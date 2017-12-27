@@ -12,3 +12,20 @@ too shaky for good example, but you get the idea
 ![](example_stab.gif)
 
 video source: [Insane First Person Parkour! (POV/GoPro/Headcam)](https://www.youtube.com/watch?v=_XTPS9hoJRo&t=20s) by [★ EpicMetalPiece / Best Compilations ➥](https://www.youtube.com/channel/UC3jGLyiJS2_Nm1fMfAThdjQ) on [YouTube](https://www.youtube.com/)
+
+### Usage
+
+`python python_video_stab.py --video input_video.mov --output output_dir --compareOutput 1 --maxWidth 400`
+
+##### Arguments
+
+ * `--video`          (`-v`) video file to stabilize (i.e. my_video.mp4)
+ * `--output`         (`-o`) path to dir to save output files
+ * `--compareOutput`  (`-c`) should output video be side by side comparison of input & output videos (as shown in readme). If `0` the output video will only contain the stabilized video; if `>0` the output will be the comparison
+ * `--maxWidth`       (`-w`) max width of output video in pixels; if `compareOutput > 0` then output width will be `2 * maxWidth`
+
+##### Outputs
+
+ * Stabilzed video file as a .avi
+ * .csv of the transformations used during stabilization
+ * .csv of the smoothed trajectory used during stabilization
