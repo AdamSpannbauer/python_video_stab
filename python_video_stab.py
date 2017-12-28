@@ -60,7 +60,9 @@ for k in range(N-1):
 	prev_corner2 = np.array(prev_corner2)
 	cur_corner2 = np.array(cur_corner2)
 	#estimate partial transform (resource: http://nghiaho.com/?p=2208)
-	T = cv2.estimateRigidTransform(prev_corner2, cur_corner2, False)
+	T_new = cv2.estimateRigidTransform(prev_corner2, cur_corner2, False)
+	if T_new is not None:
+		T = T_new
 	#translation x
 	dx = T[0,2]
 	#translation y
