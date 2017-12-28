@@ -13,6 +13,10 @@ too shaky for good example, but you get the idea
 
 video source: [Insane First Person Parkour! (POV/GoPro/Headcam)](https://www.youtube.com/watch?v=_XTPS9hoJRo&t=20s) by [★ EpicMetalPiece / Best Compilations ➥](https://www.youtube.com/channel/UC3jGLyiJS2_Nm1fMfAThdjQ) on [YouTube](https://www.youtube.com/)
 
+![](example_stab_mango.gif)
+
+video source: [Mango vs Plup - Singles LB QF - Smash Summit 2](https://www.youtube.com/watch?v=YpQTH7b-3jg) by [Beyond the Summit - Smash](https://www.youtube.com/channel/UCKJi-4lbB3EwpLpC82OWFjA) on [YouTube](https://www.youtube.com/)
+
 ### Usage
 
 `python python_video_stab.py --video input_video.mov --output output_dir --compareOutput 1 --maxWidth 400`
