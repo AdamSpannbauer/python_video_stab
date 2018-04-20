@@ -6,6 +6,7 @@ __pycache__/
 .idea*
 readme/input_video.mov
 stable_video.avi
+input_video.mov
 
 # C extensions
 *.so
