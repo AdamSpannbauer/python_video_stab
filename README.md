@@ -16,29 +16,34 @@ pip install .
 
 ### Example Usage
 
-##### Using Defaults
+The `VidStab` class can be used as a command line script or in your own custom python code.
+
+#### Using from command line
+
+```bash
+# Using defaults
+python3 -m vidstab --input input_video.mov --output stable_video.avi
+```
+
+```bash
+# Using a specific keypoint detector
+python3 -m vidstab -i input_video.mov -o stable_video.avi -k GFTT
+```
+
+#### Using `VidStab` class
 
 ```python
 from vidstab import VidStab
 
+# Using defaults
 stabilizer = VidStab()
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
-```
 
-##### Using a specific keypoint detector
-
-```python
-from vidstab import VidStab
-
+# Using a specific keypoint detector
 stabilizer = VidStab(kp_method='ORB')
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
-```
 
-##### Using a specific keypoint detector and customizing keypoint parameters
-
-```python
-from vidstab import VidStab
-
+# Using a specific keypoint detector and customizing keypoint parameters
 stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
 ```
