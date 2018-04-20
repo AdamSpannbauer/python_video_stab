@@ -9,6 +9,7 @@ setup(name='vidstab',
       packages=['vidstab'],
       license='MIT',
       install_requires=[
+          'opencv-contrib-python',
           'opencv-python',
           'numpy',
           'pandas',
