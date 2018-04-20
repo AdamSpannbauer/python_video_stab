@@ -8,8 +8,17 @@
 Currently only available from this repo.  Planned to publish to pypi after testing.
 
 ##### From repo
+
+python3
+
 ```bash
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
+```
+
+python2
+
+```bash
+pip install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
 ### Example Usage
