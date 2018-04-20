@@ -9,9 +9,7 @@ Currently only available from this repo.  Planned to publish to pypi after testi
 
 ##### From repo
 ```bash
-git clone https://github.com/AdamSpannbauer/python_video_stab
-cd python_video_stab
-pip install .
+pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
 ### Example Usage
