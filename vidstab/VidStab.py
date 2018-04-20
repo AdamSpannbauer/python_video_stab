@@ -90,7 +90,7 @@ class VidStab:
         # initialize storage
         prev_to_cur_transform = []
         if show_progress:
-            bar = IncrementalBar('Stabilizing', max=2 * (frame_count - 1))
+            bar = IncrementalBar('Stabilizing', max=2 * (frame_count - 1), suffix='%(percent)d%%')
         # iterate through frame count
         for _ in range(frame_count - 1):
             # read current frame
@@ -175,3 +175,4 @@ class VidStab:
             out.write(transformed)
             if show_progress:
                 bar.next()
+        bar.finish()
