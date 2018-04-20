@@ -48,6 +48,6 @@ stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi
 ### Example output
 <sub>(too shaky for good example, but you get the idea)</sub>
 
-![](example_stab.gif)
+![](readme/example_stab.gif)
 
 video source: [Insane First Person Parkour! (POV/GoPro/Headcam)](https://www.youtube.com/watch?v=_XTPS9hoJRo&t=20s) by [★ EpicMetalPiece / Best Compilations ➥](https://www.youtube.com/channel/UC3jGLyiJS2_Nm1fMfAThdjQ) on [YouTube](https://www.youtube.com/)
