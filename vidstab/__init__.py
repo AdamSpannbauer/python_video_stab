@@ -1,0 +1,1 @@
+from .VidStab import VidStab
