@@ -1,9 +1,7 @@
 # Python Video Stabilization
  Python video stabilization using OpenCV. 
  
- This module contains a single class (`VidStab`) used for video stabilization.  
- This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093).
- The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
+ This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
 ### Installation
 
