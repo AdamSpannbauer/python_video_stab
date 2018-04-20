@@ -9,13 +9,13 @@ Currently only available from this repo.  Planned to publish to pypi after testi
 
 ##### From repo
 
-python3
+<sub>python3</sub>
 
 ```bash
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
-python2
+<sub>python2</sub>
 
 ```bash
 pip install git+https://github.com/AdamSpannbauer/python_video_stab.git
