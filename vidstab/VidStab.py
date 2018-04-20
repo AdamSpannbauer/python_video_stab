@@ -31,7 +31,7 @@ class VidStab:
     Attributes:
         kp_method:       a string naming the keypoint detector being used
         kp_detector:     the keypoint detector object being used
-        transforms:      a `pandas.DataFrame`
+        transforms:      a `pandas.DataFrame` storing the transformations used from frame to frame
     """
 
     def __init__(self, kp_method='GFTT', *args, **kwargs):

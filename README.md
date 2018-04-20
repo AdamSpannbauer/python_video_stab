@@ -1,31 +1,53 @@
 # Python Video Stabilization
- Python video stabilization script using OpenCV. 
+ Python video stabilization using OpenCV. 
  
- This is a translation of [the C++ script](http://nghiaho.com/uploads/code/videostab.cpp
-) provided in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093) by NGHIAHO12.
+ This module contains a single class (`VidStab`) used for video stabilization.  
+ This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093).
+ The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
- I did not write this code.  The code was found in the comments section of the linked blog entry.  The commenter who posted the code was koala.  I have made some modifications to koala's original code (i.e. formating, adding some arguments/features, commenting).
+### Installation
+
+Currently only available from this repo.  Planned to publish to pypi after testing.
+
+##### From repo
+```bash
+git clone https://github.com/AdamSpannbauer/python_video_stab
+cd python_video_stab
+pip install .
+```
+
+### Example Usage
+
+##### Using Defaults
+
+```python
+from vidstab import VidStab
+
+stabilizer = VidStab()
+stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+```
+
+##### Using a specific keypoint detector
+
+```python
+from vidstab import VidStab
+
+stabilizer = VidStab(kp_method='ORB')
+stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+```
+
+##### Using a specific keypoint detector and customizing keypoint parameters
+
+```python
+from vidstab import VidStab
+
+stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
+stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+```
  
 ### Example output
-too shaky for good example, but you get the idea
+<sub>(too shaky for good example, but you get the idea)</sub>
 
 ![](example_stab.gif)
 
 video source: [Insane First Person Parkour! (POV/GoPro/Headcam)](https://www.youtube.com/watch?v=_XTPS9hoJRo&t=20s) by [★ EpicMetalPiece / Best Compilations ➥](https://www.youtube.com/channel/UC3jGLyiJS2_Nm1fMfAThdjQ) on [YouTube](https://www.youtube.com/)
-
-### Usage
-
-`python python_video_stab.py --video input_video.mov --output output_dir --compareOutput 1 --maxWidth 400`
-
-##### Arguments
-
- * `--video`          (`-v`) video file to stabilize (i.e. my_video.mp4)
- * `--output`         (`-o`) path to dir to save output files
- * `--compareOutput`  (`-c`) should output video be side by side comparison of input & output videos (as shown in readme). If `0` the output video will only contain the stabilized video; if `>0` the output will be the comparison
- * `--maxWidth`       (`-w`) max width of output video in pixels; if `compareOutput > 0` then output width will be `2 * maxWidth`
-
-##### Outputs
-
- * Stabilzed video file as a .avi
- * .csv of the transformations used during stabilization
- * .csv of the smoothed trajectory used during stabilization
