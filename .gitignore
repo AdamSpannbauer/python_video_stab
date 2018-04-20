@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.idea*
+readme/input_video.mov
+stable_video.avi
+
 # C extensions
 *.so
 
