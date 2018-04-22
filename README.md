@@ -12,11 +12,13 @@
  
 ### Installation
 
+> Warning: Code still in development. If you install: expect 🐛s and interface is subject to change
+
 Currently only available from this repo.  Plan to publish to pypi once stable.
 
 ##### From repo
 
-<sub>replace `pip3` with `pip` if using python 2</sub>
+<sub>replace pip3 with pip if using python 2</sub>
 
 ```bash
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
