@@ -1,4 +1,7 @@
 # Python Video Stabilization
+
+![](https://img.shields.io/badge/STATUS-UNSTABLE%20(in%20development)-red.svg)
+
  Python video stabilization using OpenCV. 
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
@@ -9,20 +12,14 @@
  
 ### Installation
 
-Currently only available from this repo.  Planned to publish to pypi after testing.
+Currently only available from this repo.  Plan to publish to pypi once stable.
 
 ##### From repo
 
-<sub>python3</sub>
+<sub>replace `pip3` with `pip` if using python 2</sub>
 
 ```bash
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
-```
-
-<sub>python2</sub>
-
-```bash
-pip install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
 ### Example Usage
