@@ -147,7 +147,7 @@ class VidStab:
         :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
         :param border: how to handle border when rotations are needed to stabilize
-                       ['crop', 'nocrop', 'reflect', 'replicate']
+                       ['crop', 'reflect', 'replicate']
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output is written to `output_path`.
         """
@@ -162,6 +162,9 @@ class VidStab:
 
         if show_progress:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
+
+        if border not in ['crop', 'reflect', 'replicate']:
+            raise ValueError('Invalid border value')
 
         border_modes = {'crop': cv2.BORDER_CONSTANT,
                         'reflect': cv2.BORDER_REFLECT,
@@ -190,7 +193,7 @@ class VidStab:
             # apply transform
             if border in ['crop', 'reflect', 'replicate']:
                 transformed = cv2.warpAffine(frame, transform, (w, h), borderMode=border_mode)
-            elif border == 'nocrop':
+            else:
                 pass
 
             # write frame to output video
