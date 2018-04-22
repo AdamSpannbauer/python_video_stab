@@ -15,6 +15,7 @@ setup(name='vidstab',
           'pandas',
           'imutils',
           'progress',
+          'matplotlib',
       ],
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv']
       )
