@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import imutils.feature.factories as kp_factory
 from progress.bar import IncrementalBar
-
+import matplotlib.pyplot as plt
 
 class VidStab:
     """A class for stabilizing video files
@@ -29,9 +29,11 @@ class VidStab:
         kwargs:          Keyword arguments for keypoint detector
 
     Attributes:
-        kp_method:       a string naming the keypoint detector being used
-        kp_detector:     the keypoint detector object being used
-        transforms:      a `pandas.DataFrame` storing the transformations used from frame to frame
+        kp_method:              a string naming the keypoint detector being used
+        kp_detector:            the keypoint detector object being used
+        trajectory:             a pandas DataFrame showing the trajectory of the input video
+        smoothed_trajectory:    a pandas DataFrame showing the smoothed trajectory of the input video
+        transforms:             a 2d numpy array storing the transformations used from frame to frame
     """
 
     def __init__(self, kp_method='GFTT', *args, **kwargs):
@@ -54,43 +56,32 @@ class VidStab:
         else:
             self.kp_detector = kp_factory.FeatureDetector_create(kp_method, *args, **kwargs)
 
+        self.trajectory = None
+        self.smoothed_trajectory = None
         self.transforms = None
 
-    def stabilize(self, input_path, output_path, output_fourcc='MJPG', show_progress=True):
-        """read video, perform stabilization, & write output to file
+    def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
+        """Generate frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
         Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param output_path: Path to save stabilized video.
-        Will be written with cv2.VideoWriter; see opencv documentation for more info.
-        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
-        The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
+        :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  Output of stabilization is written to `output_path`.
-
-        >>> from vidstab.VidStab import VidStab
-        >>> stabilizer = VidStab()
-        >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
-
-        >>> stabilizer = VidStab(kp_method = 'ORB')
-        >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
         """
         # set up video capture
         vid_cap = cv2.VideoCapture(input_path)
         frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        fps = int(vid_cap.get(cv2.CAP_PROP_FPS))
 
         # read first frame
         _, prev_frame = vid_cap.read()
         # convert to gray scale
         prev_frame_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
-        # get image dims
-        (h, w) = prev_frame.shape[:2]
 
         # initialize storage
         prev_to_cur_transform = []
         if show_progress:
-            bar = IncrementalBar('Stabilizing', max=2 * (frame_count - 1), suffix='%(percent)d%%')
+            bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
         # iterate through frame count
         for _ in range(frame_count - 1):
             # read current frame
@@ -130,37 +121,58 @@ class VidStab:
             prev_frame_gray = cur_frame_gray[:]
             if show_progress:
                 bar.next()
+        bar.finish()
 
         # convert list of transforms to array
-        prev_to_cur_transform = np.array(prev_to_cur_transform)
+        raw_transforms = np.array(prev_to_cur_transform)
+
         # cumsum of all transforms for trajectory
         trajectory = np.cumsum(prev_to_cur_transform, axis=0)
 
         # convert trajectory array to df
-        trajectory = pd.DataFrame(trajectory)
+        self.trajectory = pd.DataFrame(trajectory)
         # rolling mean to smooth
-        smoothed_trajectory = trajectory.rolling(window=30, center=False).mean()
+        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean().fillna(method='bfill')
         # back fill nas caused by smoothing and store
-        smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
+        self.smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
+        self.transforms = np.array(raw_transforms + (self.smoothed_trajectory - self.trajectory))
 
-        # new set of prev to cur transform, removing trajectory and replacing w/smoothed
-        self.transforms = np.array(prev_to_cur_transform + (smoothed_trajectory - trajectory))
+    def apply_transforms(self, input_path, output_path, output_fourcc='MJPG', show_progress=True):
+        """Apply frame transformations to apply for stabilization
 
-        #####
-        # APPLY VIDEO STAB
-        #####
+        :param input_path: Path to input video to stabilize.
+        Will be read with cv2.VideoCapture; see opencv documentation for more info.
+        :param output_path: Path to save stabilized video.
+        Will be written with cv2.VideoWriter; see opencv documentation for more info.
+        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
+        The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
+        :param show_progress: Should a progress bar be displayed to console?
+        :return: Nothing is returned.  Output is written to `output_path`.
+        """
         # initialize transformation matrix
         transform = np.zeros((2, 3))
         # setup video cap
         vid_cap = cv2.VideoCapture(input_path)
-        # setup video writer
-        out = cv2.VideoWriter(output_path,
-                              cv2.VideoWriter_fourcc(*output_fourcc), fps, (w, h), True)
+        frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = int(vid_cap.get(cv2.CAP_PROP_FPS))
+
+        writer = None
+
+        if show_progress:
+            bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
 
         # loop through frame count
         for i in range(frame_count - 1):
             # read current frame
             _, frame = vid_cap.read()
+
+            w, h = frame.shape[:2]
+
+            if writer is None:
+                # setup video writer
+                writer = cv2.VideoWriter(output_path,
+                                         cv2.VideoWriter_fourcc(*output_fourcc), fps, (w, h), True)
+
             # build transformation matrix
             transform[0, 0] = np.cos(self.transforms[i][2])
             transform[0, 1] = -np.sin(self.transforms[i][2])
@@ -172,7 +184,123 @@ class VidStab:
             transformed = cv2.warpAffine(frame, transform, (w, h))
 
             # write frame to output video
-            out.write(transformed)
+            writer.write(transformed)
             if show_progress:
                 bar.next()
         bar.finish()
+
+    def stabilize(self, input_path, output_path, output_fourcc='MJPG', smoothing_window=30, show_progress=True):
+        """read video, perform stabilization, & write output to file
+
+        :param input_path: Path to input video to stabilize.
+        Will be read with cv2.VideoCapture; see opencv documentation for more info.
+        :param output_path: Path to save stabilized video.
+        Will be written with cv2.VideoWriter; see opencv documentation for more info.
+        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
+        The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param show_progress: Should a progress bar be displayed to console?
+        :return: Nothing is returned.  Output of stabilization is written to `output_path`.
+
+        >>> from vidstab.VidStab import VidStab
+        >>> stabilizer = VidStab()
+        >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+
+        >>> stabilizer = VidStab(kp_method = 'ORB')
+        >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+        """
+
+        # generate transforms if needed
+        if self.transforms is None:
+            self.gen_transforms(input_path=input_path,
+                                smoothing_window=smoothing_window,
+                                show_progress=True)
+
+        # apply transformations for stabilization
+        self.apply_transforms(input_path=input_path,
+                              output_path=output_path,
+                              output_fourcc=output_fourcc,
+                              show_progress=show_progress)
+
+    def plot_trajectory(self):
+        """Plot video trajectory
+
+        Create a plot of the video's trajectory & smoothed trajectory.
+        Separate subplots are used to show the x and y trajectory.
+
+        :return: tuple of matplotlib objects (Figure, (AxesSubplot, AxesSubplot))
+
+        >>> from vidstab import VidStab
+        >>> import matplotlib.pyplot as plt
+        >>> stabilizer = VidStab()
+        >>> stabilizer.gen_transforms(input_path='input_video.mov')
+        >>> stabilizer.plot_trajectory()
+        >>> plt.show()
+        """
+
+        if self.transforms is None:
+            raise AttributeError('No trajectory to plot. '
+                                 'Use methods: gen_transforms or stabilize to generate the trajectory attributes')
+
+        with plt.style.context('ggplot'):
+            fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+
+            # x trajectory
+            ax1.plot(self.trajectory[0], label='Trajectory')
+            ax1.plot(self.smoothed_trajectory[0], label='Smoothed Trajectory')
+            ax1.set_ylabel('dx')
+
+            # y trajectory
+            ax2.plot(self.trajectory[1], label='Trajectory')
+            ax2.plot(self.smoothed_trajectory[1], label='Smoothed Trajectory')
+            ax2.set_ylabel('dy')
+
+            handles, labels = ax2.get_legend_handles_labels()
+            fig.legend(handles, labels, loc='upper right')
+
+            plt.xlabel('Frame Number')
+
+            fig.canvas.set_window_title('Trajectory')
+
+            return fig, (ax1, ax2)
+
+    def plot_transforms(self):
+        """Plot stabilizing transforms
+
+        Create a plot of the transforms used to stabilize the input video.
+        Plots x & y transforms (dx & dy) in a separate subplot than angle transforms (da).
+
+        :return: tuple of matplotlib objects (Figure, (AxesSubplot, AxesSubplot))
+
+        >>> from vidstab import VidStab
+        >>> import matplotlib.pyplot as plt
+        >>> stabilizer = VidStab()
+        >>> stabilizer.gen_transforms(input_path='input_video.mov')
+        >>> stabilizer.plot_transforms()
+        >>> plt.show()
+        """
+        if self.transforms is None:
+            raise AttributeError('No transforms to plot. '
+                                 'Use methods: gen_transforms or stabilize to generate the transforms attribute')
+
+        with plt.style.context('ggplot'):
+            fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+
+            ax1.plot(self.transforms[:, 0], label='dx', color='C0')
+            ax1.plot(self.transforms[:, 1], label='dy', color='C1')
+
+            ax2.plot(self.transforms[:, 2], label='da', color='C2')
+
+            handles1, labels1 = ax1.get_legend_handles_labels()
+            handles2, labels2 = ax2.get_legend_handles_labels()
+            fig.legend(handles1 + handles2,
+                       labels1 + labels2,
+                       loc='upper right',
+                       ncol=3)
+
+            fig.text(0.5, 0.02, 'Frame Number', ha='center')
+            fig.text(0.02, 0.5, 'Delta Pixels', va='center', rotation='vertical')
+
+            fig.canvas.set_window_title('Transforms')
+
+            return fig, (ax1, ax2)
