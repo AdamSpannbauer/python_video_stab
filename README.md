@@ -12,7 +12,10 @@
  
 ### Installation
 
-> Warning: Code still in development. If you install: expect 🐛s and interface is subject to change
+> ```diff
+> - Warning: Code still in development. 
+> - If you install: expect 🐛s and interface is subject to change
+> ```
 
 Currently only available from this repo.  Plan to publish to pypi once stable.
 
