@@ -3,6 +3,10 @@
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
+ Input                     |  Output
+:-------------------------------:|:-------------------------:
+![](readme/input_ostrich.gif)  |  ![](readme/stable_ostrich.gif)
+ 
 ### Installation
 
 Currently only available from this repo.  Planned to publish to pypi after testing.
@@ -53,9 +57,16 @@ stabilizer.stabilize(input_path='input_video.mp4', output_path='stable_video.avi
 # Using a specific keypoint detector and customizing keypoint parameters
 stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+```
 
-# plot trajectory and transforms
+#### Plotting frame to frame transformations
+
+```python
+from vidstab import VidStab
 import matplotlib.pyplot as plt
+
+stabilizer = VidStab()
+stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
 
 stabilizer.plot_trajectory()
 plt.show()
@@ -68,8 +79,21 @@ Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
 ![](readme/trajectory_plot.png)  |  ![](readme/transforms_plot.png)
 
-### Example Stabilization
+#### Using borders
 
-Input                     |  Output
+By default the `border` parameter of the `stabilize` method is `'crop'`.  This results in output similiar to the output seen at the top of the readme (i.e. black space when transformation causes image to shift in frame)
+
+There are currently 2 other border options (shown below).
+
+```python
+from vidstab import VidStab
+
+# stabilize with borders
+stabilizer = VidStab()
+stabilizer.stabilize(input_path='input_video.mov', output_path='ref_stable_video.avi', border='reflect')
+stabilizer.stabilize(input_path='input_video.mov', output_path='rep_stable_video.avi', border='replicate')
+```
+
+`border='reflect'`                     |  `border='replicate'`
 :-------------------------------:|:-------------------------:
-![](readme/input_ostrich.gif)  |  ![](readme/stable_ostrich.gif)
+![](readme/reflect_stable_ostrich.gif)  |  ![](readme/replicate_stable_ostrich.gif)
