@@ -7,6 +7,7 @@ import imutils.feature.factories as kp_factory
 from progress.bar import IncrementalBar
 import matplotlib.pyplot as plt
 
+
 class VidStab:
     """A class for stabilizing video files
 
