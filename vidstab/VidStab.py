@@ -293,6 +293,7 @@ class VidStab:
 
             plt.xlabel('Frame Number')
 
+            fig.suptitle('Video Trajectory', x=0.15, y=0.96, ha='left')
             fig.canvas.set_window_title('Trajectory')
 
             return fig, (ax1, ax2)
@@ -319,22 +320,23 @@ class VidStab:
         with plt.style.context('ggplot'):
             fig, (ax1, ax2) = plt.subplots(2, sharex=True)
 
-            ax1.plot(self.transforms[:, 0], label='dx', color='C0')
-            ax1.plot(self.transforms[:, 1], label='dy', color='C1')
-            ax1.set_ylabel('Delta Pixels')
+            ax1.plot(self.transforms[:, 0], label='delta x', color='C0')
+            ax1.plot(self.transforms[:, 1], label='delta y', color='C1')
+            ax1.set_ylabel('Delta Pixels', fontsize=10)
 
-            ax2.plot(self.transforms[:, 2], label='da', color='C2')
-            ax2.set_ylabel('Delta Angle')
+            ax2.plot(self.transforms[:, 2], label='delta angle', color='C2')
+            ax2.set_ylabel('Delta Degrees', fontsize=10)
 
             handles1, labels1 = ax1.get_legend_handles_labels()
             handles2, labels2 = ax2.get_legend_handles_labels()
             fig.legend(handles1 + handles2,
                        labels1 + labels2,
                        loc='upper right',
-                       ncol=3)
+                       ncol=1)
 
             plt.xlabel('Frame Number')
 
+            fig.suptitle('Transformations for Stabilizing', x=0.15, y=0.96, ha='left')
             fig.canvas.set_window_title('Transforms')
 
             return fig, (ax1, ax2)
