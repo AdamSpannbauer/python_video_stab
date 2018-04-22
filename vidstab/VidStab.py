@@ -304,8 +304,10 @@ class VidStab:
 
             ax1.plot(self.transforms[:, 0], label='dx', color='C0')
             ax1.plot(self.transforms[:, 1], label='dy', color='C1')
+            ax1.set_ylabel('Delta Pixels')
 
             ax2.plot(self.transforms[:, 2], label='da', color='C2')
+            ax2.set_ylabel('Delta Angle')
 
             handles1, labels1 = ax1.get_legend_handles_labels()
             handles2, labels2 = ax2.get_legend_handles_labels()
@@ -314,8 +316,7 @@ class VidStab:
                        loc='upper right',
                        ncol=3)
 
-            fig.text(0.5, 0.02, 'Frame Number', ha='center')
-            fig.text(0.02, 0.5, 'Delta Pixels', va='center', rotation='vertical')
+            plt.xlabel('Frame Number')
 
             fig.canvas.set_window_title('Transforms')
 
