@@ -81,18 +81,34 @@ Trajectories                     |  Transforms
 
 #### Using borders
 
-By default the `border` parameter of the `stabilize` method is `'crop'`.  This results in output similiar to the output seen at the top of the readme (i.e. black space when transformation causes image to shift in frame)
-
-There are currently 2 other border options (shown below).
+By default the `border` parameter of the `stabilize` method is `'crop'`.  There are currently 4 border options; see below for example output.
 
 ```python
 from vidstab import VidStab
 
-# stabilize with borders
 stabilizer = VidStab()
-stabilizer.stabilize(input_path='input_video.mov', output_path='ref_stable_video.avi', border='reflect')
-stabilizer.stabilize(input_path='input_video.mov', output_path='rep_stable_video.avi', border='replicate')
+
+# black borders
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='stable_video.avi', 
+                     border='crop')
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='wide_stable_video.avi', 
+                     border='wide', 
+                     wide_border_pad=100)
+
+# filled in borders
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='ref_stable_video.avi', 
+                     border='reflect')
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='rep_stable_video.avi', 
+                     border='replicate')
 ```
+
+`border='crop'`                     |  `border='wide'`
+:-------------------------------:|:-------------------------:
+![](readme/stable_ostrich.gif)  |  ![](readme/wide_stable_ostrich.gif)
 
 `border='reflect'`                     |  `border='replicate'`
 :-------------------------------:|:-------------------------:

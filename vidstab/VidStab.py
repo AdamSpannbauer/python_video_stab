@@ -138,7 +138,8 @@ class VidStab:
         self.smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
         self.transforms = np.array(raw_transforms + (self.smoothed_trajectory - self.trajectory))
 
-    def apply_transforms(self, input_path, output_path, output_fourcc='MJPG', border='crop', show_progress=True):
+    def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
+                         border='crop', wide_border_pad=100, show_progress=True):
         """Apply frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
@@ -149,6 +150,7 @@ class VidStab:
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
         :param border: how to handle border when rotations are needed to stabilize
                        ['crop', 'reflect', 'replicate']
+        :param wide_border_pad: size of padding to use if border == 'wide'
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output is written to `output_path`.
         """
@@ -164,13 +166,14 @@ class VidStab:
         if show_progress:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
 
-        if border not in ['crop', 'reflect', 'replicate']:
+        if border not in ['crop', 'reflect', 'replicate', 'wide']:
             raise ValueError('Invalid border value')
 
-        border_modes = {'crop': cv2.BORDER_CONSTANT,
-                        'reflect': cv2.BORDER_REFLECT,
-                        'replicate': cv2.BORDER_REPLICATE}
-        border_mode = border_modes[border]
+        if border in ['crop', 'reflect', 'replicate']:
+            border_modes = {'crop': cv2.BORDER_CONSTANT,
+                            'reflect': cv2.BORDER_REFLECT,
+                            'replicate': cv2.BORDER_REPLICATE}
+            border_mode = border_modes[border]
 
         # loop through frame count
         for i in range(frame_count - 1):
@@ -178,6 +181,10 @@ class VidStab:
             _, frame = vid_cap.read()
 
             h, w = frame.shape[:2]
+
+            if border == 'wide':
+                h += 2 * wide_border_pad
+                w += 2 * wide_border_pad
 
             if writer is None:
                 # setup video writer
@@ -195,7 +202,14 @@ class VidStab:
             if border in ['crop', 'reflect', 'replicate']:
                 transformed = cv2.warpAffine(frame, transform, (w, h), borderMode=border_mode)
             else:
-                pass
+                frame = cv2.copyMakeBorder(frame,
+                                           top=wide_border_pad,
+                                           bottom=wide_border_pad,
+                                           left=wide_border_pad,
+                                           right=wide_border_pad,
+                                           borderType=cv2.BORDER_CONSTANT,
+                                           value=[0, 0, 0])
+                transformed = cv2.warpAffine(frame, transform, (w, h))
 
             # write frame to output video
             writer.write(transformed)
@@ -204,7 +218,7 @@ class VidStab:
         bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
-                  border='crop', smoothing_window=30, show_progress=True):
+                  border='crop', wide_border_pad=100, smoothing_window=30, show_progress=True):
         """read video, perform stabilization, & write output to file
 
         :param input_path: Path to input video to stabilize.
@@ -214,6 +228,7 @@ class VidStab:
         :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
         :param border: how to handle border when rotations are needed to stabilize
+        :param wide_border_pad: size of padding to use if border == 'wide'
         :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output of stabilization is written to `output_path`.
@@ -237,6 +252,7 @@ class VidStab:
                               output_path=output_path,
                               output_fourcc=output_fourcc,
                               border=border,
+                              wide_border_pad=wide_border_pad,
                               show_progress=show_progress)
 
     def plot_trajectory(self):
