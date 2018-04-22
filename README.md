@@ -48,7 +48,7 @@ stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi
 
 # Using a specific keypoint detector
 stabilizer = VidStab(kp_method='ORB')
-stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
+stabilizer.stabilize(input_path='input_video.mp4', output_path='stable_video.avi')
 
 # Using a specific keypoint detector and customizing keypoint parameters
 stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
@@ -68,10 +68,8 @@ Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
 ![](readme/trajectory_plot.png)  |  ![](readme/transforms_plot.png)
 
-### Example Output
+### Example Stabilization
 
-<sub>(too shaky for good example, but you get the idea)</sub>
-
-![](readme/example_stab.gif)
-
-video source: [Insane First Person Parkour! (POV/GoPro/Headcam)](https://www.youtube.com/watch?v=_XTPS9hoJRo&t=20s) by [★ EpicMetalPiece / Best Compilations ➥](https://www.youtube.com/channel/UC3jGLyiJS2_Nm1fMfAThdjQ) on [YouTube](https://www.youtube.com/)
+Input                     |  Output
+:-------------------------------:|:-------------------------:
+![](readme/input_ostrich.gif)  |  ![](readme/stable_ostrich.gif)
