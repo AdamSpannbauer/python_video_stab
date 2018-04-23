@@ -8,6 +8,9 @@ readme/input_video.mov
 stable_video.avi
 input_video.mov
 *.avi
+*.gif
+*.mp4
+*.png
 
 # C extensions
 *.so
