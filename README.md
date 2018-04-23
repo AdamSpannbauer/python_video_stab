@@ -6,9 +6,9 @@
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
- Input                     |  Output
+ Input                           |  Output
 :-------------------------------:|:-------------------------:
-![](readme/input_ostrich.gif)  |  ![](readme/stable_ostrich.gif)
+![](readme/input_ostrich.gif)    |  ![](readme/stable_ostrich.gif)
  
 ### Installation
 
@@ -83,8 +83,6 @@ Trajectories                     |  Transforms
 
 #### Using borders
 
-By default the `border` parameter of the `stabilize` method is `'crop'`.  There are currently 4 border options; see below for example output.
-
 ```python
 from vidstab import VidStab
 
@@ -93,11 +91,11 @@ stabilizer = VidStab()
 # black borders
 stabilizer.stabilize(input_path='input_video.mov', 
                      output_path='stable_video.avi', 
-                     border='crop')
+                     border_type='black')
 stabilizer.stabilize(input_path='input_video.mov', 
                      output_path='wide_stable_video.avi', 
-                     border='wide', 
-                     wide_border_pad=100)
+                     border_type='black', 
+                     border_size=100)
 
 # filled in borders
 stabilizer.stabilize(input_path='input_video.mov', 
@@ -108,10 +106,10 @@ stabilizer.stabilize(input_path='input_video.mov',
                      border='replicate')
 ```
 
-`border='crop'`                     |  `border='wide'`
+`border_size=0`                  |  `border_size=100`
 :-------------------------------:|:-------------------------:
-![](readme/stable_ostrich.gif)  |  ![](readme/wide_stable_ostrich.gif)
+![](readme/stable_ostrich.gif)   |  ![](readme/wide_stable_ostrich.gif)
 
-`border='reflect'`                     |  `border='replicate'`
-:-------------------------------:|:-------------------------:
+`border='reflect'`                      |  `border='replicate'`
+:--------------------------------------:|:-------------------------:
 ![](readme/reflect_stable_ostrich.gif)  |  ![](readme/replicate_stable_ostrich.gif)

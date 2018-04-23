@@ -139,7 +139,7 @@ class VidStab:
         self.transforms = np.array(raw_transforms + (self.smoothed_trajectory - self.trajectory))
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
-                         border='crop', wide_border_pad=100, show_progress=True):
+                         border_type='black', border_size=0, show_progress=True):
         """Apply frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
@@ -148,9 +148,9 @@ class VidStab:
         Will be written with cv2.VideoWriter; see opencv documentation for more info.
         :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
-        :param border: how to handle border when rotations are needed to stabilize
-                       ['crop', 'reflect', 'replicate']
-        :param wide_border_pad: size of padding to use if border == 'wide'
+        :param border_type: how to handle border when rotations are needed to stabilize
+                       ['black', 'reflect', 'replicate']
+        :param border_size: size of border in output
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output is written to `output_path`.
         """
@@ -166,14 +166,13 @@ class VidStab:
         if show_progress:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
 
-        if border not in ['crop', 'reflect', 'replicate', 'wide']:
+        if border_type not in ['black', 'reflect', 'replicate']:
             raise ValueError('Invalid border value')
 
-        if border in ['crop', 'reflect', 'replicate']:
-            border_modes = {'crop': cv2.BORDER_CONSTANT,
-                            'reflect': cv2.BORDER_REFLECT,
-                            'replicate': cv2.BORDER_REPLICATE}
-            border_mode = border_modes[border]
+        border_modes = {'black': cv2.BORDER_CONSTANT,
+                        'reflect': cv2.BORDER_REFLECT,
+                        'replicate': cv2.BORDER_REPLICATE}
+        border_mode = border_modes[border_type]
 
         # loop through frame count
         for i in range(frame_count - 1):
@@ -182,9 +181,8 @@ class VidStab:
 
             h, w = frame.shape[:2]
 
-            if border == 'wide':
-                h += 2 * wide_border_pad
-                w += 2 * wide_border_pad
+            h += 2 * border_size
+            w += 2 * border_size
 
             if writer is None:
                 # setup video writer
@@ -199,17 +197,20 @@ class VidStab:
             transform[0, 2] = self.transforms[i][0]
             transform[1, 2] = self.transforms[i][1]
             # apply transform
-            if border in ['crop', 'reflect', 'replicate']:
-                transformed = cv2.warpAffine(frame, transform, (w, h), borderMode=border_mode)
-            else:
-                frame = cv2.copyMakeBorder(frame,
-                                           top=wide_border_pad,
-                                           bottom=wide_border_pad,
-                                           left=wide_border_pad,
-                                           right=wide_border_pad,
-                                           borderType=cv2.BORDER_CONSTANT,
-                                           value=[0, 0, 0])
-                transformed = cv2.warpAffine(frame, transform, (w, h))
+            bordered_frame = cv2.copyMakeBorder(frame,
+                                                top=border_size * 2,
+                                                bottom=border_size * 2,
+                                                left=border_size * 2,
+                                                right=border_size * 2,
+                                                borderType=border_mode,
+                                                value=[0, 0, 0])
+            transformed = cv2.warpAffine(bordered_frame,
+                                         transform,
+                                         (w + border_size * 2, h + border_size * 2),
+                                         borderMode=border_mode)
+
+            transformed = transformed[border_size:(transformed.shape[0] - border_size),
+                                      border_size:(transformed.shape[1] - border_size)]
 
             # write frame to output video
             writer.write(transformed)
@@ -218,7 +219,7 @@ class VidStab:
         bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
-                  border='crop', wide_border_pad=100, smoothing_window=30, show_progress=True):
+                  border_type='crop', border_size=0, smoothing_window=30, show_progress=True):
         """read video, perform stabilization, & write output to file
 
         :param input_path: Path to input video to stabilize.
@@ -227,8 +228,9 @@ class VidStab:
         Will be written with cv2.VideoWriter; see opencv documentation for more info.
         :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
-        :param border: how to handle border when rotations are needed to stabilize
-        :param wide_border_pad: size of padding to use if border == 'wide'
+        :param border_type: how to handle border when rotations are needed to stabilize
+                       ['black', 'reflect', 'replicate']
+        :param border_size: size of border in output
         :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output of stabilization is written to `output_path`.
@@ -251,8 +253,8 @@ class VidStab:
         self.apply_transforms(input_path=input_path,
                               output_path=output_path,
                               output_fourcc=output_fourcc,
-                              border=border,
-                              wide_border_pad=wide_border_pad,
+                              border_type=border_type,
+                              border_size=border_size,
                               show_progress=show_progress)
 
     def plot_trajectory(self):
