@@ -10,24 +10,42 @@
 :-------------------------------:|:-------------------------:
 ![](readme/input_ostrich.gif)    |  ![](readme/stable_ostrich.gif)
  
-### Installation
+## Installation
 
 > ```diff
 > - Warning: Code still in development. 
-> - If you install: expect 🐛s and interface is subject to change
+> - 
+> - If you install: 
+> -      * expect 🐛s
+> -      * interface is subject to change
 > ```
 
 Currently only available from this repo.  Plan to publish to pypi once stable.
 
-##### From repo
+#### Install `vidstab` without installing OpenCV
 
-<sub>replace pip3 with pip if using python 2</sub>
+If you've already built OpenCV with python bindings on your machine it is recommended to install `vidstab` without installing the pypi versions of OpenCV.  The `opencv-python` python module can cause issues if you've already built OpenCV from source in your environment.
+
+The below command will install `vidstab` without OpenCV included.
 
 ```bash
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
-### Example Usage
+#### Install `vidstab` & OpenCV
+
+If you don't have OpenCV installed already there are a couple options.  
+
+1. You can build OpenCV using one of the great online tutorials from [PyImageSearch](https://www.pyimagesearch.com/), [LearnOpenCV](https://www.learnopencv.com/), or [OpenCV](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html#py-table-of-content-setup) themselves.  When building from source you have more options (e.g. [platform optimization](https://www.pyimagesearch.com/2017/10/09/optimizing-opencv-on-the-raspberry-pi/)), but more responsibility.  Once installed you can use the pip install command shown above.
+2. You can install a pre-built distribution of OpenCV from pypi as a dependency for `vidstab` (see command below)
+
+The below command will install `vidstab` with `opencv-python` & `opencv-contrib-python` as dependencies.
+
+```bash
+ pip3 install -e git+https://github.com/AdamSpannbauer/python_video_stab.git#egg=vidstab[cv2]
+```
+
+## Usage
 
 The `VidStab` class can be used as a command line script or in your own custom python code.
 
