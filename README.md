@@ -100,16 +100,16 @@ stabilizer.stabilize(input_path='input_video.mov',
 # filled in borders
 stabilizer.stabilize(input_path='input_video.mov', 
                      output_path='ref_stable_video.avi', 
-                     border='reflect')
+                     border_type='reflect')
 stabilizer.stabilize(input_path='input_video.mov', 
                      output_path='rep_stable_video.avi', 
-                     border='replicate')
+                     border_type='replicate')
 ```
 
 `border_size=0`                  |  `border_size=100`
 :-------------------------------:|:-------------------------:
 ![](readme/stable_ostrich.gif)   |  ![](readme/wide_stable_ostrich.gif)
 
-`border='reflect'`                      |  `border='replicate'`
+`border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
 ![](readme/reflect_stable_ostrich.gif)  |  ![](readme/replicate_stable_ostrich.gif)
