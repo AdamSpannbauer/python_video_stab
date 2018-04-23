@@ -9,13 +9,14 @@ setup(name='vidstab',
       packages=['vidstab'],
       license='MIT',
       install_requires=[
-          'opencv-contrib-python',
-          'opencv-python',
           'numpy',
           'pandas',
           'imutils',
           'progress',
           'matplotlib',
       ],
+      extras_require={
+        'cv2':  ['opencv-contrib-python >= 3.4.0', 'opencv-python >= 3.4.0']
+      },
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv']
       )
