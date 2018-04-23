@@ -7,6 +7,7 @@ __pycache__/
 readme/input_video.mov
 stable_video.avi
 input_video.mov
+*.avi
 
 # C extensions
 *.so
