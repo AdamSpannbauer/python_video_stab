@@ -16,7 +16,7 @@ setup(name='vidstab',
           'matplotlib',
       ],
       extras_require={
-        'cv2':  ['opencv-contrib-python >= 3.4.0', 'opencv-python >= 3.4.0']
+        'cv2':  ['opencv-contrib-python >= 3.4.0']
       },
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv']
       )
