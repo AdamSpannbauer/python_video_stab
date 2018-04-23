@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='vidstab',
       version='0.0.5',
@@ -18,5 +18,7 @@ setup(name='vidstab',
       extras_require={
         'cv2':  ['opencv-contrib-python >= 3.4.0']
       },
+      test_suite='nose.collector',
+      tests_require=['nose'],
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv']
       )
