@@ -22,7 +22,7 @@
 
 Currently only available from this repo.  Plan to publish to pypi once stable.
 
-#### Install `vidstab` without installing OpenCV
+### Install `vidstab` without installing OpenCV
 
 If you've already built OpenCV with python bindings on your machine it is recommended to install `vidstab` without installing the pypi versions of OpenCV.  The `opencv-python` python module can cause issues if you've already built OpenCV from source in your environment.
 
@@ -32,7 +32,7 @@ The below command will install `vidstab` without OpenCV included.
 pip3 install git+https://github.com/AdamSpannbauer/python_video_stab.git
 ```
 
-#### Install `vidstab` & OpenCV
+### Install `vidstab` & OpenCV
 
 If you don't have OpenCV installed already there are a couple options.  
 
@@ -49,7 +49,7 @@ The below command will install `vidstab` with `opencv-python` & `opencv-contrib-
 
 The `VidStab` class can be used as a command line script or in your own custom python code.
 
-#### Using from command line
+### Using from command line
 
 ```bash
 # Using defaults
@@ -61,7 +61,7 @@ python3 -m vidstab --input input_video.mov --output stable_video.avi
 python3 -m vidstab -i input_video.mov -o stable_video.avi -k GFTT
 ```
 
-#### Using `VidStab` class
+### Using `VidStab` class
 
 ```python
 from vidstab import VidStab
@@ -79,7 +79,7 @@ stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
 ```
 
-#### Plotting frame to frame transformations
+### Plotting frame to frame transformations
 
 ```python
 from vidstab import VidStab
@@ -99,7 +99,7 @@ Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
 ![](readme/trajectory_plot.png)  |  ![](readme/transforms_plot.png)
 
-#### Using borders
+### Using borders
 
 ```python
 from vidstab import VidStab
