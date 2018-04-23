@@ -8,7 +8,7 @@ readme/input_video.mov
 stable_video.avi
 input_video.mov
 *.avi
-*.gif
+# *.gif
 *.mp4
 *.png
 
