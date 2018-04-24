@@ -179,15 +179,24 @@ class VidStab:
             # read current frame
             _, frame = vid_cap.read()
 
-            h, w = frame.shape[:2]
-
-            h += 2 * border_size
-            w += 2 * border_size
-
             if writer is None:
+                # set output and working dims
+                h, w = frame.shape[:2]
+
+                write_h = h + 2 * border_size
+                write_w = w + 2 * border_size
+
+                if border_size < 0:
+                    neg_border_size = 100 + abs(border_size)
+                    border_size = 100
+                else:
+                    neg_border_size = 0
+
+                h += 2 * border_size
+                w += 2 * border_size
                 # setup video writer
                 writer = cv2.VideoWriter(output_path,
-                                         cv2.VideoWriter_fourcc(*output_fourcc), fps, (w, h), True)
+                                         cv2.VideoWriter_fourcc(*output_fourcc), fps, (write_w, write_h), True)
 
             # build transformation matrix
             transform[0, 0] = np.cos(self.transforms[i][2])
@@ -209,8 +218,9 @@ class VidStab:
                                          (w + border_size * 2, h + border_size * 2),
                                          borderMode=border_mode)
 
-            transformed = transformed[border_size:(transformed.shape[0] - border_size),
-                                      border_size:(transformed.shape[1] - border_size)]
+            buffer = border_size + neg_border_size
+            transformed = transformed[buffer:(transformed.shape[0] - buffer),
+                                      buffer:(transformed.shape[1] - buffer)]
 
             # write frame to output video
             writer.write(transformed)
