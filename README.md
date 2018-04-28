@@ -1,6 +1,6 @@
 # Python Video Stabilization
 
-![](https://img.shields.io/badge/STATUS-UNSTABLE%20(in%20development)-red.svg)
+![](https://img.shields.io/badge/Status-Beta-yellow.svg)
 
  Python video stabilization using OpenCV. 
  
@@ -13,11 +13,8 @@
 ## Installation
 
 > ```diff
-> - Warning: Code still in development. 
-> - 
-> - If you install: 
-> -      * expect 🐛s
-> -      * interface is subject to change
+> + Project recently moved to a beta state.
+> + Please report issues if you install and run into problems.
 > ```
 
 Currently only available from this repo.  Plan to publish to pypi once stable.
