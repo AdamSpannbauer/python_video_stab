@@ -82,11 +82,15 @@ class VidStab:
         # initialize storage
         prev_to_cur_transform = []
         if show_progress:
+            print('Progress bar is based on OpenCV CAP_PROP_FRAME_COUNT which may be inaccurate')
             bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
         # iterate through frame count
         for _ in range(frame_count - 1):
             # read current frame
-            _, cur_frame = vid_cap.read()
+            grabbed_frame, cur_frame = vid_cap.read()
+            if not grabbed_frame:
+                print('No frame grabbed. Exiting process.')
+                break
             # convert to gray
             cur_frame_gray = cv2.cvtColor(cur_frame, cv2.COLOR_BGR2GRAY)
             # detect keypoints
@@ -175,7 +179,7 @@ class VidStab:
         border_mode = border_modes[border_type]
 
         # loop through frame count
-        for i in range(frame_count - 1):
+        for i in range(self.transforms.shape[0]):
             # read current frame
             _, frame = vid_cap.read()
 
