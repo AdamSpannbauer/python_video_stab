@@ -230,6 +230,7 @@ class VidStab:
             writer.write(transformed)
             if show_progress:
                 bar.next()
+        writer.release()
         bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
