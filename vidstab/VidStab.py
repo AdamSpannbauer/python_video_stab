@@ -171,7 +171,7 @@ class VidStab:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
 
         if border_type not in ['black', 'reflect', 'replicate']:
-            raise ValueError('Invalid border value')
+            raise ValueError('Invalid border type')
 
         border_modes = {'black': cv2.BORDER_CONSTANT,
                         'reflect': cv2.BORDER_REFLECT,
@@ -234,7 +234,7 @@ class VidStab:
         bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
-                  border_type='crop', border_size=0, smoothing_window=30, show_progress=True):
+                  border_type='black', border_size=0, smoothing_window=30, show_progress=True):
         """read video, perform stabilization, & write output to file
 
         :param input_path: Path to input video to stabilize.
