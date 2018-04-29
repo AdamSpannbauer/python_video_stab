@@ -1,9 +1,9 @@
 # TODO: implement test to check output values
 
+import tempfile
 import unittest
 import matplotlib
 matplotlib.use('Agg')
-
 from vidstab import VidStab
 
 kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS",
@@ -29,8 +29,7 @@ class KeyPointMethods(unittest.TestCase):
 
     def test_video_dep_funcs_run(self):
         # just tests to check functions run
-        input_vid = 'readme/trunc_video.avi'
-        output_vid = 'readme/test_output.avi'
+        input_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
 
         stabilizer = VidStab()
         stabilizer.gen_transforms(input_vid, smoothing_window=1, show_progress=True)
@@ -50,15 +49,17 @@ class KeyPointMethods(unittest.TestCase):
         self.assertTrue(isinstance(ax1, matplotlib.axes._subplots.Axes))
         self.assertTrue(isinstance(ax2, matplotlib.axes._subplots.Axes))
 
-        try:
-            stabilizer.apply_transforms(input_vid, output_vid)
-        except Exception as e:
-            self.fail("stabilizer.apply_transforms ran into {}".format(e))
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_vid = '{}/test_output.avi'.format(tmpdir)
+            try:
+                stabilizer.apply_transforms(input_vid, output_vid)
+            except Exception as e:
+                self.fail("stabilizer.apply_transforms ran into {}".format(e))
 
-        try:
-            stabilizer.stabilize(input_vid, output_vid, smoothing_window=1)
-        except Exception as e:
-            self.fail("stabilizer.stabilize ran into {}".format(e))
+            try:
+                stabilizer.stabilize(input_vid, output_vid, smoothing_window=1)
+            except Exception as e:
+                self.fail("stabilizer.stabilize ran into {}".format(e))
 
 
 if __name__ == '__main__':
