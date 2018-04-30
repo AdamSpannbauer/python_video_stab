@@ -170,10 +170,11 @@ class VidStab:
         if show_progress:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
 
-        if border_type not in ['black', 'reflect', 'replicate']:
+        if border_type not in ['black', 'reflect', 'replicate', 'trail']:
             raise ValueError('Invalid border type')
 
         border_modes = {'black': cv2.BORDER_CONSTANT,
+                        'trail': cv2.BORDER_CONSTANT,
                         'reflect': cv2.BORDER_REFLECT,
                         'replicate': cv2.BORDER_REPLICATE}
         border_mode = border_modes[border_type]
@@ -221,6 +222,18 @@ class VidStab:
                                          transform,
                                          (w + border_size * 2, h + border_size * 2),
                                          borderMode=border_mode)
+
+            if border_type == 'trail':
+                if i > 1:
+                    gray = cv2.cvtColor(transformed, cv2.COLOR_BGR2GRAY)
+                    _, threshed = cv2.threshold(gray, 3, 255, cv2.THRESH_BINARY_INV)
+                    threshed = cv2.dilate(threshed, None, iterations=2)
+
+                    masked = cv2.bitwise_and(prev_frame, prev_frame, mask=threshed)
+
+                    transformed = np.maximum(masked, transformed)
+
+                prev_frame = transformed[:]
 
             buffer = border_size + neg_border_size
             transformed = transformed[buffer:(transformed.shape[0] - buffer),
