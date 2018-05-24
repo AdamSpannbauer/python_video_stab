@@ -1,8 +1,11 @@
-# TODO: implement test to check output values
+# TODO: write legitimate tests
 
 import tempfile
 import unittest
+import pickle
+from urllib.request import urlopen
 import matplotlib
+import numpy as np
 matplotlib.use('Agg')
 from vidstab import VidStab
 
@@ -60,6 +63,29 @@ class KeyPointMethods(unittest.TestCase):
                 stabilizer.stabilize(input_vid, output_vid, smoothing_window=1)
             except Exception as e:
                 self.fail("stabilizer.stabilize ran into {}".format(e))
+
+    def test_trajectory_transform_values(self):
+        input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+        base_url = 'https://s3.amazonaws.com/python-vidstab'
+        stabilizer = VidStab()
+
+        for window in [15, 30, 60]:
+            stabilizer.gen_transforms(input_path=input_vid, smoothing_window=window)
+
+            transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
+            trajectory_file = '{}/ostrich_trajectory_{}.pickle'.format(base_url, window)
+            smooth_trajectory_file = '{}/ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
+
+            with urlopen(transform_file) as f:
+                expected_transforms = pickle.load(f)
+            with urlopen(trajectory_file) as f:
+                expected_trajectory = pickle.load(f)
+            with urlopen(smooth_trajectory_file) as f:
+                expected_smooth_trajectory = pickle.load(f)
+
+            self.assertTrue(np.allclose(stabilizer.transforms, expected_transforms))
+            self.assertTrue(np.allclose(stabilizer.trajectory, expected_trajectory))
+            self.assertTrue(np.allclose(stabilizer.smoothed_trajectory, expected_smooth_trajectory))
 
 
 if __name__ == '__main__':

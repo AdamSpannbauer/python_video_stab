@@ -60,16 +60,17 @@ class VidStab:
         self.trajectory = None
         self.smoothed_trajectory = None
         self.transforms = None
+        self._raw_transforms = None
 
-    def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
+    def _gen_trajectory(self, input_path, show_progress=True):
         """Generate frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
         Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
+        :return: Nothing is returned.  The result is added as trajectory attribute.
         """
+
         # set up video capture
         vid_cap = cv2.VideoCapture(input_path)
         frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -129,18 +130,35 @@ class VidStab:
         bar.finish()
 
         # convert list of transforms to array
-        raw_transforms = np.array(prev_to_cur_transform)
+        self._raw_transforms = np.array(prev_to_cur_transform)
 
         # cumsum of all transforms for trajectory
         trajectory = np.cumsum(prev_to_cur_transform, axis=0)
 
         # convert trajectory array to df
         self.trajectory = pd.DataFrame(trajectory)
+
+    def gen_transforms(self, input_path, smoothing_window=30, re_calc_trajectory=False, show_progress=True):
+        """Generate frame transformations to apply for stabilization
+
+        :param input_path: Path to input video to stabilize.
+        Will be read with cv2.VideoCapture; see opencv documentation for more info.
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param re_calc_trajectory: Force re-calculation of trajectory?
+        Trajectory is a deterministic process that requires iterating through every frame of input video.
+        It should not need to be recalculated unless using the same VidStab object on multiple videos.
+        :param show_progress: Should a progress bar be displayed to console?
+        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
+        """
+
+        if re_calc_trajectory or self.trajectory is None:
+            self._gen_trajectory(input_path=input_path, show_progress=show_progress)
+
         # rolling mean to smooth
-        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean().fillna(method='bfill')
+        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean()
         # back fill nas caused by smoothing and store
         self.smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
-        self.transforms = np.array(raw_transforms + (self.smoothed_trajectory - self.trajectory))
+        self.transforms = np.array(self._raw_transforms + (self.smoothed_trajectory - self.trajectory))
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
                          border_type='black', border_size=0, layer_func=None, show_progress=True):

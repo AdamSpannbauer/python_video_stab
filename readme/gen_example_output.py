@@ -1,7 +1,7 @@
 from vidstab import VidStab, layer_overlay, layer_blend
 import matplotlib.pyplot as plt
 
-input_vid = 'ostrich.mp4'
+input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
 
 stabilizer = VidStab()
 stabilizer.gen_transforms(input_path=input_vid)
