@@ -3,12 +3,23 @@
 import tempfile
 import unittest
 import pickle
-from urllib.request import urlopen
+from urllib.request import urlopen, urlretrieve
 import numpy as np
 from vidstab import VidStab
 
 kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS",
               "MSER", "ORB", "SIFT", "SURF", "STAR"]
+
+tmp_dir = tempfile.TemporaryDirectory()
+
+remote_trunc_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
+remote_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+
+local_trunc_vid = '{}/trunc_vid.avi'.format(tmp_dir.name)
+local_vid = '{}/vid.avi'.format(tmp_dir.name)
+
+urlretrieve(remote_trunc_vid, local_trunc_vid)
+urlretrieve(remote_vid, local_vid)
 
 
 class KeyPointMethods(unittest.TestCase):
@@ -30,7 +41,8 @@ class KeyPointMethods(unittest.TestCase):
 
     def test_video_dep_funcs_run(self):
         # just tests to check functions run
-        input_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
+        # input_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
+        input_vid = local_trunc_vid
 
         stabilizer = VidStab()
         stabilizer.gen_transforms(input_vid, smoothing_window=1, show_progress=True)
@@ -53,7 +65,8 @@ class KeyPointMethods(unittest.TestCase):
                 self.fail("stabilizer.stabilize ran into {}".format(e))
 
     def test_trajectory_transform_values(self):
-        input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+        # input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+        input_vid = local_vid
         base_url = 'https://s3.amazonaws.com/python-vidstab'
         stabilizer = VidStab()
 
