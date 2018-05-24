@@ -128,3 +128,37 @@ stabilizer.stabilize(input_path='input_video.mov',
 `border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
 ![](readme/reflect_stable_ostrich.gif)  |  ![](readme/replicate_stable_ostrich.gif)
+
+### Using Frame Layering
+
+```python
+from vidstab import VidStab, layer_overlay, layer_blend
+
+# init vid stabilizer
+stabilizer = VidStab()
+
+# use vidstab.layer_overlay for generating a trail effect
+stabilizer.stabilize(input_path=input_vid,
+                     output_path='trail_stable_video.avi',
+                     border_type='black',
+                     border_size=100,
+                     layer_func=layer_overlay)
+
+
+# create custom overlay function
+# here we use vidstab.layer_blend with custom alpha
+#   layer_blend will generate a fading trail effect with some motion blur
+def layer_custom(foreground, background):
+    return layer_blend(foreground, background, foreground_alpha=.8)
+
+# use custom overlay function
+stabilizer.stabilize(input_path=input_vid,
+                     output_path='blend_stable_video.avi',
+                     border_type='black',
+                     border_size=100,
+                     layer_func=layer_custom)
+```
+
+`layer_func=vidstab.layer_overlay`     |  `layer_func=vidstab.layer_blend`
+:--------------------------------------:|:-------------------------:
+![](https://discourse-cdn-sjc2.com/standard16/uploads/pyimagesearch/original/2X/b/bf2996f1d2ae18801e40838c89c08ad0d30cfdc9.gif)  |  ![](https://discourse-cdn-sjc2.com/standard16/uploads/pyimagesearch/original/2X/f/f688787217fac5f1b5e7597a55ff063cc1fbd544.gif)
