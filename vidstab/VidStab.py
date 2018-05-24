@@ -60,16 +60,17 @@ class VidStab:
         self.trajectory = None
         self.smoothed_trajectory = None
         self.transforms = None
+        self._raw_transforms = None
 
-    def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
+    def _gen_trajectory(self, input_path, show_progress=True):
         """Generate frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
         Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
+        :return: Nothing is returned.  The result is added as trajectory attribute.
         """
+
         # set up video capture
         vid_cap = cv2.VideoCapture(input_path)
         frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -82,7 +83,7 @@ class VidStab:
         # initialize storage
         prev_to_cur_transform = []
         if show_progress:
-            print('Progress bar is based on OpenCV CAP_PROP_FRAME_COUNT which may be inaccurate')
+            print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
             bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
         # iterate through frame count
         for _ in range(frame_count - 1):
@@ -129,21 +130,38 @@ class VidStab:
         bar.finish()
 
         # convert list of transforms to array
-        raw_transforms = np.array(prev_to_cur_transform)
+        self._raw_transforms = np.array(prev_to_cur_transform)
 
         # cumsum of all transforms for trajectory
         trajectory = np.cumsum(prev_to_cur_transform, axis=0)
 
         # convert trajectory array to df
         self.trajectory = pd.DataFrame(trajectory)
+
+    def gen_transforms(self, input_path, smoothing_window=30, re_calc_trajectory=False, show_progress=True):
+        """Generate frame transformations to apply for stabilization
+
+        :param input_path: Path to input video to stabilize.
+        Will be read with cv2.VideoCapture; see opencv documentation for more info.
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param re_calc_trajectory: Force re-calculation of trajectory?
+        Trajectory is a deterministic process that requires iterating through every frame of input video.
+        It should not need to be recalculated unless using the same VidStab object on multiple videos.
+        :param show_progress: Should a progress bar be displayed to console?
+        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
+        """
+
+        if re_calc_trajectory or self.trajectory is None:
+            self._gen_trajectory(input_path=input_path, show_progress=show_progress)
+
         # rolling mean to smooth
-        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean().fillna(method='bfill')
+        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean()
         # back fill nas caused by smoothing and store
         self.smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
-        self.transforms = np.array(raw_transforms + (self.smoothed_trajectory - self.trajectory))
+        self.transforms = np.array(self._raw_transforms + (self.smoothed_trajectory - self.trajectory))
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
-                         border_type='black', border_size=0, show_progress=True):
+                         border_type='black', border_size=0, layer_func=None, show_progress=True):
         """Apply frame transformations to apply for stabilization
 
         :param input_path: Path to input video to stabilize.
@@ -152,9 +170,13 @@ class VidStab:
         Will be written with cv2.VideoWriter; see opencv documentation for more info.
         :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
-        :param border_type: how to handle border when rotations are needed to stabilize
-                       ['black', 'reflect', 'replicate']
+        :param border_type: How to handle border when rotations are needed to stabilize
+                           ['black', 'reflect', 'replicate']
         :param border_size: size of border in output
+        :param layer_func: Function to layer frames in output.
+        The function should accept 2 parameters: foreground & background.
+        The current frame of video will be passed as foreground, the previous frame will be passed as the background
+        (after the first frame of output the background will be the output of layer_func on the last iteration)
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output is written to `output_path`.
         """
@@ -174,7 +196,6 @@ class VidStab:
             raise ValueError('Invalid border type')
 
         border_modes = {'black': cv2.BORDER_CONSTANT,
-                        'trail': cv2.BORDER_CONSTANT,
                         'reflect': cv2.BORDER_REFLECT,
                         'replicate': cv2.BORDER_REPLICATE}
         border_mode = border_modes[border_type]
@@ -223,15 +244,9 @@ class VidStab:
                                          (w + border_size * 2, h + border_size * 2),
                                          borderMode=border_mode)
 
-            if border_type == 'trail':
-                if i > 1:
-                    gray = cv2.cvtColor(transformed, cv2.COLOR_BGR2GRAY)
-                    _, threshed = cv2.threshold(gray, 3, 255, cv2.THRESH_BINARY_INV)
-                    threshed = cv2.dilate(threshed, None, iterations=2)
-
-                    masked = cv2.bitwise_and(prev_frame, prev_frame, mask=threshed)
-
-                    transformed = np.maximum(masked, transformed)
+            if layer_func is not None:
+                if i > 0:
+                    transformed = layer_func(transformed, prev_frame)
 
                 prev_frame = transformed[:]
 
@@ -247,7 +262,7 @@ class VidStab:
         bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
-                  border_type='black', border_size=0, smoothing_window=30, show_progress=True):
+                  border_type='black', border_size=0, layer_func=None, smoothing_window=30, show_progress=True):
         """read video, perform stabilization, & write output to file
 
         :param input_path: Path to input video to stabilize.
@@ -259,6 +274,10 @@ class VidStab:
         :param border_type: how to handle border when rotations are needed to stabilize
                        ['black', 'reflect', 'replicate']
         :param border_size: size of border in output
+        :param layer_func: Function to layer frames in output.
+        The function should accept 2 parameters: foreground & background.
+        The current frame of video will be passed as foreground, the previous frame will be passed as the background
+        (after the first frame of output the background will be the output of layer_func on the last iteration)
         :param smoothing_window: window size to use when smoothing trajectory
         :param show_progress: Should a progress bar be displayed to console?
         :return: Nothing is returned.  Output of stabilization is written to `output_path`.
@@ -283,6 +302,7 @@ class VidStab:
                               output_fourcc=output_fourcc,
                               border_type=border_type,
                               border_size=border_size,
+                              layer_func=layer_func,
                               show_progress=show_progress)
 
     def plot_trajectory(self):

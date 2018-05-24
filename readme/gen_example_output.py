@@ -1,7 +1,7 @@
-from vidstab import VidStab
+from vidstab import VidStab, layer_overlay, layer_blend
 import matplotlib.pyplot as plt
 
-input_vid = 'ostrich.mp4'
+input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
 
 stabilizer = VidStab()
 stabilizer.gen_transforms(input_path=input_vid)
@@ -12,33 +12,53 @@ plt.savefig('trajectory_plot.png')
 stabilizer.plot_transforms()
 plt.savefig('transforms_plot.png')
 
-# default (0 width border)
-stabilizer.stabilize(input_path=input_vid,
-                     output_path='stable_video.avi',
-                     border_type='black')
+# USING AND SIZING BORDERS
 
-# wide black border
+# # default (0 width border)
+# stabilizer.stabilize(input_path=input_vid,
+#                      output_path='stable_video.avi',
+#                      border_type='black')
+#
+# # wide black border
+# stabilizer.stabilize(input_path=input_vid,
+#                      output_path='wide_stable_video.avi',
+#                      border_type='black',
+#                      border_size=100)
+#
+# # crop with negative border
+# stabilizer.stabilize(input_path=input_vid,
+#                      output_path='crop_stable_video.avi',
+#                      border_type='black',
+#                      border_size=-100)
+#
+# # replicated border
+# stabilizer.stabilize(input_path=input_vid,
+#                      output_path='rep_stable_video.avi',
+#                      border_type='replicate',
+#                      border_size=100)
+#
+# # reflected border
+# stabilizer.stabilize(input_path=input_vid,
+#                      output_path='ref_stable_video.avi',
+#                      border_type='reflect',
+#                      border_size=100)
+
+# USING LAYERING FUNCTIONS
+
+# trail of frames
 stabilizer.stabilize(input_path=input_vid,
-                     output_path='wide_stable_video.avi',
+                     output_path='trail_stable_video.avi',
                      border_type='black',
-                     border_size=100)
+                     border_size=100,
+                     layer_func=layer_overlay)
 
-# crop with negative border
+
+def layer_custom(foreground, background):
+    return layer_blend(foreground, background, foreground_alpha=.8)
+
+
 stabilizer.stabilize(input_path=input_vid,
-                     output_path='crop_stable_video.avi',
+                     output_path='blend_stable_video.avi',
                      border_type='black',
-                     border_size=-100)
-
-# replicated border
-stabilizer.stabilize(input_path=input_vid,
-                     output_path='rep_stable_video.avi',
-                     border_type='replicate',
-                     border_size=100)
-
-# reflected border
-stabilizer.stabilize(input_path=input_vid,
-                     output_path='ref_stable_video.avi',
-                     border_type='reflect',
-                     border_size=100)
-
-
+                     border_size=100,
+                     layer_func=layer_custom)
