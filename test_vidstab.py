@@ -4,9 +4,7 @@ import tempfile
 import unittest
 import pickle
 from urllib.request import urlopen
-import matplotlib
 import numpy as np
-matplotlib.use('Agg')
 from vidstab import VidStab
 
 kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS",
@@ -41,16 +39,6 @@ class KeyPointMethods(unittest.TestCase):
                          'trajectory/transform obj shapes')
         self.assertEqual(stabilizer.transforms.shape, stabilizer.trajectory.shape,
                          'trajectory/transform obj shapes')
-
-        fig, (ax1, ax2) = stabilizer.plot_transforms()
-        self.assertTrue(isinstance(fig, matplotlib.figure.Figure))
-        self.assertTrue(isinstance(ax1, matplotlib.axes._subplots.Axes))
-        self.assertTrue(isinstance(ax2, matplotlib.axes._subplots.Axes))
-
-        fig, (ax1, ax2) = stabilizer.plot_trajectory()
-        self.assertTrue(isinstance(fig, matplotlib.figure.Figure))
-        self.assertTrue(isinstance(ax1, matplotlib.axes._subplots.Axes))
-        self.assertTrue(isinstance(ax2, matplotlib.axes._subplots.Axes))
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_vid = '{}/test_output.avi'.format(tmpdir)
