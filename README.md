@@ -16,8 +16,6 @@
 > + Please report issues if you install/try to install and run into problems!
 > ```
 
-Currently only available from this repo.  Plan to publish to pypi once stable.
-
 ### Install `vidstab` without installing OpenCV
 
 If you've already built OpenCV with python bindings on your machine it is recommended to install `vidstab` without installing the pypi versions of OpenCV.  The `opencv-python` python module can cause issues if you've already built OpenCV from source in your environment.
