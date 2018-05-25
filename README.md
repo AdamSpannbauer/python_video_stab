@@ -13,8 +13,7 @@
 ## Installation
 
 > ```diff
-> + Project recently moved to a beta state.
-> + Please report issues if you install and run into problems.
+> + Please report issues if you install/try to install and run into problems!
 > ```
 
 Currently only available from this repo.  Plan to publish to pypi once stable.
