@@ -8,7 +8,7 @@
  
  Input                           |  Output
 :-------------------------------:|:-------------------------:
-![](readme/input_ostrich.gif)    |  ![](readme/stable_ostrich.gif)
+![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true)    |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)
  
 ## Installation
 
@@ -107,7 +107,7 @@ plt.show()
 
 Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
-![](readme/trajectory_plot.png)  |  ![](readme/transforms_plot.png)
+![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true)
 
 ### Using borders
 
@@ -136,11 +136,11 @@ stabilizer.stabilize(input_path='input_video.mov',
 
 `border_size=0`                  |  `border_size=100`
 :-------------------------------:|:-------------------------:
-![](readme/stable_ostrich.gif)   |  ![](readme/wide_stable_ostrich.gif)
+![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)   |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/wide_stable_ostrich.gif?raw=true)
 
 `border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
-![](readme/reflect_stable_ostrich.gif)  |  ![](readme/replicate_stable_ostrich.gif)
+![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/reflect_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/replicate_stable_ostrich.gif?raw=true)
 
 ### Using Frame Layering
 
