@@ -1,8 +1,13 @@
 from setuptools import setup
 
+with open('README.md', 'r') as f:
+    long_description = f.read()
+
 setup(name='vidstab',
-      version='0.1.0',
+      version='0.1.1',
       description='Video Stabilization using OpenCV',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='Adam Spannbauer',
       author_email='spannbaueradam@gmail.com',
       url='https://github.com/AdamSpannbauer/python_video_stab',
