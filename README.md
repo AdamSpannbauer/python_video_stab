@@ -1,4 +1,4 @@
-# Python Video Stabilization
+# Python Video Stabilization <img src=readme/vidstab_logo.png width=125 align='right'/>
 
 ![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab) [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://crate.io/packages/vidstab/)
 
