@@ -1,8 +1,6 @@
 # Python Video Stabilization 
 
-![logo](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo_small.png?raw=true)
-
-![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab) [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://crate.io/packages/vidstab/)
+![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab) [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://crate.io/packages/vidstab/)        ![logo](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo_small.png?raw=true)
 
  Python video stabilization using OpenCV. 
  
