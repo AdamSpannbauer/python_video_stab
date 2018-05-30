@@ -1,10 +1,10 @@
-# Python Video Stabilization 
+# Python Video Stabilization
 
 -------------
 
-![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab) [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://crate.io/packages/vidstab/)        ![logo](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo_small.png?raw=true)
+![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab) [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://crate.io/packages/vidstab/)
 
- Python video stabilization using OpenCV. 
+ Python video stabilization using OpenCV. ![logo](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo_small.png?raw=true)
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
