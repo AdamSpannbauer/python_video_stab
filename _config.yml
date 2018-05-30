@@ -1,2 +1,5 @@
 theme: jekyll-theme-minimal
-logo: /readme/vidstab_logo.png
+title: vidstab
+logo: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo.png?raw=true
+show_downloads: ["true" or "false" to indicate whether to provide a download URL]
+google_analytics: "UA-93461459-1"
