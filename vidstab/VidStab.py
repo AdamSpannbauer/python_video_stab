@@ -1,6 +1,19 @@
 """VidStab: a class for stabilizing video files"""
 
-import cv2
+try:
+    import cv2
+except ModuleNotFoundError:
+    print("""
+    No python bindings for OpenCV found when attempting to `import cv2`.
+    If you have not installed OpenCV you can install with:
+        
+        pip install vidstab[cv2]
+        
+    If you'd prefer to install OpenCV from source you can see the docs here:
+        https://docs.opencv.org/3.4.1/da/df6/tutorial_py_table_of_contents_setup.html
+    """)
+    raise
+
 import numpy as np
 import pandas as pd
 import imutils.feature.factories as kp_factory
