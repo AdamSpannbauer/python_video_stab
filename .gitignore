@@ -7,6 +7,8 @@ __pycache__/
 readme/input_video.mov
 stable_video.avi
 input_video.mov
+readme/architecture.gif
+readme/vidstab_bot_architecture.key
 *.avi
 # *.gif
 *.mp4
