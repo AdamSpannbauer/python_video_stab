@@ -95,15 +95,24 @@ class VidStab:
 
         # initialize storage
         prev_to_cur_transform = []
+
         if show_progress:
             print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
-            bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
-        # iterate through frame count
-        for _ in range(frame_count - 1):
+            # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
+            if frame_count < 0:
+                show_progress = False
+                print('Unable to grab frame count. No progress bar will be shown.')
+            else:
+                bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
+
+        # iterate through frames count
+        grabbed_frame = True
+        while grabbed_frame:
             # read current frame
             grabbed_frame, cur_frame = vid_cap.read()
             if not grabbed_frame:
-                print('No frame grabbed. Exiting process.')
+                if show_progress:
+                    bar.finish()
                 break
             # convert to gray
             cur_frame_gray = cv2.cvtColor(cur_frame, cv2.COLOR_BGR2GRAY)
@@ -140,7 +149,6 @@ class VidStab:
             prev_frame_gray = cur_frame_gray[:]
             if show_progress:
                 bar.next()
-        bar.finish()
 
         # convert list of transforms to array
         self._raw_transforms = np.array(prev_to_cur_transform)
@@ -202,8 +210,10 @@ class VidStab:
 
         writer = None
 
-        if show_progress:
+        if show_progress and frame_count > 0:
             bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
+        else:
+            show_progress = False
 
         if border_type not in ['black', 'reflect', 'replicate', 'trail']:
             raise ValueError('Invalid border type')
@@ -272,7 +282,8 @@ class VidStab:
             if show_progress:
                 bar.next()
         writer.release()
-        bar.finish()
+        if show_progress:
+            bar.finish()
 
     def stabilize(self, input_path, output_path, output_fourcc='MJPG',
                   border_type='black', border_size=0, layer_func=None, smoothing_window=30, show_progress=True):
