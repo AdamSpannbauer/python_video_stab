@@ -1,4 +1,5 @@
-# TODO: write legitimate tests
+# TODO
+# * fix tests for live video rewrite
 
 import tempfile
 import unittest

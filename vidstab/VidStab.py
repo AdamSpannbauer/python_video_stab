@@ -1,5 +1,11 @@
 """VidStab: a class for stabilizing video files"""
 
+# TODO
+# * add pre calc option for trajectory
+# * test reusing old trajectory
+# * strip unneeded dependencies
+
+
 try:
     import cv2
 except ModuleNotFoundError:
