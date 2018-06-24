@@ -315,12 +315,16 @@ class VidStab:
         if show_progress:
             # print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
             # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-            if frame_count < 0:
+            if frame_count <= 0 and max_frames == float('inf'):
                 bar = None
-                print('Unable to grab frame count. No progress bar will be shown.')
+                print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
             else:
+                if frame_count <= 0:
+                    max_bar = max_frames
+                else:
+                    max_bar = frame_count
                 bar = IncrementalBar('Stabilizing',
-                                     max=min([frame_count - 1, max_frames]),
+                                     max=max_bar,
                                      suffix='%(percent)d%%')
         else:
             bar = None
