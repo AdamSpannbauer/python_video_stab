@@ -14,11 +14,12 @@ except ModuleNotFoundError:
     """)
     raise
 
+from collections import deque
 import numpy as np
-import pandas as pd
 import imutils.feature.factories as kp_factory
 from progress.bar import IncrementalBar
 import matplotlib.pyplot as plt
+from .utils import bfill_rolling_mean
 
 
 class VidStab:
@@ -70,150 +71,125 @@ class VidStab:
         else:
             self.kp_detector = kp_factory.FeatureDetector_create(kp_method, *args, **kwargs)
 
-        self.trajectory = None
+        self._raw_transforms = []
+        self.trajectory = []
         self.smoothed_trajectory = None
         self.transforms = None
-        self._raw_transforms = None
+        self.frame_queue = None
+        self.frame_queue_inds = None
+        self.prev_kps = None
+        self.prev_gray = None
+        self.vid_cap = None
+        self.writer = None
 
-    def _gen_trajectory(self, input_path, show_progress=True):
-        """Generate frame transformations to apply for stabilization
+    def _gen_next_raw_transform(self):
+        current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
 
-        :param input_path: Path to input video to stabilize.
-        Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  The result is added as trajectory attribute.
+        # calc flow of movement
+        cur_kps, status, err = cv2.calcOpticalFlowPyrLK(self.prev_gray,
+                                                        current_frame_gray,
+                                                        self.prev_kps, None)
+        # storage for keypoints with status 1
+        prev_matched_kp = []
+        cur_matched_kp = []
+        for i, matched in enumerate(status):
+            # store coords of keypoints that appear in both
+            if matched:
+                prev_matched_kp.append(self.prev_kps[i])
+                cur_matched_kp.append(cur_kps[i])
+        # estimate partial transform
+        transform = cv2.estimateRigidTransform(np.array(prev_matched_kp),
+                                               np.array(cur_matched_kp),
+                                               False)
+        if transform is not None:
+            # translation x
+            dx = transform[0, 2]
+            # translation y
+            dy = transform[1, 2]
+            # rotation
+            da = np.arctan2(transform[1, 0], transform[0, 0])
+        else:
+            dx = dy = da = 0
+
+        transform_i = [dx, dy, da]
+
+        # update previous frame info for next iteration
+        self.prev_gray = current_frame_gray[:]
+        self.prev_kps = self.kp_detector.detect(self.prev_gray)
+        self.prev_kps = np.array([kp.pt for kp in self.prev_kps], dtype='float32').reshape(-1, 1, 2)
+        self._raw_transforms.append(transform_i[:])
+
+        if not self.trajectory:
+            self.trajectory.append(transform_i[:])
+        else:
+            # gen cumsum for new row and append
+            self.trajectory.append([self.trajectory[-1][j] + x for j, x in enumerate(transform_i)])
+
+        return
+
+    def _init_trajectory(self, smoothing_window, max_frames):
         """
 
-        # set up video capture
-        vid_cap = cv2.VideoCapture(input_path)
-        frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param max_frames: max number of frames to process
+        :return:
+        """
 
         # read first frame
-        _, prev_frame = vid_cap.read()
+        _, prev_frame = self.vid_cap.read()
         # convert to gray scale
         prev_frame_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+        # detect keypoints
+        prev_kps = self.kp_detector.detect(prev_frame_gray)
+        self.prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
 
-        # initialize storage
-        prev_to_cur_transform = []
+        # store frame
+        self.frame_queue.append(prev_frame)
+        self.prev_gray = prev_frame_gray[:]
 
-        if show_progress:
-            print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
-            # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-            if frame_count < 0:
-                show_progress = False
-                print('Unable to grab frame count. No progress bar will be shown.')
-            else:
-                bar = IncrementalBar('Generating Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
+        if max_frames is None:
+            max_frames = float('inf')
 
         # iterate through frames count
         grabbed_frame = True
+
         while grabbed_frame:
             # read current frame
-            grabbed_frame, cur_frame = vid_cap.read()
+            grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
-                if show_progress:
-                    bar.finish()
                 break
-            # convert to gray
-            cur_frame_gray = cv2.cvtColor(cur_frame, cv2.COLOR_BGR2GRAY)
-            # detect keypoints
-            prev_kps = self.kp_detector.detect(prev_frame_gray)
-            prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
-            # calc flow of movement
-            cur_kps, status, err = cv2.calcOpticalFlowPyrLK(prev_frame_gray, cur_frame_gray, prev_kps, None)
-            # storage for keypoints with status 1
-            prev_matched_kp = []
-            cur_matched_kp = []
-            for i, matched in enumerate(status):
-                # store coords of keypoints that appear in both
-                if matched:
-                    prev_matched_kp.append(prev_kps[i])
-                    cur_matched_kp.append(cur_kps[i])
-            # estimate partial transform
-            transform = cv2.estimateRigidTransform(np.array(prev_matched_kp),
-                                                   np.array(cur_matched_kp),
-                                                   False)
-            if transform is not None:
-                # translation x
-                dx = transform[0, 2]
-                # translation y
-                dy = transform[1, 2]
-                # rotation
-                da = np.arctan2(transform[1, 0], transform[0, 0])
+
+            self.frame_queue.append(cur_frame)
+            if not self.frame_queue_inds:
+                self.frame_queue_inds.append(0)
             else:
-                dx = dy = da = 0
+                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+            self._gen_next_raw_transform()
 
-            # store transform
-            prev_to_cur_transform.append([dx, dy, da])
-            # set current frame to prev frame for use in next iteration
-            prev_frame_gray = cur_frame_gray[:]
-            if show_progress:
-                bar.next()
+            if (self.frame_queue_inds[-1] >= max_frames - 1 or
+                    self.frame_queue_inds[-1] >= smoothing_window - 1):
+                break
 
-        # convert list of transforms to array
-        self._raw_transforms = np.array(prev_to_cur_transform)
+        self._gen_transforms(smoothing_window)
 
-        # cumsum of all transforms for trajectory
-        trajectory = np.cumsum(prev_to_cur_transform, axis=0)
+        return
 
-        # convert trajectory array to df
-        self.trajectory = pd.DataFrame(trajectory)
+    def _init_writer(self, output_path, frame_shape, border_size, output_fourcc, fps):
+        # set output and working dims
+        h, w = frame_shape
 
-    def gen_transforms(self, input_path, smoothing_window=30, re_calc_trajectory=False, show_progress=True):
-        """Generate frame transformations to apply for stabilization
+        write_h = h + 2 * border_size
+        write_w = w + 2 * border_size
 
-        :param input_path: Path to input video to stabilize.
-        Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param smoothing_window: window size to use when smoothing trajectory
-        :param re_calc_trajectory: Force re-calculation of trajectory?
-        Trajectory is a deterministic process that requires iterating through every frame of input video.
-        It should not need to be recalculated unless using the same VidStab object on multiple videos.
-        :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  The results are added as attributes: trajectory, smoothed_trajectory, & transforms
-        """
+        h += 2 * border_size
+        w += 2 * border_size
+        # setup video writer
+        self.writer = cv2.VideoWriter(output_path,
+                                      cv2.VideoWriter_fourcc(*output_fourcc),
+                                      fps, (write_w, write_h), True)
 
-        if re_calc_trajectory or self.trajectory is None:
-            self._gen_trajectory(input_path=input_path, show_progress=show_progress)
-
-        # rolling mean to smooth
-        smoothed_trajectory = self.trajectory.rolling(window=smoothing_window, center=False).mean()
-        # back fill nas caused by smoothing and store
-        self.smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
-        self.transforms = np.array(self._raw_transforms + (self.smoothed_trajectory - self.trajectory))
-
-    def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
-                         border_type='black', border_size=0, layer_func=None, show_progress=True):
-        """Apply frame transformations to apply for stabilization
-
-        :param input_path: Path to input video to stabilize.
-        Will be read with cv2.VideoCapture; see opencv documentation for more info.
-        :param output_path: Path to save stabilized video.
-        Will be written with cv2.VideoWriter; see opencv documentation for more info.
-        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
-        The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
-        :param border_type: How to handle border when rotations are needed to stabilize
-                           ['black', 'reflect', 'replicate']
-        :param border_size: size of border in output
-        :param layer_func: Function to layer frames in output.
-        The function should accept 2 parameters: foreground & background.
-        The current frame of video will be passed as foreground, the previous frame will be passed as the background
-        (after the first frame of output the background will be the output of layer_func on the last iteration)
-        :param show_progress: Should a progress bar be displayed to console?
-        :return: Nothing is returned.  Output is written to `output_path`.
-        """
-        # initialize transformation matrix
-        transform = np.zeros((2, 3))
-        # setup video cap
-        vid_cap = cv2.VideoCapture(input_path)
-        frame_count = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        fps = int(vid_cap.get(cv2.CAP_PROP_FPS))
-
-        writer = None
-
-        if show_progress and frame_count > 0:
-            bar = IncrementalBar('Applying Transforms', max=(frame_count - 1), suffix='%(percent)d%%')
-        else:
-            show_progress = False
+    def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
+                          border_type='black', border_size=0, layer_func=None, progress_bar=None):
 
         if border_type not in ['black', 'reflect', 'replicate', 'trail']:
             raise ValueError('Invalid border type')
@@ -223,39 +199,51 @@ class VidStab:
                         'replicate': cv2.BORDER_REPLICATE}
         border_mode = border_modes[border_type]
 
-        # loop through frame count
-        for i in range(self.transforms.shape[0]):
-            # read current frame
-            _, frame = vid_cap.read()
+        if border_size < 0:
+            neg_border_size = 100 + abs(border_size)
+            border_size = 100
+        else:
+            neg_border_size = 0
 
-            if writer is None:
-                # set output and working dims
-                h, w = frame.shape[:2]
+        prev_frame = self.frame_queue.popleft()
+        (h, w) = prev_frame.shape[:2]
+        h += 2 * border_size
+        w += 2 * border_size
 
-                write_h = h + 2 * border_size
-                write_w = w + 2 * border_size
+        # initialize transformation matrix
+        transform = np.zeros((2, 3))
+        while len(self.frame_queue) > 0:
+            if progress_bar:
+                progress_bar.next()
 
-                if border_size < 0:
-                    neg_border_size = 100 + abs(border_size)
-                    border_size = 100
-                else:
-                    neg_border_size = 0
+            i = self.frame_queue_inds.popleft()
+            frame_i = self.frame_queue.popleft()
+            transform_i = self.transforms[i, :]
 
-                h += 2 * border_size
-                w += 2 * border_size
-                # setup video writer
-                writer = cv2.VideoWriter(output_path,
-                                         cv2.VideoWriter_fourcc(*output_fourcc), fps, (write_w, write_h), True)
+            if i >= max_frames:
+                break
+
+            grabbed_frame, next_frame = self.vid_cap.read()
+            if grabbed_frame:
+                self.frame_queue.append(next_frame)
+                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+                self._gen_next_raw_transform()
+                self._gen_transforms(smoothing_window=smoothing_window)
+
+            if self.writer is None:
+                self._init_writer(output_path, frame_i.shape[:2], border_size, output_fourcc,
+                                  fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
 
             # build transformation matrix
-            transform[0, 0] = np.cos(self.transforms[i][2])
-            transform[0, 1] = -np.sin(self.transforms[i][2])
-            transform[1, 0] = np.sin(self.transforms[i][2])
-            transform[1, 1] = np.cos(self.transforms[i][2])
-            transform[0, 2] = self.transforms[i][0]
-            transform[1, 2] = self.transforms[i][1]
+            transform[0, 0] = np.cos(transform_i[2])
+            transform[0, 1] = -np.sin(transform_i[2])
+            transform[1, 0] = np.sin(transform_i[2])
+            transform[1, 1] = np.cos(transform_i[2])
+            transform[0, 2] = transform_i[0]
+            transform[1, 2] = transform_i[1]
+
             # apply transform
-            bordered_frame = cv2.copyMakeBorder(frame,
+            bordered_frame = cv2.copyMakeBorder(frame_i,
                                                 top=border_size * 2,
                                                 bottom=border_size * 2,
                                                 left=border_size * 2,
@@ -278,32 +266,40 @@ class VidStab:
                                       buffer:(transformed.shape[1] - buffer)]
 
             # write frame to output video
-            writer.write(transformed)
-            if show_progress:
-                bar.next()
-        writer.release()
-        if show_progress:
-            bar.finish()
+            self.writer.write(transformed)
 
-    def stabilize(self, input_path, output_path, output_fourcc='MJPG',
-                  border_type='black', border_size=0, layer_func=None, smoothing_window=30, show_progress=True):
+        self.writer.release()
+        if progress_bar:
+            progress_bar.finish()
+
+    def _gen_transforms(self, smoothing_window):
+        np_trajectory = np.array(self.trajectory)
+        self.smoothed_trajectory = bfill_rolling_mean(np_trajectory, n=smoothing_window)
+        self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - np_trajectory)
+
+    def stabilize(self, input_path, output_path, smoothing_window=30, max_frames=float('inf'),
+                  border_type='black', border_size=0, layer_func=None,
+                  use_stored_transforms=False, show_progress=True, output_fourcc='MJPG'):
         """read video, perform stabilization, & write output to file
 
         :param input_path: Path to input video to stabilize.
         Will be read with cv2.VideoCapture; see opencv documentation for more info.
         :param output_path: Path to save stabilized video.
         Will be written with cv2.VideoWriter; see opencv documentation for more info.
-        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param max_frames: the maximum amount of frames to stabilize/process
         The list of available codes can be found in fourcc.org.  See cv2.VideoWriter_fourcc documentation for more info.
         :param border_type: how to handle border when rotations are needed to stabilize
-                       ['black', 'reflect', 'replicate']
+                            ['black', 'reflect', 'replicate']
         :param border_size: size of border in output
         :param layer_func: Function to layer frames in output.
         The function should accept 2 parameters: foreground & background.
         The current frame of video will be passed as foreground, the previous frame will be passed as the background
         (after the first frame of output the background will be the output of layer_func on the last iteration)
-        :param smoothing_window: window size to use when smoothing trajectory
+        :param use_stored_transforms: should stored transforms from last stabilization be used instead of
+                                      recalculating them?
         :param show_progress: Should a progress bar be displayed to console?
+        :param output_fourcc: FourCC is a 4-byte code used to specify the video codec.
         :return: Nothing is returned.  Output of stabilization is written to `output_path`.
 
         >>> from vidstab.VidStab import VidStab
@@ -313,21 +309,33 @@ class VidStab:
         >>> stabilizer = VidStab(kp_method = 'ORB')
         >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
         """
+        self.vid_cap = cv2.VideoCapture(input_path)
+        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        # generate transforms if needed
-        if self.transforms is None:
-            self.gen_transforms(input_path=input_path,
-                                smoothing_window=smoothing_window,
-                                show_progress=True)
+        if show_progress:
+            # print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
+            # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
+            if frame_count < 0:
+                bar = None
+                print('Unable to grab frame count. No progress bar will be shown.')
+            else:
+                bar = IncrementalBar('Stabilizing',
+                                     max=min([frame_count - 1, max_frames]),
+                                     suffix='%(percent)d%%')
+        else:
+            bar = None
 
-        # apply transformations for stabilization
-        self.apply_transforms(input_path=input_path,
-                              output_path=output_path,
-                              output_fourcc=output_fourcc,
-                              border_type=border_type,
-                              border_size=border_size,
-                              layer_func=layer_func,
-                              show_progress=show_progress)
+        self.frame_queue = deque(maxlen=smoothing_window)
+        self.frame_queue_inds = deque(maxlen=smoothing_window)
+
+        if not use_stored_transforms:
+            self._init_trajectory(smoothing_window, max_frames)
+
+        self._apply_transforms(output_path, max_frames, smoothing_window,
+                               border_type=border_type, border_size=border_size, layer_func=layer_func,
+                               output_fourcc=output_fourcc, progress_bar=bar)
+
+        return
 
     def plot_trajectory(self):
         """Plot video trajectory
@@ -350,16 +358,16 @@ class VidStab:
                                  'Use methods: gen_transforms or stabilize to generate the trajectory attributes')
 
         with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
 
             # x trajectory
-            ax1.plot(self.trajectory[0], label='Trajectory')
-            ax1.plot(self.smoothed_trajectory[0], label='Smoothed Trajectory')
+            ax1.plot(np.array(self.trajectory)[:, 0], label='Trajectory')
+            ax1.plot(self.smoothed_trajectory[:, 0], label='Smoothed Trajectory')
             ax1.set_ylabel('dx')
 
             # y trajectory
-            ax2.plot(self.trajectory[1], label='Trajectory')
-            ax2.plot(self.smoothed_trajectory[1], label='Smoothed Trajectory')
+            ax2.plot(np.array(self.trajectory)[:, 1], label='Trajectory')
+            ax2.plot(self.smoothed_trajectory[:, 1], label='Smoothed Trajectory')
             ax2.set_ylabel('dy')
 
             handles, labels = ax2.get_legend_handles_labels()
@@ -392,7 +400,7 @@ class VidStab:
                                  'Use methods: gen_transforms or stabilize to generate the transforms attribute')
 
         with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
 
             ax1.plot(self.transforms[:, 0], label='delta x', color='C0')
             ax1.plot(self.transforms[:, 1], label='delta y', color='C1')
