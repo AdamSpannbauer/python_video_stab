@@ -20,6 +20,7 @@ except ModuleNotFoundError:
     """)
     raise
 
+import time
 from collections import deque
 import numpy as np
 import imutils.feature.factories as kp_factory
@@ -142,7 +143,7 @@ class VidStab:
         """
 
         # read first frame
-        _, prev_frame = self.vid_cap.read()
+        grabbed_frame, prev_frame = self.vid_cap.read()
         # convert to gray scale
         prev_frame_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
         # detect keypoints
@@ -317,6 +318,10 @@ class VidStab:
         """
         self.vid_cap = cv2.VideoCapture(input_path)
         frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        # wait for camera to start up
+        if isinstance(input_path, int):
+            time.sleep(0.1)
 
         if show_progress:
             # print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
