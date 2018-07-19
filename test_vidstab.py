@@ -1,6 +1,3 @@
-# TODO
-# * fix tests for live video rewrite
-
 import tempfile
 import unittest
 import pickle
@@ -46,7 +43,7 @@ class KeyPointMethods(unittest.TestCase):
         input_vid = local_trunc_vid
 
         stabilizer = VidStab()
-        stabilizer.gen_transforms(input_vid, smoothing_window=1, show_progress=True)
+        stabilizer.gen_transforms(input_vid, smoothing_window=2, show_progress=True)
 
         self.assertEqual(stabilizer.smoothed_trajectory.shape, stabilizer.trajectory.shape,
                          'trajectory/transform obj shapes')
@@ -61,7 +58,7 @@ class KeyPointMethods(unittest.TestCase):
                 self.fail("stabilizer.apply_transforms ran into {}".format(e))
 
             try:
-                stabilizer.stabilize(input_vid, output_vid, smoothing_window=1)
+                stabilizer.stabilize(input_vid, output_vid, smoothing_window=2)
             except Exception as e:
                 self.fail("stabilizer.stabilize ran into {}".format(e))
 
@@ -69,9 +66,9 @@ class KeyPointMethods(unittest.TestCase):
         # input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
         input_vid = local_vid
         base_url = 'https://s3.amazonaws.com/python-vidstab'
-        stabilizer = VidStab()
 
         for window in [15, 30, 60]:
+            stabilizer = VidStab()
             stabilizer.gen_transforms(input_path=input_vid, smoothing_window=window)
 
             transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
