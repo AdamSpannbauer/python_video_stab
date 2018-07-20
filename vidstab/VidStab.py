@@ -140,7 +140,7 @@ class VidStab:
         return
 
     @staticmethod
-    def _init_progress_bar(frame_count, max_frames, show_progress=True):
+    def _init_progress_bar(frame_count, max_frames, show_progress=True, message='Stabilizing'):
         if show_progress:
             # print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
             # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
@@ -152,7 +152,7 @@ class VidStab:
                     max_bar = max_frames
                 else:
                     max_bar = frame_count
-                bar = IncrementalBar('Stabilizing',
+                bar = IncrementalBar(message,
                                      max=max_bar,
                                      suffix='%(percent)d%%')
         else:
@@ -168,7 +168,12 @@ class VidStab:
         :return:
         """
         frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        bar = self._init_progress_bar(frame_count, max_frames, show_progress)
+
+        if gen_all:
+            message = 'Generating Transforms'
+        else:
+            message = 'Stabilizing'
+        bar = self._init_progress_bar(frame_count, max_frames, show_progress, message)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -232,7 +237,7 @@ class VidStab:
                                       fps, (write_w, write_h), True)
 
     def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
-                          border_type='black', border_size=0, layer_func=None, playback=True, progress_bar=None):
+                          border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
 
         if border_type not in ['black', 'reflect', 'replicate', 'trail']:
             raise ValueError('Invalid border type')
@@ -348,7 +353,7 @@ class VidStab:
                               show_progress=show_progress)
 
     def stabilize(self, input_path, output_path, smoothing_window=30, max_frames=float('inf'),
-                  border_type='black', border_size=0, layer_func=None, playback=True,
+                  border_type='black', border_size=0, layer_func=None, playback=False,
                   use_stored_transforms=False, show_progress=True, output_fourcc='MJPG'):
         """read video, perform stabilization, & write output to file
 
