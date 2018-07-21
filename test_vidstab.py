@@ -20,7 +20,7 @@ urlretrieve(remote_trunc_vid, local_trunc_vid)
 urlretrieve(remote_vid, local_vid)
 
 
-class KeyPointMethods(unittest.TestCase):
+class TestVidStabClass(unittest.TestCase):
 
     # test that all keypoint detection methods load without error
     def test_default_init(self):

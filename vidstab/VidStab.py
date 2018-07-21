@@ -27,9 +27,8 @@ from collections import deque
 import numpy as np
 import imutils
 import imutils.feature.factories as kp_factory
-from progress.bar import IncrementalBar
 import matplotlib.pyplot as plt
-from .utils import bfill_rolling_mean
+from .utils import bfill_rolling_mean, init_progress_bar
 
 
 class VidStab:
@@ -139,27 +138,6 @@ class VidStab:
 
         return
 
-    @staticmethod
-    def _init_progress_bar(frame_count, max_frames, show_progress=True, message='Stabilizing'):
-        if show_progress:
-            # print('Progress bar is based on cv2.CAP_PROP_FRAME_COUNT which may be inaccurate')
-            # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-            if frame_count <= 0 and max_frames == float('inf'):
-                bar = None
-                print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
-            else:
-                if frame_count <= 0:
-                    max_bar = max_frames
-                else:
-                    max_bar = frame_count
-                bar = IncrementalBar(message,
-                                     max=max_bar,
-                                     suffix='%(percent)d%%')
-        else:
-            bar = None
-
-        return bar
-
     def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
         """
 
@@ -173,7 +151,7 @@ class VidStab:
             message = 'Generating Transforms'
         else:
             message = 'Stabilizing'
-        bar = self._init_progress_bar(frame_count, max_frames, show_progress, message)
+        bar = init_progress_bar(frame_count, max_frames, show_progress, message)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -198,7 +176,7 @@ class VidStab:
             grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
                 if show_progress:
-                    bar.finish()
+                    bar.next()
                 break
 
             self.frame_queue.append(cur_frame)
@@ -211,8 +189,6 @@ class VidStab:
             if not gen_all:
                 if (self.frame_queue_inds[-1] >= max_frames - 1 or
                         self.frame_queue_inds[-1] >= smoothing_window - 1):
-                    if show_progress:
-                        bar.finish()
                     break
 
             if show_progress:
@@ -220,7 +196,7 @@ class VidStab:
 
         self._gen_transforms(smoothing_window)
 
-        return
+        return bar
 
     def _init_writer(self, output_path, frame_shape, border_size, output_fourcc, fps):
         # set output and working dims
@@ -260,7 +236,8 @@ class VidStab:
 
         # initialize transformation matrix
         transform = np.zeros((2, 3))
-        while len(self.frame_queue) > 0:
+        grabbed_frame = True
+        while len(self.frame_queue) > 0 or grabbed_frame:
             if progress_bar:
                 progress_bar.next()
 
@@ -329,6 +306,7 @@ class VidStab:
 
         self.writer.release()
         if progress_bar:
+            progress_bar.next()
             progress_bar.finish()
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
@@ -342,15 +320,18 @@ class VidStab:
         self.smoothed_trajectory = bfill_rolling_mean(self.trajectory, n=smoothing_window)
         self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - self.trajectory)
 
-    def gen_transforms(self, input_path, smoothing_window=30, re_calc_trajectory=False, show_progress=True):
+    def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
         self._smoothing_window = smoothing_window
         self.vid_cap = cv2.VideoCapture(input_path)
         self.frame_queue = deque(maxlen=smoothing_window)
         self.frame_queue_inds = deque(maxlen=smoothing_window)
-        self._init_trajectory(smoothing_window=smoothing_window,
-                              max_frames=float('inf'),
-                              gen_all=True,
-                              show_progress=show_progress)
+        bar = self._init_trajectory(smoothing_window=smoothing_window,
+                                    max_frames=float('inf'),
+                                    gen_all=True,
+                                    show_progress=show_progress)
+
+        if bar:
+            bar.finish()
 
     def stabilize(self, input_path, output_path, smoothing_window=30, max_frames=float('inf'),
                   border_type='black', border_size=0, layer_func=None, playback=False,
@@ -396,13 +377,13 @@ class VidStab:
         if isinstance(input_path, int):
             time.sleep(0.1)
 
-        bar = self._init_progress_bar(frame_count, max_frames, show_progress)
-
         self.frame_queue = deque(maxlen=smoothing_window)
         self.frame_queue_inds = deque(maxlen=smoothing_window)
 
         if not use_stored_transforms:
-            self._init_trajectory(smoothing_window, max_frames)
+            bar = self._init_trajectory(smoothing_window, max_frames, show_progress=show_progress)
+        else:
+            bar = init_progress_bar(frame_count, max_frames, show_progress)
 
         self._apply_transforms(output_path, max_frames, smoothing_window,
                                border_type=border_type, border_size=border_size, layer_func=layer_func,
