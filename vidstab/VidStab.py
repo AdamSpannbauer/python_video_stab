@@ -1,13 +1,5 @@
 """VidStab: a class for stabilizing video files"""
 
-# TODO
-# * add pre calc option for trajectory
-# * test reusing old trajectory
-# * strip unneeded dependencies
-# * dynamic resizing of numpy array for raw trans and trajectory
-# * stabilize x, y, angle alone
-
-
 try:
     import cv2
 except ModuleNotFoundError:
@@ -175,7 +167,7 @@ class VidStab:
             # read current frame
             grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
-                if show_progress:
+                if show_progress and bar is not None:
                     bar.next()
                 break
 
@@ -191,7 +183,7 @@ class VidStab:
                         self.frame_queue_inds[-1] >= smoothing_window - 1):
                     break
 
-            if show_progress:
+            if show_progress and bar is not None:
                 bar.next()
 
         self._gen_transforms(smoothing_window)
@@ -287,15 +279,21 @@ class VidStab:
                 prev_frame = transformed[:]
 
             if playback:
-                resized_frame = imutils.resize(frame_i, width=min([frame_i.shape[0], 500]))
-                resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 500]))
+                # resized_frame = imutils.resize(frame_i, width=min([frame_i.shape[0], 500]))
+                # resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 500]))
+                # playback_frame = np.hstack((resized_frame, resized_transformed))
 
-                playback_frame = np.hstack((resized_frame, resized_transformed))
+                resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 1000]))
+                playback_frame = resized_transformed
 
-                cv2.imshow('VidStab Playback ({} frame delay if using live video)'.format(min([smoothing_window,
-                                                                                               max_frames])),
+                cv2.imshow('VidStab Playback ({} frame delay if using live video;'
+                           ' press Q or ESC to quit)'.format(min([smoothing_window,
+                                                                 max_frames])),
                            playback_frame)
-                cv2.waitKey(1)
+                key = cv2.waitKey(1)
+
+                if key == ord("q") or key == 27:
+                    break
 
             buffer = border_size + neg_border_size
             transformed = transformed[buffer:(transformed.shape[0] - buffer),
