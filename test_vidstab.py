@@ -72,8 +72,8 @@ class TestVidStabClass(unittest.TestCase):
             stabilizer.gen_transforms(input_path=input_vid, smoothing_window=window)
 
             transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
-            trajectory_file = '{}/ostrich_trajectory_{}.pickle'.format(base_url, window)
-            smooth_trajectory_file = '{}/ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
+            trajectory_file = '{}/np_ostrich_trajectory_{}.pickle'.format(base_url, window)
+            smooth_trajectory_file = '{}/np_ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
 
             with urlopen(transform_file) as f:
                 expected_transforms = pickle.load(f)
