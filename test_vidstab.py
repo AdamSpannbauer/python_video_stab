@@ -1,5 +1,3 @@
-# TODO: write legitimate tests
-
 import tempfile
 import unittest
 import pickle
@@ -22,7 +20,7 @@ urlretrieve(remote_trunc_vid, local_trunc_vid)
 urlretrieve(remote_vid, local_vid)
 
 
-class KeyPointMethods(unittest.TestCase):
+class TestVidStabClass(unittest.TestCase):
 
     # test that all keypoint detection methods load without error
     def test_default_init(self):
@@ -45,7 +43,7 @@ class KeyPointMethods(unittest.TestCase):
         input_vid = local_trunc_vid
 
         stabilizer = VidStab()
-        stabilizer.gen_transforms(input_vid, smoothing_window=1, show_progress=True)
+        stabilizer.gen_transforms(input_vid, smoothing_window=2, show_progress=True)
 
         self.assertEqual(stabilizer.smoothed_trajectory.shape, stabilizer.trajectory.shape,
                          'trajectory/transform obj shapes')
@@ -60,7 +58,7 @@ class KeyPointMethods(unittest.TestCase):
                 self.fail("stabilizer.apply_transforms ran into {}".format(e))
 
             try:
-                stabilizer.stabilize(input_vid, output_vid, smoothing_window=1)
+                stabilizer.stabilize(input_vid, output_vid, smoothing_window=2)
             except Exception as e:
                 self.fail("stabilizer.stabilize ran into {}".format(e))
 
@@ -68,14 +66,14 @@ class KeyPointMethods(unittest.TestCase):
         # input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
         input_vid = local_vid
         base_url = 'https://s3.amazonaws.com/python-vidstab'
-        stabilizer = VidStab()
 
         for window in [15, 30, 60]:
+            stabilizer = VidStab()
             stabilizer.gen_transforms(input_path=input_vid, smoothing_window=window)
 
             transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
-            trajectory_file = '{}/ostrich_trajectory_{}.pickle'.format(base_url, window)
-            smooth_trajectory_file = '{}/ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
+            trajectory_file = '{}/np_ostrich_trajectory_{}.pickle'.format(base_url, window)
+            smooth_trajectory_file = '{}/np_ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
 
             with urlopen(transform_file) as f:
                 expected_transforms = pickle.load(f)
