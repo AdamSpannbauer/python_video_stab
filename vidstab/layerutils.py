@@ -6,7 +6,6 @@ def layer_overlay(foreground, background):
     """put an image over the top of another
 
     Intended for use in VidStab class to create a trail of previous frames in the stable video output.
-    (example output of using trail: https://www.linkedin.com/feed/update/urn:li:activity:6396794976134524928/)
 
     :param foreground: image to be laid over top of background image
     :param background: image to over laid with foreground image

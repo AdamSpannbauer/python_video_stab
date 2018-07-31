@@ -190,19 +190,14 @@ class VidStab:
 
         return bar
 
-    def _init_writer(self, output_path, frame_shape, border_size, output_fourcc, fps):
+    def _init_writer(self, output_path, frame_shape, output_fourcc, fps):
         # set output and working dims
         h, w = frame_shape
 
-        write_h = h + 2 * border_size
-        write_w = w + 2 * border_size
-
-        h += 2 * border_size
-        w += 2 * border_size
         # setup video writer
         self.writer = cv2.VideoWriter(output_path,
                                       cv2.VideoWriter_fourcc(*output_fourcc),
-                                      fps, (write_w, write_h), True)
+                                      fps, (w, h), True)
 
     def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
                           border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
@@ -247,10 +242,6 @@ class VidStab:
             if i >= max_frames:
                 break
 
-            if self.writer is None:
-                self._init_writer(output_path, frame_i.shape[:2], border_size, output_fourcc,
-                                  fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
-
             # build transformation matrix
             transform[0, 0] = np.cos(transform_i[2])
             transform[0, 1] = -np.sin(transform_i[2])
@@ -272,8 +263,12 @@ class VidStab:
                                          (w + border_size * 2, h + border_size * 2),
                                          borderMode=border_mode)
 
+            buffer = border_size + neg_border_size
+            transformed = transformed[buffer:(transformed.shape[0] - buffer),
+                                      buffer:(transformed.shape[1] - buffer)]
+
             if layer_func is not None:
-                if i > 0:
+                if i > 1:
                     transformed = layer_func(transformed, prev_frame)
 
                 prev_frame = transformed[:]
@@ -295,9 +290,9 @@ class VidStab:
                 if key == ord("q") or key == 27:
                     break
 
-            buffer = border_size + neg_border_size
-            transformed = transformed[buffer:(transformed.shape[0] - buffer),
-                                      buffer:(transformed.shape[1] - buffer)]
+            if self.writer is None:
+                self._init_writer(output_path, transformed.shape[:2], output_fourcc,
+                                  fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
 
             # write frame to output video
             self.writer.write(transformed)
