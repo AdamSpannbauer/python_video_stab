@@ -135,6 +135,41 @@ Using Frame Layering
 | |image9|                             | |image10|                          |
 +--------------------------------------+------------------------------------+
 
+
+Working with live video
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``VidStab`` class can also process live video streams.  The underlying video reader is |cv2.VideoCapture|_ (documentation linked).
+The relevant snippet from the documentation for stabilizing live video is:
+
+     *Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.*
+
+The ``input_path`` argument of the ``VidStab.stabilize`` method can accept integers that will be passed directly to ``cv2.VideoCapture`` as a device index.  You can also pass a device index to the ``--input`` argument for command line usage.
+
+One notable difference between live feeds and video files is that webcam footage does not have a definite end point.
+The options for ending a live video stabilization are to set the max length using the ``max_frames`` argument or to manually stop the process by pressing the ``Esc`` key or the ``Q`` key.
+If ``max_frames`` is not provided then no progress bar can be displayed for live video stabilization processes.
+
+Example
+-------
+
+.. code:: python
+
+   from vidstab import VidStab
+
+   stabilizer = VidStab()
+   stabilizer.stabilize(input_path=0,
+                        output_path='stable_webcam.avi',
+                        max_frames=1000,
+                        playback=True)
+
+.. image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true
+    :width: 50%
+    :align: center
+
+.. |cv2.VideoCapture| replace:: ``cv2.VideoCapture``
+.. _cv2.VideoCapture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html
+
 .. |image3| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true
 .. |image4| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true
 .. |image5| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true

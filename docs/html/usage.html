@@ -201,6 +201,30 @@ own custom python code.</p>
 </tbody>
 </table>
 </div>
+<div class="section" id="working-with-live-video">
+<h2>Working with live video<a class="headerlink" href="#working-with-live-video" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class can also process live video streams.  The underlying video reader is <a class="reference external" href="https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html"><code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code></a> (documentation linked).
+The important snippet from the documentation for stabilizing webcam video is:</p>
+<blockquote>
+<div><em>Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.</em></div></blockquote>
+<p>The <code class="docutils literal notranslate"><span class="pre">input_path</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize</span></code> method can accept integers that will be passed directly to <code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code> as a device index.  You can also pass a device index to the <code class="docutils literal notranslate"><span class="pre">--input</span></code> argument for command line usage.</p>
+<p>One notable difference between live feeds and video files is that webcam footage does not have a definite end point.
+The options for ending a live video stabilization are to set the max length using the <code class="docutils literal notranslate"><span class="pre">max_frames</span></code> argument or to manually stop the process by pressing the <code class="docutils literal notranslate"><span class="pre">Esc</span></code> key or the <code class="docutils literal notranslate"><span class="pre">Q</span></code> key.
+If <code class="docutils literal notranslate"><span class="pre">max_frames</span></code> is not provided then no progress bar can be displayed for live video stabilization processes.</p>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;stable_webcam.avi&#39;</span><span class="p">,</span>
+                     <span class="n">max_frames</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                     <span class="n">playback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true"><img alt="https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true" class="align-center" src="https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true" style="width: 50%;" /></a>
+</div>
+</div>
 </div>
 
 
@@ -218,6 +242,10 @@ own custom python code.</p>
 <li><a class="reference internal" href="#plotting-frame-to-frame-transformations">Plotting frame to frame transformations</a></li>
 <li><a class="reference internal" href="#using-borders">Using borders</a></li>
 <li><a class="reference internal" href="#using-frame-layering">Using Frame Layering</a></li>
+<li><a class="reference internal" href="#working-with-live-video">Working with live video</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
