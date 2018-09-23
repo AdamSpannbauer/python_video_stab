@@ -111,8 +111,6 @@ Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
 ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true)
 
-*[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
-
 ### Using borders
 
 ```python
