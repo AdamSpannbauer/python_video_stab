@@ -51,8 +51,10 @@ Transformations will be applied (<code class="docutils literal notranslate"><spa
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>kp_method</strong> – String of the type of keypoint detector to use. Available options:
-<code class="docutils literal notranslate"><span class="pre">[&quot;GFTT&quot;,</span> <span class="pre">&quot;BRISK&quot;,</span> <span class="pre">&quot;DENSE&quot;,</span> <span class="pre">&quot;FAST&quot;,</span> <span class="pre">&quot;HARRIS&quot;,</span> <span class="pre">&quot;MSER&quot;,</span> <span class="pre">&quot;ORB&quot;,</span> <span class="pre">&quot;SIFT&quot;,</span> <span class="pre">&quot;SURF&quot;,</span> <span class="pre">&quot;STAR&quot;]</span></code></li>
+<li><strong>kp_method</strong> – String of the type of keypoint detector to use. Available options are:
+<code class="docutils literal notranslate"><span class="pre">[&quot;GFTT&quot;,</span> <span class="pre">&quot;BRISK&quot;,</span> <span class="pre">&quot;DENSE&quot;,</span> <span class="pre">&quot;FAST&quot;,</span> <span class="pre">&quot;HARRIS&quot;,</span> <span class="pre">&quot;MSER&quot;,</span> <span class="pre">&quot;ORB&quot;,</span> <span class="pre">&quot;STAR&quot;]</span></code>.
+<code class="docutils literal notranslate"><span class="pre">[&quot;SIFT&quot;,</span> <span class="pre">&quot;SURF&quot;]</span></code> are additional non-free options available depending
+on your build of OpenCV.  The non-free detectors are not tested with this package.</li>
 <li><strong>args</strong> – Positional arguments for keypoint detector.</li>
 <li><strong>kwargs</strong> – Keyword arguments for keypoint detector.</li>
 </ul>

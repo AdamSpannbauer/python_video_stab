@@ -204,7 +204,7 @@ own custom python code.</p>
 <div class="section" id="working-with-live-video">
 <h2>Working with live video<a class="headerlink" href="#working-with-live-video" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class can also process live video streams.  The underlying video reader is <a class="reference external" href="https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html"><code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code></a> (documentation linked).
-The important snippet from the documentation for stabilizing webcam video is:</p>
+The relevant snippet from the documentation for stabilizing live video is:</p>
 <blockquote>
 <div><em>Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.</em></div></blockquote>
 <p>The <code class="docutils literal notranslate"><span class="pre">input_path</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize</span></code> method can accept integers that will be passed directly to <code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code> as a device index.  You can also pass a device index to the <code class="docutils literal notranslate"><span class="pre">--input</span></code> argument for command line usage.</p>
