@@ -140,7 +140,7 @@ Working with live video
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``VidStab`` class can also process live video streams.  The underlying video reader is |cv2.VideoCapture|_ (documentation linked).
-The important snippet from the documentation for stabilizing webcam video is:
+The relevant snippet from the documentation for stabilizing live video is:
 
      *Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.*
 

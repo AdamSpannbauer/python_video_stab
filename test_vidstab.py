@@ -5,8 +5,9 @@ from urllib.request import urlopen, urlretrieve
 import numpy as np
 from vidstab import VidStab
 
-kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS",
-              "MSER", "ORB", "SIFT", "SURF", "STAR"]
+# excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python
+# see: https://github.com/skvark/opencv-python/issues/126
+kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]
 
 tmp_dir = tempfile.TemporaryDirectory()
 

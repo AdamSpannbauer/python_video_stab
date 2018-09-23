@@ -37,8 +37,10 @@ class VidStab:
 
     This class is based on the `work presented by Nghia Ho <http://nghiaho.com/?p=2093>`_
 
-    :param kp_method: String of the type of keypoint detector to use. Available options:
-                        ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "SIFT", "SURF", "STAR"]``
+    :param kp_method: String of the type of keypoint detector to use. Available options are:
+                        ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]``.
+                        ``["SIFT", "SURF"]`` are additional non-free options available depending
+                        on your build of OpenCV.  The non-free detectors are not tested with this package.
     :param args: Positional arguments for keypoint detector.
     :param kwargs: Keyword arguments for keypoint detector.
 
@@ -53,9 +55,10 @@ class VidStab:
     def __init__(self, kp_method='GFTT', *args, **kwargs):
         """instantiate VidStab class
 
-        :param kp_method: String of the type of keypoint detector to use. Available options:
-                        ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS",
-                         "MSER", "ORB", "SIFT", "SURF", "STAR"]``
+        :param kp_method: String of the type of keypoint detector to use. Available options are:
+                        ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]``.
+                        ``["SIFT", "SURF"]`` are additional non-free options available depending
+                        on your build of OpenCV.  The non-free detectors are not tested with this package.
         :param args: Positional arguments for keypoint detector.
         :param kwargs: Keyword arguments for keypoint detector.
 
