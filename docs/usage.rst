@@ -98,6 +98,8 @@ Using borders
 | |image7|                  | |image8|                    |
 +---------------------------+-----------------------------+
 
+|VideoLink|_ *used with permission from* |HappyLivingLink|_
+
 Using Frame Layering
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -135,6 +137,7 @@ Using Frame Layering
 | |image9|                             | |image10|                          |
 +--------------------------------------+------------------------------------+
 
+|VideoLink|_ *used with permission from* |HappyLivingLink|_
 
 Working with live video
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,6 +169,11 @@ Example
 .. image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true
     :width: 50%
     :align: center
+
+.. _VideoLink: https://www.youtube.com/watch?v=9pypPqbV_GM
+.. _HappyLivingLink: https://www.facebook.com/happylivinginfl/
+.. |VideoLink| replace:: *Video*
+.. |HappyLivingLink| replace:: *HappyLiving*
 
 .. |cv2.VideoCapture| replace:: ``cv2.VideoCapture``
 .. _cv2.VideoCapture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html

@@ -10,6 +10,8 @@
 :-------------------------------:|:-------------------------:
 ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true)    |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)
  
+*[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
+
 ## Installation
 
 > ```diff
@@ -142,6 +144,8 @@ stabilizer.stabilize(input_path='input_video.mov',
 :--------------------------------------:|:-------------------------:
 ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/reflect_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/replicate_stable_ostrich.gif?raw=true)
 
+*[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
+
 ### Using Frame Layering
 
 ```python
@@ -174,4 +178,7 @@ stabilizer.stabilize(input_path=input_vid,
 
 `layer_func=vidstab.layer_overlay`     |  `layer_func=vidstab.layer_blend`
 :--------------------------------------:|:-------------------------:
-![](https://discourse-cdn-sjc2.com/standard16/uploads/pyimagesearch/original/2X/b/bf2996f1d2ae18801e40838c89c08ad0d30cfdc9.gif)  |  ![](https://discourse-cdn-sjc2.com/standard16/uploads/pyimagesearch/original/2X/f/f688787217fac5f1b5e7597a55ff063cc1fbd544.gif)
+![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trail_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/blend_stable_ostrich.gif?raw=true)
+
+*[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
+
