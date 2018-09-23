@@ -25,5 +25,12 @@ OPENCV <http://nghiaho.com/?p=2093>`__.
 | |image1| | |image2| |
 +----------+----------+
 
+|VideoLink|_ *used with permission from* |HappyLivingLink|_
+
 .. |image1| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true
 .. |image2| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true
+
+.. _VideoLink: https://www.youtube.com/watch?v=9pypPqbV_GM
+.. _HappyLivingLink: https://www.facebook.com/happylivinginfl/
+.. |VideoLink| replace:: *Video*
+.. |HappyLivingLink| replace:: *HappyLiving*
