@@ -1,7 +1,7 @@
 import tempfile
-import unittest
 import pickle
 from urllib.request import urlopen, urlretrieve
+import pytest
 import numpy as np
 from vidstab import VidStab
 
@@ -21,72 +21,63 @@ urlretrieve(remote_trunc_vid, local_trunc_vid)
 urlretrieve(remote_vid, local_vid)
 
 
-class TestVidStabClass(unittest.TestCase):
+# test that all keypoint detection methods load without error
+def test_default_init():
+    for kp in kp_methods:
+        print('testing kp method {}'.format(kp))
+        assert VidStab(kp_method=kp).kp_method == kp
 
-    # test that all keypoint detection methods load without error
-    def test_default_init(self):
-        for kp in kp_methods:
-            print('testing kp method {}'.format(kp))
-            self.assertEqual(VidStab(kp_method=kp).kp_method, kp, '{} kp init'.format(kp))
 
-    def test_kp_options(self):
-        stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
-        self.assertFalse(stabilizer.kp_detector.getNonmaxSuppression(), 'FAST kp non-max suppression flag')
-        self.assertEqual(stabilizer.kp_detector.getThreshold(), 42, 'FAST kp custom threshold')
+def test_kp_options():
+    stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
+    assert not stabilizer.kp_detector.getNonmaxSuppression()
+    assert stabilizer.kp_detector.getThreshold() == 42
 
-        with self.assertRaises(TypeError) as err:
-            VidStab(kp_method='FAST', fake='fake')
-        self.assertTrue(isinstance(err.exception, TypeError), 'reject bad kwargs')
+    with pytest.raises(TypeError) as err:
+        VidStab(kp_method='FAST', fake='fake')
 
-    def test_video_dep_funcs_run(self):
-        # just tests to check functions run
-        # input_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
-        input_vid = local_trunc_vid
+    assert 'invalid keyword argument' in str(err.value)
 
+
+def test_video_dep_funcs_run():
+    # just tests to check functions run
+    stabilizer = VidStab()
+    stabilizer.gen_transforms(local_trunc_vid, smoothing_window=2, show_progress=True)
+
+    assert stabilizer.smoothed_trajectory.shape == stabilizer.trajectory.shape
+    assert stabilizer.transforms.shape == stabilizer.trajectory.shape
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_vid = '{}/test_output.avi'.format(tmpdir)
+        try:
+            stabilizer.apply_transforms(local_trunc_vid, output_vid)
+        except Exception as e:
+            pytest.fail("stabilizer.apply_transforms ran into {}".format(e))
+
+        try:
+            stabilizer.stabilize(local_trunc_vid, output_vid, smoothing_window=2)
+        except Exception as e:
+            pytest.fail("stabilizer.stabilize ran into {}".format(e))
+
+
+def test_trajectory_transform_values():
+    base_url = 'https://s3.amazonaws.com/python-vidstab'
+
+    for window in [15, 30, 60]:
         stabilizer = VidStab()
-        stabilizer.gen_transforms(input_vid, smoothing_window=2, show_progress=True)
+        stabilizer.gen_transforms(input_path=local_vid, smoothing_window=window)
 
-        self.assertEqual(stabilizer.smoothed_trajectory.shape, stabilizer.trajectory.shape,
-                         'trajectory/transform obj shapes')
-        self.assertEqual(stabilizer.transforms.shape, stabilizer.trajectory.shape,
-                         'trajectory/transform obj shapes')
+        transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
+        trajectory_file = '{}/np_ostrich_trajectory_{}.pickle'.format(base_url, window)
+        smooth_trajectory_file = '{}/np_ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_vid = '{}/test_output.avi'.format(tmpdir)
-            try:
-                stabilizer.apply_transforms(input_vid, output_vid)
-            except Exception as e:
-                self.fail("stabilizer.apply_transforms ran into {}".format(e))
+        with urlopen(transform_file) as f:
+            expected_transforms = pickle.load(f)
+        with urlopen(trajectory_file) as f:
+            expected_trajectory = pickle.load(f)
+        with urlopen(smooth_trajectory_file) as f:
+            expected_smooth_trajectory = pickle.load(f)
 
-            try:
-                stabilizer.stabilize(input_vid, output_vid, smoothing_window=2)
-            except Exception as e:
-                self.fail("stabilizer.stabilize ran into {}".format(e))
-
-    def test_trajectory_transform_values(self):
-        # input_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
-        input_vid = local_vid
-        base_url = 'https://s3.amazonaws.com/python-vidstab'
-
-        for window in [15, 30, 60]:
-            stabilizer = VidStab()
-            stabilizer.gen_transforms(input_path=input_vid, smoothing_window=window)
-
-            transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
-            trajectory_file = '{}/np_ostrich_trajectory_{}.pickle'.format(base_url, window)
-            smooth_trajectory_file = '{}/np_ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
-
-            with urlopen(transform_file) as f:
-                expected_transforms = pickle.load(f)
-            with urlopen(trajectory_file) as f:
-                expected_trajectory = pickle.load(f)
-            with urlopen(smooth_trajectory_file) as f:
-                expected_smooth_trajectory = pickle.load(f)
-
-            self.assertTrue(np.allclose(stabilizer.transforms, expected_transforms))
-            self.assertTrue(np.allclose(stabilizer.trajectory, expected_trajectory))
-            self.assertTrue(np.allclose(stabilizer.smoothed_trajectory, expected_smooth_trajectory))
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert np.allclose(stabilizer.transforms, expected_transforms)
+        assert np.allclose(stabilizer.trajectory, expected_trajectory)
+        assert np.allclose(stabilizer.smoothed_trajectory, expected_smooth_trajectory)
