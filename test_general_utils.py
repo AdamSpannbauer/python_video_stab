@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import vidstab.utils as utils
+import vidstab.general_utils as utils
 
 
 def test_bfill_rolling_mean():

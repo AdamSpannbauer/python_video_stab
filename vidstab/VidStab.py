@@ -20,7 +20,8 @@ import numpy as np
 import imutils
 import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
-from .utils import bfill_rolling_mean, init_progress_bar
+from . import general_utils
+from . import vidstab_utils
 
 
 class VidStab:
@@ -88,50 +89,33 @@ class VidStab:
         self.vid_cap = None
         self.writer = None
 
+    def _update_prev_frame(self, current_frame_gray):
+        self.prev_gray = current_frame_gray[:]
+        self.prev_kps = self.kp_detector.detect(self.prev_gray)
+        self.prev_kps = np.array([kp.pt for kp in self.prev_kps], dtype='float32').reshape(-1, 1, 2)
+
+    def _update_trajectory(self, transform):
+        if not self._trajectory:
+            self._trajectory.append(transform[:])
+        else:
+            # gen cumsum for new row and append
+            self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
+
     def _gen_next_raw_transform(self):
         current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
 
         # calc flow of movement
-        cur_kps, status, err = cv2.calcOpticalFlowPyrLK(self.prev_gray,
-                                                        current_frame_gray,
-                                                        self.prev_kps, None)
-        # storage for keypoints with status 1
-        prev_matched_kp = []
-        cur_matched_kp = []
-        for i, matched in enumerate(status):
-            # store coords of keypoints that appear in both
-            if matched:
-                prev_matched_kp.append(self.prev_kps[i])
-                cur_matched_kp.append(cur_kps[i])
-        # estimate partial transform
-        transform = cv2.estimateRigidTransform(np.array(prev_matched_kp),
-                                               np.array(cur_matched_kp),
-                                               False)
-        if transform is not None:
-            # translation x
-            dx = transform[0, 2]
-            # translation y
-            dy = transform[1, 2]
-            # rotation
-            da = np.arctan2(transform[1, 0], transform[0, 0])
-        else:
-            dx = dy = da = 0
+        optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
+                                                current_frame_gray,
+                                                self.prev_kps, None)
 
-        transform_i = [dx, dy, da]
+        matched_keypoints = vidstab_utils.match_keypoints(optical_flow, self.prev_kps)
+        transform_i = vidstab_utils.estimate_partial_transform(matched_keypoints)
 
         # update previous frame info for next iteration
-        self.prev_gray = current_frame_gray[:]
-        self.prev_kps = self.kp_detector.detect(self.prev_gray)
-        self.prev_kps = np.array([kp.pt for kp in self.prev_kps], dtype='float32').reshape(-1, 1, 2)
+        self._update_prev_frame(current_frame_gray)
         self._raw_transforms.append(transform_i[:])
-
-        if not self._trajectory:
-            self._trajectory.append(transform_i[:])
-        else:
-            # gen cumsum for new row and append
-            self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform_i)])
-
-        return
+        self._update_trajectory(transform_i)
 
     def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
         """
@@ -146,7 +130,7 @@ class VidStab:
             message = 'Generating Transforms'
         else:
             message = 'Stabilizing'
-        bar = init_progress_bar(frame_count, max_frames, show_progress, message)
+        bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, message)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -205,13 +189,8 @@ class VidStab:
     def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
                           border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
 
-        if border_type not in ['black', 'reflect', 'replicate', 'trail']:
+        if border_type not in ['black', 'reflect', 'replicate']:
             raise ValueError('Invalid border type')
-
-        border_modes = {'black': cv2.BORDER_CONSTANT,
-                        'reflect': cv2.BORDER_REFLECT,
-                        'replicate': cv2.BORDER_REPLICATE}
-        border_mode = border_modes[border_type]
 
         if border_size < 0:
             neg_border_size = 100 + abs(border_size)
@@ -225,7 +204,6 @@ class VidStab:
         w += 2 * border_size
 
         # initialize transformation matrix
-        transform = np.zeros((2, 3))
         grabbed_frame = True
         while len(self.frame_queue) > 0 or grabbed_frame:
             if progress_bar:
@@ -246,21 +224,10 @@ class VidStab:
                 break
 
             # build transformation matrix
-            transform[0, 0] = np.cos(transform_i[2])
-            transform[0, 1] = -np.sin(transform_i[2])
-            transform[1, 0] = np.sin(transform_i[2])
-            transform[1, 1] = np.cos(transform_i[2])
-            transform[0, 2] = transform_i[0]
-            transform[1, 2] = transform_i[1]
+            transform = vidstab_utils.build_transformation_matrix(transform_i)
 
-            # apply transform
-            bordered_frame = cv2.copyMakeBorder(frame_i,
-                                                top=border_size * 2,
-                                                bottom=border_size * 2,
-                                                left=border_size * 2,
-                                                right=border_size * 2,
-                                                borderType=border_mode,
-                                                value=[0, 0, 0])
+            bordered_frame, border_mode = vidstab_utils.border_frame(frame_i, border_size, border_type)
+
             transformed = cv2.warpAffine(bordered_frame,
                                          transform,
                                          (w + border_size * 2, h + border_size * 2),
@@ -277,10 +244,6 @@ class VidStab:
                 prev_frame = transformed[:]
 
             if playback:
-                # resized_frame = imutils.resize(frame_i, width=min([frame_i.shape[0], 500]))
-                # resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 500]))
-                # playback_frame = np.hstack((resized_frame, resized_transformed))
-
                 resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 1000]))
                 playback_frame = resized_transformed
 
@@ -313,7 +276,7 @@ class VidStab:
 
     def _gen_transforms(self, smoothing_window):
         self.trajectory = np.array(self._trajectory)
-        self.smoothed_trajectory = bfill_rolling_mean(self.trajectory, n=smoothing_window)
+        self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=smoothing_window)
         self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - self.trajectory)
 
     def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
@@ -379,15 +342,13 @@ class VidStab:
         if not use_stored_transforms:
             bar = self._init_trajectory(smoothing_window, max_frames, show_progress=show_progress)
         else:
-            bar = init_progress_bar(frame_count, max_frames, show_progress)
+            bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress)
 
         self._apply_transforms(output_path, max_frames, smoothing_window,
                                border_type=border_type, border_size=border_size, layer_func=layer_func,
                                playback=playback, output_fourcc=output_fourcc, progress_bar=bar)
 
         cv2.destroyAllWindows()
-
-        return
 
     def plot_trajectory(self):
         """Plot video trajectory
@@ -405,7 +366,6 @@ class VidStab:
         >>> plt.show()
 
         """
-
         if self.transforms is None:
             raise AttributeError('No trajectory to plot. '
                                  'Use methods: gen_transforms or stabilize to generate the trajectory attributes')
