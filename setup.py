@@ -27,7 +27,6 @@ setup(name='vidstab',
       extras_require={
         'cv2':  ['opencv-contrib-python >= 3.4.0']
       },
-      test_suite='nose.collector',
-      tests_require=['nose'],
+      tests_require=['pytest'],
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv']
       )
