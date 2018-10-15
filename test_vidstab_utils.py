@@ -36,15 +36,15 @@ def test_border_frame():
     frame = np.zeros((10, 10))
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='black')
-    assert bordered_frame.shape == (410, 410)
+    assert bordered_frame.shape == (210, 210)
     assert border_mode == 0
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='replicate')
-    assert bordered_frame.shape == (410, 410)
+    assert bordered_frame.shape == (210, 210)
     assert border_mode == 1
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='reflect')
-    assert bordered_frame.shape == (410, 410)
+    assert bordered_frame.shape == (210, 210)
     assert border_mode == 2
 
     with pytest.raises(KeyError) as err:
