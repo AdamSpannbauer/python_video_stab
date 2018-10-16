@@ -176,7 +176,7 @@ Separate subplots are used to show the x and y trajectory.</p>
 
 <dl class="method">
 <dt id="vidstab.VidStab.plot_transforms">
-<code class="descname">plot_transforms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vidstab.VidStab.plot_transforms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_transforms</code><span class="sig-paren">(</span><em>radians=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vidstab.VidStab.plot_transforms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot stabilizing transforms</p>
 <p>Create a plot of the transforms used to stabilize the input video.
 Plots x &amp; y transforms (dx &amp; dy) in a separate subplot than angle transforms (da).</p>
@@ -184,7 +184,9 @@ Plots x &amp; y transforms (dx &amp; dy) in a separate subplot than angle transf
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple of matplotlib objects <code class="docutils literal notranslate"><span class="pre">(Figure,</span> <span class="pre">(AxesSubplot,</span> <span class="pre">AxesSubplot))</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radians</strong> – Should angle transforms be plotted in radians?  If <code class="docutils literal notranslate"><span class="pre">false</span></code>, transforms are plotted in degrees.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">tuple of matplotlib objects <code class="docutils literal notranslate"><span class="pre">(Figure,</span> <span class="pre">(AxesSubplot,</span> <span class="pre">AxesSubplot))</span></code></td>
 </tr>
 </tbody>
 </table>
