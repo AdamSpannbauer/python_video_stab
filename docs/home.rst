@@ -9,6 +9,9 @@
 .. image:: https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master
     :target: https://travis-ci.org/AdamSpannbauer/python_video_stab
 
+.. image:: https://img.shields.io/codecov/c/github/AdamSpannbauer/python_video_stab/master.svg
+    :target: https://codecov.io/github/AdamSpannbauer/python_video_stab?branch=master
+
 .. image:: https://pypip.in/v/vidstab/badge.png
     :target: https://crate.io/packages/vidstab/
 
