@@ -275,8 +275,6 @@ class VidStab:
                                          borderMode=border_mode)
 
             buffer = border_size + neg_border_size
-            # transformed = transformed[buffer:(transformed.shape[0] - buffer),
-            #                           buffer:(transformed.shape[1] - buffer)]
 
             if self.auto_border_flag:
                 auto_x = round(1.2 * (buffer - self.extreme_frame_corners['min_x']))
