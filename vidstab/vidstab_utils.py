@@ -34,10 +34,10 @@ def border_frame(frame, border_size, border_type):
     border_mode = border_modes[border_type]
 
     bordered_frame = cv2.copyMakeBorder(frame,
-                                        top=border_size * 2,
-                                        bottom=border_size * 2,
-                                        left=border_size * 2,
-                                        right=border_size * 2,
+                                        top=border_size,
+                                        bottom=border_size,
+                                        left=border_size,
+                                        right=border_size,
                                         borderType=border_mode,
                                         value=[0, 0, 0])
 

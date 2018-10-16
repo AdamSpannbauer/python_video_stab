@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 from progress.bar import IncrementalBar
 
@@ -62,4 +61,3 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, message='Stab
         bar = None
 
     return bar
-
