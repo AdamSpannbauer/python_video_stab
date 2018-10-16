@@ -50,7 +50,6 @@ class VidStab:
     :ivar trajectory: a 2d showing the trajectory of the input video
     :ivar smoothed_trajectory: a 2d numpy array showing the smoothed trajectory of the input video
     :ivar transforms: a 2d numpy array storing the transformations used from frame to frame
-
     """
 
     def __init__(self, kp_method='GFTT', *args, **kwargs):
@@ -62,7 +61,6 @@ class VidStab:
                         on your build of OpenCV.  The non-free detectors are not tested with this package.
         :param args: Positional arguments for keypoint detector.
         :param kwargs: Keyword arguments for keypoint detector.
-
         """
 
         self.kp_method = kp_method
@@ -419,7 +417,6 @@ class VidStab:
 
         >>> stabilizer = VidStab(kp_method = 'ORB')
         >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
-
         """
         if border_size == 'auto':
             self.auto_border_flag = True
@@ -473,7 +470,6 @@ class VidStab:
         >>> stabilizer.gen_transforms(input_path='input_video.mov')
         >>> stabilizer.plot_trajectory()
         >>> plt.show()
-
         """
         if self.transforms is None:
             raise AttributeError('No trajectory to plot. '
@@ -502,12 +498,13 @@ class VidStab:
 
             return fig, (ax1, ax2)
 
-    def plot_transforms(self):
+    def plot_transforms(self, radians=False):
         """Plot stabilizing transforms
 
         Create a plot of the transforms used to stabilize the input video.
         Plots x & y transforms (dx & dy) in a separate subplot than angle transforms (da).
 
+        :param radians: Should angle transforms be plotted in radians?  If ``false``, transforms are plotted in degrees.
         :return: tuple of matplotlib objects ``(Figure, (AxesSubplot, AxesSubplot))``
 
         >>> from vidstab import VidStab
@@ -516,7 +513,6 @@ class VidStab:
         >>> stabilizer.gen_transforms(input_path='input_video.mov')
         >>> stabilizer.plot_transforms()
         >>> plt.show()
-
         """
         if self.transforms is None:
             raise AttributeError('No transforms to plot. '
@@ -529,8 +525,12 @@ class VidStab:
             ax1.plot(self.transforms[:, 1], label='delta y', color='C1')
             ax1.set_ylabel('Delta Pixels', fontsize=10)
 
-            ax2.plot(self.transforms[:, 2], label='delta angle', color='C2')
-            ax2.set_ylabel('Delta Degrees', fontsize=10)
+            if radians:
+                ax2.plot(self.transforms[:, 2], label='delta angle', color='C2')
+                ax2.set_ylabel('Delta Radians', fontsize=10)
+            else:
+                ax2.plot(np.rad2deg(self.transforms[:, 2]), label='delta angle', color='C2')
+                ax2.set_ylabel('Delta Degrees', fontsize=10)
 
             handles1, labels1 = ax1.get_legend_handles_labels()
             handles2, labels2 = ax2.get_legend_handles_labels()

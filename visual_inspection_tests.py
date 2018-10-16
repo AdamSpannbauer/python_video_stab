@@ -3,12 +3,14 @@
 
 import tempfile
 from vidstab import VidStab
+import matplotlib.pyplot as plt
 
 input_path = 'readme/ostrich.mp4'
 
 border_type = 'reflect'
 border_size = 'auto'
 layer_func = None
+playback = False
 
 
 tmp_dir = tempfile.TemporaryDirectory()
@@ -21,5 +23,10 @@ stabilizer.stabilize(input_path,
                      border_type=border_type,
                      border_size=border_size,
                      layer_func=layer_func,
-                     playback=True)
+                     playback=playback)
 
+stabilizer.plot_transforms()
+plt.show()
+
+stabilizer.plot_transforms(radians=True)
+plt.show()
