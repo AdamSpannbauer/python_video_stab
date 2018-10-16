@@ -4,8 +4,8 @@ python:
 cache: pip
 install:
   - pip install -e git+https://github.com/AdamSpannbauer/python_video_stab.git#egg=vidstab[cv2]
-  - pip install codecov
+  - pip install pytest pytest-cov
 script:
-  - pytest
+  - pytest --cov=./
 after_success:
   - codecov -t 522baa9a-6d29-4939-a238-2150213fbf03
