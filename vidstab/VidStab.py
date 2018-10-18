@@ -281,6 +281,9 @@ class VidStab:
 
                 prev_frame = transformed[:]
 
+            # drop alpha layer of image
+            transformed = transformed[:, :, :3]
+
             if playback:
                 resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 1000]))
                 playback_frame = resized_transformed

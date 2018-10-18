@@ -2,15 +2,15 @@
 """
 
 import tempfile
-from vidstab import VidStab
+from vidstab import VidStab, layer_overlay
 import matplotlib.pyplot as plt
 
 input_path = 'readme/ostrich.mp4'
 
-border_type = 'reflect'
+border_type = 'black'
 border_size = 'auto'
-layer_func = None
-playback = False
+layer_func = layer_overlay
+playback = True
 
 
 tmp_dir = tempfile.TemporaryDirectory()

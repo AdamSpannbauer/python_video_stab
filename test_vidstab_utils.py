@@ -33,18 +33,18 @@ def test_build_transformation_matrix():
 
 
 def test_border_frame():
-    frame = np.zeros((10, 10))
+    frame = np.zeros((10, 10, 3), dtype='uint8')
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='black')
-    assert bordered_frame.shape == (210, 210)
+    assert bordered_frame.shape == (210, 210, 4)
     assert border_mode == 0
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='replicate')
-    assert bordered_frame.shape == (210, 210)
+    assert bordered_frame.shape == (210, 210, 4)
     assert border_mode == 1
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='reflect')
-    assert bordered_frame.shape == (210, 210)
+    assert bordered_frame.shape == (210, 210, 4)
     assert border_mode == 2
 
     with pytest.raises(KeyError) as err:
@@ -70,3 +70,6 @@ def test_estimate_partial_transform():
     partial_transform = utils.estimate_partial_transform(matched_keypoints)
 
     assert np.allclose(partial_transform, expected)
+
+if __name__ == '__main__':
+    test_border_frame()
