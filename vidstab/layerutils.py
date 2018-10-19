@@ -11,22 +11,14 @@ def layer_overlay(foreground, background):
     :param background: image to over laid with foreground image
     :return: return combined image where foreground is laid over background
     """
-    # convert top image to grayscale
-    gray = cv2.cvtColor(foreground, cv2.COLOR_BGR2GRAY)
+    overlaid = foreground.copy()
+    negative_space = np.where(foreground[:, :, 3] == 0)
 
-    # inv threshold grayscale top image
-    _, threshed = cv2.threshold(gray, 3, 255, cv2.THRESH_BINARY_INV)
+    overlaid[negative_space] = background[negative_space]
 
-    # lessen thresholded image area
-    # (alleviates black border around top im in overlay)
-    threshed = cv2.dilate(threshed, None, iterations=2)
+    overlaid[:, :, 3] = 255
 
-    # mask locations of background that overlap with foreground
-    masked = cv2.bitwise_and(background, background, mask=threshed)
-
-    # take max pixel values to perform overlay
-    overlayed = np.maximum(masked, foreground)
-    return overlayed
+    return overlaid
 
 
 def layer_blend(foreground, background, foreground_alpha=.6):

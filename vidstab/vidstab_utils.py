@@ -41,7 +41,12 @@ def border_frame(frame, border_size, border_type):
                                         borderType=border_mode,
                                         value=[0, 0, 0])
 
-    return bordered_frame, border_mode
+    alpha_bordered_frame = cv2.cvtColor(bordered_frame, cv2.COLOR_BGR2BGRA)
+    alpha_bordered_frame[:, :, 3] = 0
+    h, w = frame.shape[:2]
+    alpha_bordered_frame[border_size:border_size + h, border_size:border_size + w, 3] = 255
+
+    return alpha_bordered_frame, border_mode
 
 
 def match_keypoints(optical_flow, prev_kps):
