@@ -71,5 +71,6 @@ def test_estimate_partial_transform():
 
     assert np.allclose(partial_transform, expected)
 
+
 if __name__ == '__main__':
     test_border_frame()
