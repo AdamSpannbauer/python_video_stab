@@ -1,0 +1,4 @@
+exclude_patterns:
+- "docs/*"
+- "readme/*"
+- "visual_inspection_tests.py"
