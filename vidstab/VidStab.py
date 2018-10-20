@@ -265,7 +265,6 @@ class VidStab:
             buffer = border_size + neg_border_size
 
             if self.auto_border_flag:
-                # TODO: fix this
                 auto_x = math.floor(buffer - abs(self.extreme_frame_corners['min_x']))
                 auto_y = math.floor(buffer - abs(self.extreme_frame_corners['min_y']))
                 auto_w = math.ceil(transformed.shape[1] - 1 - (buffer - self.extreme_frame_corners['max_x']))
