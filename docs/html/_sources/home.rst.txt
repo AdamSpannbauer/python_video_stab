@@ -12,6 +12,9 @@
 .. image:: https://img.shields.io/codecov/c/github/AdamSpannbauer/python_video_stab/master.svg
     :target: https://codecov.io/github/AdamSpannbauer/python_video_stab?branch=master
 
+.. image:: https://api.codeclimate.com/v1/badges/f3a17d211a2a437d21b1/maintainability
+   :target: https://codeclimate.com/github/AdamSpannbauer/python_video_stab/maintainability
+
 .. image:: https://pypip.in/v/vidstab/badge.png
     :target: https://crate.io/packages/vidstab/
 
