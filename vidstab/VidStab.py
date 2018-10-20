@@ -15,6 +15,7 @@ except ModuleNotFoundError:
     raise
 
 import time
+import math
 from collections import deque
 import numpy as np
 import imutils
@@ -106,9 +107,9 @@ class VidStab:
     def _set_extreme_corners(self, frame):
         h, w = frame.shape[:2]
         frame_corners = np.array([[0, 0],  # top left
-                                  [h - 1, 0],  # bottom left
-                                  [0, w - 1],  # top right
-                                  [h - 1, w - 1]],  # bottom right
+                                  [0, h - 1],  # bottom left
+                                  [w - 1, 0],  # top right
+                                  [w - 1, h - 1]],  # bottom right
                                  dtype='float32')
         frame_corners = np.array([frame_corners])
 
@@ -118,14 +119,14 @@ class VidStab:
             transform_mat = vidstab_utils.build_transformation_matrix(transform)
             transformed_frame_corners = cv2.transform(frame_corners, transform_mat)
 
-            abs_delta_corners = abs(frame_corners - transformed_frame_corners)
+            delta_corners = transformed_frame_corners - frame_corners
 
-            y_corners = abs_delta_corners[0][:, 0].tolist()
-            x_corners = abs_delta_corners[0][:, 1].tolist()
-            min_x = max([min_x] + x_corners[:2])
-            min_y = max([min_y] + y_corners[::2])
-            max_x = max([max_x] + x_corners[2:])
-            max_y = max([max_y] + y_corners[1::2])
+            delta_y_corners = delta_corners[0][:, 1].tolist()
+            delta_x_corners = delta_corners[0][:, 0].tolist()
+            min_x = min([min_x] + delta_x_corners)
+            min_y = min([min_y] + delta_y_corners)
+            max_x = max([max_x] + delta_x_corners)
+            max_y = max([max_y] + delta_y_corners)
 
         self.extreme_frame_corners = {'min_x': min_x, 'min_y': min_y, 'max_x': max_x, 'max_y': max_y}
 
@@ -231,13 +232,8 @@ class VidStab:
         else:
             neg_border_size = 0
 
-        prev_frame = self.frame_queue.popleft()
-        (h, w) = prev_frame.shape[:2]
-        h += 2 * border_size
-        w += 2 * border_size
-
-        # initialize transformation matrix
         grabbed_frame = True
+        prev_frame = None
         while len(self.frame_queue) > 0 or grabbed_frame:
             if progress_bar:
                 progress_bar.next()
@@ -269,14 +265,15 @@ class VidStab:
             buffer = border_size + neg_border_size
 
             if self.auto_border_flag:
-                auto_x = round(1.2 * (buffer - self.extreme_frame_corners['min_x']))
-                auto_y = round(1.2 * (buffer - self.extreme_frame_corners['min_y']))
-                auto_w = round(1.2 * (frame_i.shape[1] + self.extreme_frame_corners['max_x']))
-                auto_h = round(1.2 * (frame_i.shape[0] + self.extreme_frame_corners['max_y']))
+                # TODO: fix this
+                auto_x = math.floor(buffer - abs(self.extreme_frame_corners['min_x']))
+                auto_y = math.floor(buffer - abs(self.extreme_frame_corners['min_y']))
+                auto_w = math.ceil(transformed.shape[1] - 1 - (buffer - self.extreme_frame_corners['max_x']))
+                auto_h = math.ceil(transformed.shape[0] - 1 - (buffer - self.extreme_frame_corners['max_y']))
                 transformed = transformed[auto_y:auto_y + auto_h, auto_x:auto_x + auto_w]
 
             if layer_func is not None:
-                if i > 1:
+                if prev_frame is not None:
                     transformed = layer_func(transformed, prev_frame)
 
                 prev_frame = transformed[:]
@@ -451,7 +448,8 @@ class VidStab:
 
         if self.auto_border_flag:
             self._set_extreme_corners(self.frame_queue[0])
-            border_size = round(max(self.extreme_frame_corners.values()))
+            abs_extreme_corners = [abs(x) for x in self.extreme_frame_corners.values()]
+            border_size = math.ceil(max(abs_extreme_corners))
 
         self._apply_transforms(output_path, max_frames, smoothing_window,
                                border_type=border_type, border_size=border_size, layer_func=layer_func,
