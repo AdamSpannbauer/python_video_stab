@@ -1,4 +1,4 @@
-# Python Video Stabilization <img src='https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo.png?raw=true' width=125 align='right'/>
+# Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/readme/vidstab_logo.png' width=125 align='right'/>
 
 ![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) 
 [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab)
@@ -12,7 +12,7 @@
  
  Input                           |  Output
 :-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true)    |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/input_ostrich.gif)    |  ![](https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif)
  
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
@@ -113,7 +113,7 @@ plt.show()
 
 Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png)
 
 ### Using borders
 
@@ -142,11 +142,11 @@ stabilizer.stabilize(input_path='input_video.mov',
 
 `border_size=0`                  |  `border_size=100`
 :-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)   |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/wide_stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif)   |  ![](https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif)
 
 `border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/reflect_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/replicate_stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif)
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
@@ -182,7 +182,7 @@ stabilizer.stabilize(input_path=input_vid,
 
 `layer_func=vidstab.layer_overlay`     |  `layer_func=vidstab.layer_blend`
 :--------------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trail_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/blend_stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif)
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
