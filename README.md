@@ -130,6 +130,10 @@ stabilizer.stabilize(input_path='input_video.mov',
                      output_path='wide_stable_video.avi', 
                      border_type='black', 
                      border_size=100)
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='wide_stable_video.avi', 
+                     border_type='black', 
+                     border_size='auto')
 
 # filled in borders
 stabilizer.stabilize(input_path='input_video.mov', 
@@ -140,9 +144,22 @@ stabilizer.stabilize(input_path='input_video.mov',
                      border_type='replicate')
 ```
 
-`border_size=0`                  |  `border_size=100`
-:-------------------------------:|:-------------------------:
-![](https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif)   |  ![](https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif)
+<table>
+  <tr>
+    <td><p align='center'><code>border_size=0</code></p></td>
+    <td><p align='center'><code>border_size=100</code></p></td>
+  </tr>
+  <tr>
+    <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif'></p></td>
+    <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif'></p></td>
+  </tr>
+  <tr>
+    <td colspan="2"><p align='center'><code>border_size='auto'</code></p></td>
+  </tr>
+  <tr>
+    <td colspan="2"><p align='center'><img width='45%' src='https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif'></p></td>
+  </tr>
+</table>
 
 `border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
