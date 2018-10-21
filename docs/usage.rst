@@ -166,7 +166,7 @@ Example
                         max_frames=1000,
                         playback=True)
 
-.. image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/webcam_stable.gif?raw=true
+.. image:: https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif
     :width: 50%
     :align: center
 
@@ -178,11 +178,11 @@ Example
 .. |cv2.VideoCapture| replace:: ``cv2.VideoCapture``
 .. _cv2.VideoCapture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html
 
-.. |image3| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true
-.. |image4| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true
-.. |image5| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true
-.. |image6| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/wide_stable_ostrich.gif?raw=true
-.. |image7| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/reflect_stable_ostrich.gif?raw=true
-.. |image8| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/replicate_stable_ostrich.gif?raw=true
-.. |image9| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trail_stable_ostrich.gif?raw=true
-.. |image10| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/blend_stable_ostrich.gif?raw=true
+.. |image3| image:: https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png
+.. |image4| image:: https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png
+.. |image5| image:: https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif
+.. |image6| image:: https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif
+.. |image7| image:: https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif
+.. |image8| image:: https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif
+.. |image9| image:: https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif
+.. |image10| image:: https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif
