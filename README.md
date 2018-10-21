@@ -203,3 +203,32 @@ stabilizer.stabilize(input_path=input_vid,
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
+
+### Working with live video
+
+The `VidStab` class can also process live video streams.  The underlying video reader is `cv2.VideoCapture`([documentation](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html)).
+The relevant snippet from the documentation for stabilizing live video is:
+
+> *Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.*
+
+The `input_path` argument of the `VidStab.stabilize` method can accept integers that will be passed directly to `cv2.VideoCapture` as a device index.  You can also pass a device index to the `--input` argument for command line usage.
+
+One notable difference between live feeds and video files is that webcam footage does not have a definite end point.
+The options for ending a live video stabilization are to set the max length using the `max_frames` argument or to manually stop the process by pressing the <kbd>Esc</kbd> key or the <kbd>Q</kbd> key.
+If `max_frames` is not provided then no progress bar can be displayed for live video stabilization processes.
+
+#### Example
+
+```python
+from vidstab import VidStab
+
+stabilizer = VidStab()
+stabilizer.stabilize(input_path=0,
+                     output_path='stable_webcam.avi',
+                     max_frames=1000,
+                     playback=True)
+```
+
+<p align='center'>
+  <img width='50%' src='https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif'>
+</p>
