@@ -1,4 +1,4 @@
-# Python Video Stabilization <img src='https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/vidstab_logo.png?raw=true' width=125 align='right'/>
+# Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/readme/vidstab_logo.png' width=125 align='right'/>
 
 ![](https://img.shields.io/badge/Lifecycle-Maturing-yellow.svg) 
 [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab)
@@ -12,7 +12,7 @@
  
  Input                           |  Output
 :-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true)    |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/input_ostrich.gif)    |  ![](https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif)
  
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
@@ -113,7 +113,7 @@ plt.show()
 
 Trajectories                     |  Transforms
 :-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trajectory_plot.png?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/transforms_plot.png?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png)
 
 ### Using borders
 
@@ -130,6 +130,10 @@ stabilizer.stabilize(input_path='input_video.mov',
                      output_path='wide_stable_video.avi', 
                      border_type='black', 
                      border_size=100)
+stabilizer.stabilize(input_path='input_video.mov', 
+                     output_path='wide_stable_video.avi', 
+                     border_type='black', 
+                     border_size='auto')
 
 # filled in borders
 stabilizer.stabilize(input_path='input_video.mov', 
@@ -140,13 +144,26 @@ stabilizer.stabilize(input_path='input_video.mov',
                      border_type='replicate')
 ```
 
-`border_size=0`                  |  `border_size=100`
-:-------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true)   |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/wide_stable_ostrich.gif?raw=true)
+<table>
+  <tr>
+    <td><p align='center'><code>border_size=0</code></p></td>
+    <td><p align='center'><code>border_size=100</code></p></td>
+  </tr>
+  <tr>
+    <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif'></p></td>
+    <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif'></p></td>
+  </tr>
+  <tr>
+    <td colspan="2"><p align='center'><code>border_size='auto'</code></p></td>
+  </tr>
+  <tr>
+    <td colspan="2"><p align='center'><img width='45%' src='https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif'></p></td>
+  </tr>
+</table>
 
 `border_type='reflect'`                 |  `border_type='replicate'`
 :--------------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/reflect_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/replicate_stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif)
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
@@ -182,7 +199,36 @@ stabilizer.stabilize(input_path=input_vid,
 
 `layer_func=vidstab.layer_overlay`     |  `layer_func=vidstab.layer_blend`
 :--------------------------------------:|:-------------------------:
-![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/trail_stable_ostrich.gif?raw=true)  |  ![](https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/blend_stable_ostrich.gif?raw=true)
+![](https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif)
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
+
+### Working with live video
+
+The `VidStab` class can also process live video streams.  The underlying video reader is `cv2.VideoCapture`([documentation](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html)).
+The relevant snippet from the documentation for stabilizing live video is:
+
+> *Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.*
+
+The `input_path` argument of the `VidStab.stabilize` method can accept integers that will be passed directly to `cv2.VideoCapture` as a device index.  You can also pass a device index to the `--input` argument for command line usage.
+
+One notable difference between live feeds and video files is that webcam footage does not have a definite end point.
+The options for ending a live video stabilization are to set the max length using the `max_frames` argument or to manually stop the process by pressing the <kbd>Esc</kbd> key or the <kbd>Q</kbd> key.
+If `max_frames` is not provided then no progress bar can be displayed for live video stabilization processes.
+
+#### Example
+
+```python
+from vidstab import VidStab
+
+stabilizer = VidStab()
+stabilizer.stabilize(input_path=0,
+                     output_path='stable_webcam.avi',
+                     max_frames=1000,
+                     playback=True)
+```
+
+<p align='center'>
+  <img width='50%' src='https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif'>
+</p>

@@ -33,8 +33,8 @@ OPENCV <http://nghiaho.com/?p=2093>`__.
 
 |VideoLink|_ *used with permission from* |HappyLivingLink|_
 
-.. |image1| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/input_ostrich.gif?raw=true
-.. |image2| image:: https://github.com/AdamSpannbauer/python_video_stab/blob/master/readme/stable_ostrich.gif?raw=true
+.. |image1| image:: https://s3.amazonaws.com/python-vidstab/readme/input_ostrich.gif
+.. |image2| image:: https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif
 
 .. _VideoLink: https://www.youtube.com/watch?v=9pypPqbV_GM
 .. _HappyLivingLink: https://www.facebook.com/happylivinginfl/
