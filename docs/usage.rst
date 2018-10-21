@@ -92,6 +92,14 @@ Using borders
 | |image5|          | |image6|            |
 +-------------------+---------------------+
 
++----------------------------------------+
+| ``border_size='auto'``                 |
++========================================+
+| |image11|                              |
++----------------------------------------+
+
+|
+
 +---------------------------+-----------------------------+
 | ``border_type='reflect'`` | ``border_type='replicate'`` |
 +===========================+=============================+
@@ -186,3 +194,5 @@ Example
 .. |image8| image:: https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif
 .. |image9| image:: https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif
 .. |image10| image:: https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif
+.. |image11| image:: https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif
+  :width: 45%
