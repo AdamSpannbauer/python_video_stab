@@ -1,8 +1,4 @@
 
-.. image:: _static/vidstab_logo_small.png
-    :alt: vidstab: Python Video Stabilization
-    :align: right
-
 .. image:: https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master
     :target: https://travis-ci.org/AdamSpannbauer/python_video_stab
 
@@ -13,9 +9,7 @@
    :target: https://codeclimate.com/github/AdamSpannbauer/python_video_stab/maintainability
 
 .. image:: https://pypip.in/v/vidstab/badge.png
-    :target: https://crate.io/packages/vidstab/
-
-Python video stabilization using OpenCV.
+    :target: https://pypi.org/project/vidstab/
 
 This module contains a single class (``VidStab``) used for video
 stabilization. This class is based on the work presented by Nghia Ho in
