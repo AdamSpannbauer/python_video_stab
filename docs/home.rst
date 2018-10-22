@@ -31,3 +31,4 @@ OPENCV <http://nghiaho.com/?p=2093>`__.
 .. _HappyLivingLink: https://www.facebook.com/happylivinginfl/
 .. |VideoLink| replace:: *Video*
 .. |HappyLivingLink| replace:: *HappyLiving*
+
