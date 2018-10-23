@@ -77,7 +77,7 @@ pygments_style = 'sphinx'
 #
 html_title = 'Python Video Stabilization with OpenCV'
 html_theme = 'sphinx_rtd_theme'
-html_logo = '_static/vidstab_logo_hex.png'
+html_logo = '_static/vidstab_logo.png'
 html_favicon = '_static/vidstab_logo.ico'
 html_theme_options = {
     'logo_only': True,
