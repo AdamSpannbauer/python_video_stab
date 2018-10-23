@@ -11,6 +11,7 @@ input_video.mov
 *.mp4
 *.png
 *.mov
+*.key
 
 # C extensions
 *.so
