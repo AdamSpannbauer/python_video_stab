@@ -1,4 +1,4 @@
-# Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/readme/vidstab_logo.png' width=125 align='right'/>
+# Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/logo/vidstab_logo_hex.png' width=125 align='right'/>
 
 [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab)
 [![Coverage Status](https://img.shields.io/codecov/c/github/AdamSpannbauer/python_video_stab/master.svg)](https://codecov.io/github/AdamSpannbauer/python_video_stab?branch=master)
