@@ -20,7 +20,7 @@ setup(name='vidstab',
       install_requires=[
           'numpy',
           'pandas',
-          'imutils',
+          'imutils>=0.5.2',
           'progress',
           'matplotlib',
       ],
