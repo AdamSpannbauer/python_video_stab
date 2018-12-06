@@ -5,6 +5,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/f3a17d211a2a437d21b1/maintainability)](https://codeclimate.com/github/AdamSpannbauer/python_video_stab/maintainability)
 [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://pypi.org/project/vidstab/)
 [![Last Commit](https://img.shields.io/github/last-commit/AdamSpannbauer/python_video_stab.svg)](https://github.com/AdamSpannbauer/python_video_stab/commits/master)
+[![Downloads](https://pepy.tech/badge/vidstab)](https://pepy.tech/project/vidstab)
 
  Python video stabilization using OpenCV. 
  
