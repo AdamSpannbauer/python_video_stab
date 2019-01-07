@@ -1,4 +1,40 @@
 import math
+import cv2
+import numpy as np
+from . import vidstab_utils
+
+
+def extreme_corners(frame, transforms):
+    """Calculate max drift of each frame corner caused by stabilizing transforms
+
+    :param frame: frame from video being stabilized
+    :param transforms: VidStab transforms attribute
+    :return: dictionary of most extreme x and y values caused by transformations
+    """
+    h, w = frame.shape[:2]
+    frame_corners = np.array([[0, 0],  # top left
+                              [0, h - 1],  # bottom left
+                              [w - 1, 0],  # top right
+                              [w - 1, h - 1]],  # bottom right
+                             dtype='float32')
+    frame_corners = np.array([frame_corners])
+
+    min_x = min_y = max_x = max_y = 0
+    for i in range(transforms.shape[0]):
+        transform = transforms[i, :]
+        transform_mat = vidstab_utils.build_transformation_matrix(transform)
+        transformed_frame_corners = cv2.transform(frame_corners, transform_mat)
+
+        delta_corners = transformed_frame_corners - frame_corners
+
+        delta_y_corners = delta_corners[0][:, 1].tolist()
+        delta_x_corners = delta_corners[0][:, 0].tolist()
+        min_x = min([min_x] + delta_x_corners)
+        min_y = min([min_y] + delta_y_corners)
+        max_x = max([max_x] + delta_x_corners)
+        max_y = max([max_y] + delta_y_corners)
+
+    return {'min_x': min_x, 'min_y': min_y, 'max_x': max_x, 'max_y': max_y}
 
 
 def auto_border_start(min_corner_point, buffer):

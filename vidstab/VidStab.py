@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from . import general_utils
 from . import vidstab_utils
 from . import plot_utils
-from .auto_border_utils import auto_border_crop
+from . import auto_border_utils
 
 
 class VidStab:
@@ -105,32 +105,6 @@ class VidStab:
         else:
             # gen cumsum for new row and append
             self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
-
-    def _set_extreme_corners(self, frame):
-        h, w = frame.shape[:2]
-        frame_corners = np.array([[0, 0],  # top left
-                                  [0, h - 1],  # bottom left
-                                  [w - 1, 0],  # top right
-                                  [w - 1, h - 1]],  # bottom right
-                                 dtype='float32')
-        frame_corners = np.array([frame_corners])
-
-        min_x = min_y = max_x = max_y = 0
-        for i in range(self.transforms.shape[0]):
-            transform = self.transforms[i, :]
-            transform_mat = vidstab_utils.build_transformation_matrix(transform)
-            transformed_frame_corners = cv2.transform(frame_corners, transform_mat)
-
-            delta_corners = transformed_frame_corners - frame_corners
-
-            delta_y_corners = delta_corners[0][:, 1].tolist()
-            delta_x_corners = delta_corners[0][:, 0].tolist()
-            min_x = min([min_x] + delta_x_corners)
-            min_y = min([min_y] + delta_y_corners)
-            max_x = max([max_x] + delta_x_corners)
-            max_y = max([max_y] + delta_y_corners)
-
-        self.extreme_frame_corners = {'min_x': min_x, 'min_y': min_y, 'max_x': max_x, 'max_y': max_y}
 
     def _populate_queues(self, smoothing_window, max_frames):
         n = min([smoothing_window, max_frames])
@@ -271,7 +245,7 @@ class VidStab:
             buffer = border_size + neg_border_size
 
             if self.auto_border_flag:
-                transformed = auto_border_crop(transformed, self.extreme_frame_corners, buffer)
+                transformed = auto_border_utils.auto_border_crop(transformed, self.extreme_frame_corners, buffer)
 
             if layer_func is not None:
                 if prev_frame is not None:
@@ -448,7 +422,7 @@ class VidStab:
             self._populate_queues(smoothing_window, max_frames)
 
         if self.auto_border_flag:
-            self._set_extreme_corners(self.frame_queue[0])
+            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
             abs_extreme_corners = [abs(x) for x in self.extreme_frame_corners.values()]
             border_size = math.ceil(max(abs_extreme_corners))
 
