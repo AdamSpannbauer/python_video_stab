@@ -44,20 +44,17 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, message='Stab
     >>> # use bar methods...
     Stabilizing |█████████████████████████▋      | 80%
     """
-    if show_progress:
-        # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-        if frame_count <= 0 and max_frames == float('inf'):
-            bar = None
-            print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
-        else:
-            if frame_count <= 0 or frame_count > max_frames:
-                max_bar = max_frames
-            else:
-                max_bar = frame_count
-            bar = IncrementalBar(message,
-                                 max=max_bar,
-                                 suffix='%(percent)d%%')
-    else:
-        bar = None
+    if not show_progress:
+        return None
 
-    return bar
+    # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
+    if frame_count <= 0 and max_frames == float('inf'):
+        print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
+        return None
+
+    if frame_count <= 0 or frame_count > max_frames:
+        max_bar = max_frames
+    else:
+        max_bar = frame_count
+
+    return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
