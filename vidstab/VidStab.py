@@ -23,6 +23,7 @@ import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
 from . import general_utils
 from . import vidstab_utils
+from .auto_border_utils import auto_border_crop
 
 
 class VidStab:
@@ -265,11 +266,7 @@ class VidStab:
             buffer = border_size + neg_border_size
 
             if self.auto_border_flag:
-                auto_x = math.floor(buffer - abs(self.extreme_frame_corners['min_x']))
-                auto_y = math.floor(buffer - abs(self.extreme_frame_corners['min_y']))
-                auto_w = math.ceil(transformed.shape[1] - 1 - (buffer - self.extreme_frame_corners['max_x']))
-                auto_h = math.ceil(transformed.shape[0] - 1 - (buffer - self.extreme_frame_corners['max_y']))
-                transformed = transformed[auto_y:auto_y + auto_h, auto_x:auto_x + auto_w]
+                transformed = auto_border_crop(transformed, self.extreme_frame_corners, buffer)
 
             if layer_func is not None:
                 if prev_frame is not None:
