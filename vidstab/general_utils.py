@@ -31,13 +31,13 @@ def bfill_rolling_mean(arr, n=30):
     return np.vstack((bfill, trunc_roll_mean))
 
 
-def init_progress_bar(frame_count, max_frames, show_progress=True, message='Stabilizing'):
+def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False):
     """Helper to create progress bar for stabilizing processes
 
     :param frame_count: input video's cv2.CAP_PROP_FRAME_COUNT
     :param max_frames: user provided max number of frames to process
     :param show_progress: user input if bar should be created
-    :param message: progress bar label
+    :param gen_all: if False progress message is 'Stabilizing'; otherwise 'Generating Transforms'
     :return: a progress.bar.IncrementalBar
 
     >>> init_progress_bar(30, float('inf'))
@@ -57,4 +57,16 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, message='Stab
     else:
         max_bar = frame_count
 
+    if gen_all:
+        message = 'Generating Transforms'
+    else:
+        message = 'Stabilizing'
+
     return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
+
+
+def update_progress_bar(bar, show_progress=True):
+    if show_progress and bar is not None:
+        bar.next()
+
+    return bar

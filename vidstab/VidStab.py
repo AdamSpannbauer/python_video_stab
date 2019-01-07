@@ -142,6 +142,12 @@ class VidStab:
             self.frame_queue.append(frame)
             self.frame_queue_inds.append(i)
 
+    def _update_frame_queue_inds(self):
+        if not self.frame_queue_inds:
+            self.frame_queue_inds.append(0)
+        else:
+            self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+
     def _gen_next_raw_transform(self):
         current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
 
@@ -158,14 +164,24 @@ class VidStab:
         self._raw_transforms.append(transform_i[:])
         self._update_trajectory(transform_i)
 
-    def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
-        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
+    def _init_is_complete(self, gen_all, max_frames, smoothing_window):
         if gen_all:
-            message = 'Generating Transforms'
-        else:
-            message = 'Stabilizing'
-        bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, message)
+            return False
+
+        if self.frame_queue_inds[-1] >= max_frames - 1:
+            return True
+
+        if self.frame_queue_inds[-1] >= smoothing_window - 1:
+            return True
+
+        return False
+
+    def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
+        if max_frames is None:
+            max_frames = float('inf')
+
+        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, gen_all)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -179,34 +195,22 @@ class VidStab:
         self.frame_queue.append(prev_frame)
         self.prev_gray = prev_frame_gray[:]
 
-        if max_frames is None:
-            max_frames = float('inf')
-
-        # iterate through frames count
-        grabbed_frame = True
-
-        while grabbed_frame:
+        # iterate through frames
+        while True:
             # read current frame
             grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
-                if show_progress and bar is not None:
-                    bar.next()
+                general_utils.update_progress_bar(bar, show_progress)
                 break
 
             self.frame_queue.append(cur_frame)
-            if not self.frame_queue_inds:
-                self.frame_queue_inds.append(0)
-            else:
-                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+            self._update_frame_queue_inds()
             self._gen_next_raw_transform()
 
-            if not gen_all:
-                if (self.frame_queue_inds[-1] >= max_frames - 1 or
-                        self.frame_queue_inds[-1] >= smoothing_window - 1):
-                    break
+            if self._init_is_complete(gen_all, max_frames, smoothing_window):
+                break
 
-            if show_progress and bar is not None:
-                bar.next()
+            general_utils.update_progress_bar(bar, show_progress)
 
         self._gen_transforms(smoothing_window)
 
