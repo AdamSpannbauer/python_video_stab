@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+
 import vidstab.general_utils as utils
 
 

@@ -3,6 +3,7 @@ import pickle
 from urllib.request import urlopen, urlretrieve
 import pytest
 import numpy as np
+
 from vidstab import VidStab
 
 # excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python

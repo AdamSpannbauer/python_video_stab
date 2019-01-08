@@ -1,8 +1,9 @@
 import pytest
 import numpy as np
 import cv2
-import vidstab.vidstab_utils as utils
 import imutils.feature.factories as kp_factory
+
+import vidstab.vidstab_utils as utils
 
 kp_detector = kp_factory.FeatureDetector_create('GFTT')
 frame_1 = np.zeros((200, 200, 3), dtype='uint8')

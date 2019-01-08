@@ -2,9 +2,10 @@ import tempfile
 from urllib.request import urlretrieve
 import cv2
 import numpy as np
+import imutils
+
 from vidstab import layer_overlay
 from vidstab.vidstab_utils import border_frame
-import imutils
 
 
 tmp_dir = tempfile.TemporaryDirectory()
