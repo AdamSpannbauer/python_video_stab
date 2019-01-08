@@ -214,28 +214,30 @@ class VidStab:
             'extreme_frame_corners': self.extreme_frame_corners,
             'auto_border_flag': self.auto_border_flag
         }
+
         layer_options = {
             'layer_func': layer_func,
             'prev_frame': None
         }
+
         while len(self.frame_queue) > 0:
             general_utils.update_progress_bar(progress_bar)
 
             grabbed_frame, next_frame = self.vid_cap.read()
-            if grabbed_frame:
-                self.frame_queue.append(next_frame)
-                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
-                self._gen_next_raw_transform()
-                self._gen_transforms(smoothing_window=smoothing_window)
-            else:
+            if not grabbed_frame:
                 break
+
+            self.frame_queue.append(next_frame)
+            self._update_frame_queue_inds()
+            self._gen_next_raw_transform()
+            self._gen_transforms(smoothing_window=smoothing_window)
 
             i = self.frame_queue_inds.popleft()
-            frame_i = self.frame_queue.popleft()
-            transform_i = self.transforms[i, :]
-
             if i >= max_frames:
                 break
+
+            frame_i = self.frame_queue.popleft()
+            transform_i = self.transforms[i, :]
 
             transformed = vidstab_utils.transform_frame(frame_i,
                                                         transform_i,
@@ -291,8 +293,7 @@ class VidStab:
                                     gen_all=True,
                                     show_progress=show_progress)
 
-        if bar:
-            bar.finish()
+        general_utils.update_progress_bar(bar, finish=True)
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
                          border_type='black', border_size=0, layer_func=None, show_progress=True, playback=False):
