@@ -61,20 +61,20 @@ def auto_border_size(frame_dim, extreme_corner, buffer):
     return math.ceil(frame_dim - (buffer - extreme_corner))
 
 
-def auto_border_crop(frame, extreme_frame_corners, buffer):
+def auto_border_crop(frame, extreme_frame_corners, border_size):
     """Crop frame for auto border in vidstab process
 
     :param frame: frame to be cropped
     :param extreme_frame_corners: extreme_frame_corners attribute of vidstab object
-    :param buffer: determined by vidstab process bordering
+    :param border_size: min border_size determined by extreme_frame_corners in vidstab process
     :return: cropped frame determined by auto border process
     """
     frame_h, frame_w = frame.shape[:2]
 
-    x = auto_border_start(extreme_frame_corners['min_x'], buffer)
-    y = auto_border_start(extreme_frame_corners['min_y'], buffer)
+    x = auto_border_start(extreme_frame_corners['min_x'], border_size)
+    y = auto_border_start(extreme_frame_corners['min_y'], border_size)
 
-    w = auto_border_size(frame_w, extreme_frame_corners['max_x'], buffer)
-    h = auto_border_size(frame_h, extreme_frame_corners['max_y'], buffer)
+    w = auto_border_size(frame_w, extreme_frame_corners['max_x'], border_size)
+    h = auto_border_size(frame_h, extreme_frame_corners['max_y'], border_size)
 
     return frame[y:y + h, x:x + w]

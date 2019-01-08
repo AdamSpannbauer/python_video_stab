@@ -23,8 +23,9 @@ import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
 from . import general_utils
 from . import vidstab_utils
-from . import plot_utils
+from . import border_utils
 from . import auto_border_utils
+from . import plot_utils
 
 
 class VidStab:
@@ -206,11 +207,7 @@ class VidStab:
         if border_type not in ['black', 'reflect', 'replicate']:
             raise ValueError('Invalid border type')
 
-        if border_size < 0:
-            neg_border_size = 100 + abs(border_size)
-            border_size = 100
-        else:
-            neg_border_size = 0
+        border_size, neg_border_size = border_utils.functional_border_sizes(border_size)
 
         grabbed_frame = True
         prev_frame = None
@@ -242,10 +239,8 @@ class VidStab:
                                          bordered_frame.shape[:2][::-1],
                                          borderMode=border_mode)
 
-            buffer = border_size + neg_border_size
-
-            if self.auto_border_flag:
-                transformed = auto_border_utils.auto_border_crop(transformed, self.extreme_frame_corners, buffer)
+            transformed = border_utils.crop_frame(transformed, border_size, neg_border_size,
+                                                  self.extreme_frame_corners, self.auto_border_flag)
 
             if layer_func is not None:
                 if prev_frame is not None:
