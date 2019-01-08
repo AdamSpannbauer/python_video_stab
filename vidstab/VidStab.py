@@ -1,24 +1,12 @@
 """VidStab: a class for stabilizing video files"""
 
-try:
-    import cv2
-except ModuleNotFoundError:
-    print("""
-    No python bindings for OpenCV found when attempting to `import cv2`.
-    If you have not installed OpenCV you can install with:
-        
-        pip install vidstab[cv2]
-        
-    If you'd prefer to install OpenCV from source you can see the docs here:
-        https://docs.opencv.org/3.4.1/da/df6/tutorial_py_table_of_contents_setup.html
-    """)
-    raise
+from .cv2_utils import safe_import_cv2
+safe_import_cv2()  # inform user of pip install vidstab[cv2] if ModuleNotFoundError
 
 import time
-import math
 from collections import deque
+import cv2
 import numpy as np
-import imutils
 import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
 from . import general_utils
@@ -26,7 +14,6 @@ from . import vidstab_utils
 from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
-from .layer_utils import apply_layer_func
 
 
 class VidStab:
@@ -82,15 +69,12 @@ class VidStab:
         self._smoothing_window = None
         self._raw_transforms = []
         self._trajectory = []
-        self.trajectory = None
-        self.smoothed_trajectory = None
-        self.transforms = None
-        self.frame_queue = None
-        self.frame_queue_inds = None
-        self.prev_kps = None
-        self.prev_gray = None
-        self.vid_cap = None
-        self.writer = None
+        self.trajectory = self.smoothed_trajectory = self.transforms = None
+
+        self.frame_queue = self.frame_queue_inds = None
+        self.prev_kps = self.prev_gray = None
+
+        self.vid_cap = self.writer = None
 
         self.auto_border_flag = False
         self.extreme_frame_corners = {'min_x': 0, 'min_y': 0, 'max_x': 0, 'max_y': 0}
@@ -318,7 +302,7 @@ class VidStab:
         :param border_size: Size of border in output.
                             Positive values will pad video equally on all sides,
                             negative values will crop video equally on all sides,
-                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames.
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
         :param layer_func: Function to layer frames in output.
                            The function should accept 2 parameters: foreground & background.
                            The current frame of video will be passed as foreground,
@@ -356,7 +340,7 @@ class VidStab:
         :param border_size: Size of border in output.
                             Positive values will pad video equally on all sides,
                             negative values will crop video equally on all sides,
-                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames.
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
         :param layer_func: Function to layer frames in output.
                            The function should accept 2 parameters: foreground & background.
                            The current frame of video will be passed as foreground,
