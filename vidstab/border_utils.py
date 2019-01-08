@@ -49,8 +49,3 @@ def crop_frame(frame, border_options):
                               border_options['neg_border_size']:(frame_w - border_options['neg_border_size'])]
 
     return cropped_frame
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
