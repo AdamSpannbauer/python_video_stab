@@ -213,8 +213,7 @@ class VidStab:
         grabbed_frame = True
         prev_frame = None
         while len(self.frame_queue) > 0 or grabbed_frame:
-            if progress_bar:
-                progress_bar.next()
+            general_utils.update_progress_bar(progress_bar)
 
             grabbed_frame, next_frame = self.vid_cap.read()
             if grabbed_frame:
@@ -270,9 +269,7 @@ class VidStab:
             self.writer.write(transformed)
 
         self.writer.release()
-        if progress_bar:
-            progress_bar.next()
-            progress_bar.finish()
+        general_utils.update_progress_bar(progress_bar, finish=True)
 
     def _gen_transforms(self, smoothing_window):
         self.trajectory = np.array(self._trajectory)

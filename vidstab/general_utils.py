@@ -11,8 +11,8 @@ def bfill_rolling_mean(arr, n=30):
 
     >>> arr = np.array([[1, 2, 3], [4, 5, 6]])
     >>> bfill_rolling_mean(arr, n=2)
-    array([[ 2.5,  3.5,  4.5],
-           [ 2.5,  3.5,  4.5]])
+    array([[2.5, 3.5, 4.5],
+           [2.5, 3.5, 4.5]])
     """
     if arr.shape[0] < n:
         raise ValueError('arr.shape[0] cannot be less than n')
@@ -40,9 +40,8 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False
     :param gen_all: if False progress message is 'Stabilizing'; otherwise 'Generating Transforms'
     :return: a progress.bar.IncrementalBar
 
-    >>> init_progress_bar(30, float('inf'))
-    >>> # use bar methods...
-    Stabilizing |█████████████████████████▋      | 80%
+    >>> progress_bar = init_progress_bar(30, float('inf'))
+    >>> # Stabilizing |█████████████████████████▋      | 80%
     """
     if not show_progress:
         return None
@@ -65,8 +64,21 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False
     return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
 
 
-def update_progress_bar(bar, show_progress=True):
+def update_progress_bar(bar, show_progress=True, finish=False):
+    """helper to handle progress bar updates in vidstab process
+
+    :param bar: progress bar to be updated
+    :param show_progress: user set flag of whether or not to display progress bar
+    :param finish: finish progress bar
+    :return: updated progress bar
+    """
     if show_progress and bar is not None:
         bar.next()
 
-    return bar
+        if finish:
+            bar.finish()
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
