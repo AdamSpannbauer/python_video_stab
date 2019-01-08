@@ -205,14 +205,20 @@ class VidStab:
     def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
                           border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
 
-        if border_type not in ['black', 'reflect', 'replicate']:
-            raise ValueError('Invalid border type')
+        functional_border_size, functional_neg_border_size = border_utils.functional_border_sizes(border_size)
 
-        border_size, neg_border_size = border_utils.functional_border_sizes(border_size)
-
-        grabbed_frame = True
-        prev_frame = None
-        while len(self.frame_queue) > 0 or grabbed_frame:
+        border_options = {
+            'border_type': border_type,
+            'border_size': functional_border_size,
+            'neg_border_size': functional_neg_border_size,
+            'extreme_frame_corners': self.extreme_frame_corners,
+            'auto_border_flag': self.auto_border_flag
+        }
+        layer_options = {
+            'layer_func': layer_func,
+            'prev_frame': None
+        }
+        while len(self.frame_queue) > 0:
             general_utils.update_progress_bar(progress_bar)
 
             grabbed_frame, next_frame = self.vid_cap.read()
@@ -221,6 +227,8 @@ class VidStab:
                 self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
                 self._gen_next_raw_transform()
                 self._gen_transforms(smoothing_window=smoothing_window)
+            else:
+                break
 
             i = self.frame_queue_inds.popleft()
             frame_i = self.frame_queue.popleft()
@@ -229,24 +237,14 @@ class VidStab:
             if i >= max_frames:
                 break
 
-            # Transform frame
-            transform = vidstab_utils.build_transformation_matrix(transform_i)
+            transformed = vidstab_utils.transform_frame(frame_i,
+                                                        transform_i,
+                                                        border_options['border_size'],
+                                                        border_options['border_type'])
 
-            bordered_frame, border_mode = vidstab_utils.border_frame(frame_i, border_size, border_type)
-
-            transformed = cv2.warpAffine(bordered_frame,
-                                         transform,
-                                         bordered_frame.shape[:2][::-1],
-                                         borderMode=border_mode)
-
-            # Post process
-            transformed = border_utils.crop_frame(transformed, border_size, neg_border_size,
-                                                  self.extreme_frame_corners, self.auto_border_flag)
-
-            if layer_func is not None:
-                transformed, prev_frame = apply_layer_func(transformed, prev_frame, layer_func)
-
-            transformed = transformed[:, :, :3]
+            transformed, layer_options = vidstab_utils.post_process_transformed_frame(transformed,
+                                                                                      border_options,
+                                                                                      layer_options)
 
             break_playback = general_utils.playback_video(transformed, playback, min([smoothing_window, max_frames]))
             if break_playback:
