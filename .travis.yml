@@ -9,6 +9,6 @@ install:
   - pip install pytest pytest-cov
   - pip install codecov
 script:
-  - pytest --cov=./
+  - pytest --cov=vidstab tests/
 after_success:
   - codecov -t 522baa9a-6d29-4939-a238-2150213fbf03

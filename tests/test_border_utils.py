@@ -27,4 +27,4 @@ def test_crop_frame():
     with pytest.raises(KeyError) as err:
         crop_frame(black_frame, border_options)
 
-    assert ""'extreme_frame_corners'"" in str(err.value)
+    assert 'extreme_frame_corners' in str(err.value)
