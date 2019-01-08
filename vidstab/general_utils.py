@@ -1,4 +1,6 @@
+import cv2
 import numpy as np
+import imutils
 from progress.bar import IncrementalBar
 
 
@@ -77,6 +79,22 @@ def update_progress_bar(bar, show_progress=True, finish=False):
 
         if finish:
             bar.finish()
+
+
+def playback_video(display_frame, playback_flag, delay, max_display_width=750):
+    if not playback_flag:
+        return False
+
+    if display_frame.shape[1] > max_display_width:
+        display_frame = imutils.resize(display_frame, width=max_display_width)
+
+    cv2.imshow('VidStab Playback ({} frame delay if using live video;'
+               ' press Q or ESC to quit)'.format(delay),
+               display_frame)
+    key = cv2.waitKey(1)
+
+    if key == ord("q") or key == 27:
+        return True
 
 
 if __name__ == '__main__':

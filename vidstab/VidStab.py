@@ -229,7 +229,7 @@ class VidStab:
             if i >= max_frames:
                 break
 
-            # build transformation matrix
+            # Transform frame
             transform = vidstab_utils.build_transformation_matrix(transform_i)
 
             bordered_frame, border_mode = vidstab_utils.border_frame(frame_i, border_size, border_type)
@@ -239,33 +239,23 @@ class VidStab:
                                          bordered_frame.shape[:2][::-1],
                                          borderMode=border_mode)
 
+            # Post process
             transformed = border_utils.crop_frame(transformed, border_size, neg_border_size,
                                                   self.extreme_frame_corners, self.auto_border_flag)
 
             if layer_func is not None:
                 transformed, prev_frame = apply_layer_func(transformed, prev_frame, layer_func)
 
-            # drop alpha layer of image
             transformed = transformed[:, :, :3]
 
-            if playback:
-                resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 1000]))
-                playback_frame = resized_transformed
-
-                cv2.imshow('VidStab Playback ({} frame delay if using live video;'
-                           ' press Q or ESC to quit)'.format(min([smoothing_window,
-                                                                 max_frames])),
-                           playback_frame)
-                key = cv2.waitKey(1)
-
-                if key == ord("q") or key == 27:
-                    break
+            break_playback = general_utils.playback_video(transformed, playback, min([smoothing_window, max_frames]))
+            if break_playback:
+                break
 
             if self.writer is None:
                 self._init_writer(output_path, transformed.shape[:2], output_fourcc,
                                   fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
 
-            # write frame to output video
             self.writer.write(transformed)
 
         self.writer.release()
