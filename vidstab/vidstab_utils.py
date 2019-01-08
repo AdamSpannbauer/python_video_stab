@@ -113,11 +113,11 @@ def post_process_transformed_frame(transformed_frame, border_options, layer_opti
     cropped_frame = border_utils.crop_frame(transformed_frame, border_options)
 
     if layer_options['layer_func'] is not None:
-        cropped_frame, prev_frame = layer_utils.apply_layer_func(cropped_frame,
-                                                                 layer_options['prev_frame'],
-                                                                 layer_options['layer_func'])
+        cropped_frame = layer_utils.apply_layer_func(cropped_frame,
+                                                     layer_options['prev_frame'],
+                                                     layer_options['layer_func'])
 
-        layer_options['prev_frame'] = prev_frame
+        layer_options['prev_frame'] = cropped_frame
 
     # drop alpha layer
     return cropped_frame[:, :, :3], layer_options

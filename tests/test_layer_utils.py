@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 import imutils
 
-from vidstab import layer_overlay
+from vidstab import layer_overlay, layer_blend
+from vidstab.layer_utils import apply_layer_func
 from vidstab.vidstab_utils import border_frame
 
 
@@ -65,3 +66,36 @@ def test_layer_overlay_rotated():
 
     assert np.allclose(overlay_1, overlay_1)
     assert np.allclose(overlay_2, overlay_2_expected)
+
+
+def apply_layer_func(cur_frame, prev_frame, layer_func):
+    """helper method to apply layering function in vidstab process
+
+    :param cur_frame: current frame to apply layer over prev_frame
+    :param prev_frame: previous frame to be layered over by cur_frame
+    :param layer_func: layering function to apply
+    :return: tuple of (layered_frames, prev_frame) where prev_frame is to be used in next layering operation
+    """
+    if prev_frame is not None:
+        cur_frame = layer_func(cur_frame, prev_frame)
+
+    prev_frame = cur_frame[:]
+
+    return cur_frame, prev_frame
+
+
+def test_apply_layer_func():
+    black_frame = np.zeros((100, 200, 3), dtype='uint8')
+    rand_frame = black_frame.copy()
+    add_random_circles(rand_frame)
+
+    layered_frame = apply_layer_func(rand_frame, None, layer_blend)
+    assert np.allclose(layered_frame, rand_frame)
+
+    layered_frame = apply_layer_func(rand_frame, black_frame, layer_blend)
+    expected_result = layer_blend(rand_frame, black_frame)
+    assert np.allclose(layered_frame, expected_result)
+
+
+if __name__ == '__main__':
+    test_apply_layer_func()
