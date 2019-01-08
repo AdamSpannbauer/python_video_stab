@@ -49,19 +49,15 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False
         return None
 
     # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-    if frame_count <= 0 and max_frames == float('inf'):
+    bad_frame_count = frame_count <= 0
+    use_max_frames = bad_frame_count or frame_count > max_frames
+
+    if bad_frame_count and max_frames == float('inf'):
         print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
         return None
 
-    if frame_count <= 0 or frame_count > max_frames:
-        max_bar = max_frames
-    else:
-        max_bar = frame_count
-
-    if gen_all:
-        message = 'Generating Transforms'
-    else:
-        message = 'Stabilizing'
+    max_bar = max_frames if use_max_frames else frame_count
+    message = 'Generating Transforms' if gen_all else 'Stabilizing'
 
     return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
 
