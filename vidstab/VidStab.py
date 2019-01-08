@@ -260,6 +260,7 @@ class VidStab:
 
         self.writer.release()
         general_utils.update_progress_bar(progress_bar, finish=True)
+        cv2.destroyAllWindows()
 
     def _gen_transforms(self, smoothing_window):
         self.trajectory = np.array(self._trajectory)
@@ -402,14 +403,11 @@ class VidStab:
 
         if self.auto_border_flag:
             self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
-            abs_extreme_corners = [abs(x) for x in self.extreme_frame_corners.values()]
-            border_size = math.ceil(max(abs_extreme_corners))
+            border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
         self._apply_transforms(output_path, max_frames, smoothing_window,
                                border_type=border_type, border_size=border_size, layer_func=layer_func,
                                playback=playback, output_fourcc=output_fourcc, progress_bar=bar)
-
-        cv2.destroyAllWindows()
 
     def plot_trajectory(self):
         """Plot video trajectory
