@@ -26,6 +26,7 @@ from . import vidstab_utils
 from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
+from .layer_utils import apply_layer_func
 
 
 class VidStab:
@@ -243,10 +244,7 @@ class VidStab:
                                                   self.extreme_frame_corners, self.auto_border_flag)
 
             if layer_func is not None:
-                if prev_frame is not None:
-                    transformed = layer_func(transformed, prev_frame)
-
-                prev_frame = transformed[:]
+                transformed, prev_frame = apply_layer_func(transformed, prev_frame, layer_func)
 
             # drop alpha layer of image
             transformed = transformed[:, :, :3]

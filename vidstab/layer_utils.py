@@ -33,3 +33,12 @@ def layer_blend(foreground, background, foreground_alpha=.6):
                     background, 1 - foreground_alpha, 0, background)
 
     return background
+
+
+def apply_layer_func(cur_frame, prev_frame, layer_func):
+    if prev_frame is not None:
+        cur_frame = layer_func(cur_frame, prev_frame)
+
+    prev_frame = cur_frame[:]
+
+    return cur_frame, prev_frame

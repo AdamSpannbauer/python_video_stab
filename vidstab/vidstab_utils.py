@@ -26,7 +26,7 @@ def border_frame(frame, border_size, border_type):
     :param frame: frame to apply border to
     :param border_size: int border size in number of pixels
     :param border_type: one of the following ['black', 'reflect', 'replicate']
-    :return: bordered version of frame
+    :return: bordered version of frame with alpha layer for frame overlay options
     """
     border_modes = {'black': cv2.BORDER_CONSTANT,
                     'reflect': cv2.BORDER_REFLECT,

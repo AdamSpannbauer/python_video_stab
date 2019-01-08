@@ -8,21 +8,21 @@ import matplotlib.pyplot as plt
 # download videos for testing
 tmp_dir = tempfile.TemporaryDirectory()
 
-# remote_ostrich_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
-# local_ostrich_vid = '{}/ostrich.mp4'.format(tmp_dir.name)
-# urlretrieve(remote_ostrich_vid, local_ostrich_vid)
-# local_vid = local_ostrich_vid
+remote_ostrich_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+local_ostrich_vid = '{}/ostrich.mp4'.format(tmp_dir.name)
+urlretrieve(remote_ostrich_vid, local_ostrich_vid)
+local_vid = local_ostrich_vid
 
-remote_skateline_vid = 'https://s3.amazonaws.com/python-vidstab/thrasher.mp4'
-local_skateline_vid = '{}/skateline.mp4'.format(tmp_dir.name)
-urlretrieve(remote_skateline_vid, local_skateline_vid)
-local_vid = local_skateline_vid
+# remote_skateline_vid = 'https://s3.amazonaws.com/python-vidstab/thrasher.mp4'
+# local_skateline_vid = '{}/skateline.mp4'.format(tmp_dir.name)
+# urlretrieve(remote_skateline_vid, local_skateline_vid)
+# local_vid = local_skateline_vid
 
 
 # set params for test stabilization
 input_path = local_vid
 border_type = 'black'
-border_size = 'auto'
+border_size = 50
 layer_func = layer_overlay
 playback = True
 
