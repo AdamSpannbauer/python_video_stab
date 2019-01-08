@@ -1,28 +1,19 @@
 """VidStab: a class for stabilizing video files"""
 
-try:
-    import cv2
-except ModuleNotFoundError:
-    print("""
-    No python bindings for OpenCV found when attempting to `import cv2`.
-    If you have not installed OpenCV you can install with:
-        
-        pip install vidstab[cv2]
-        
-    If you'd prefer to install OpenCV from source you can see the docs here:
-        https://docs.opencv.org/3.4.1/da/df6/tutorial_py_table_of_contents_setup.html
-    """)
-    raise
+from .cv2_utils import safe_import_cv2
+safe_import_cv2()  # inform user of pip install vidstab[cv2] if ModuleNotFoundError
 
 import time
-import math
 from collections import deque
+import cv2
 import numpy as np
-import imutils
 import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
 from . import general_utils
 from . import vidstab_utils
+from . import border_utils
+from . import auto_border_utils
+from . import plot_utils
 
 
 class VidStab:
@@ -78,15 +69,12 @@ class VidStab:
         self._smoothing_window = None
         self._raw_transforms = []
         self._trajectory = []
-        self.trajectory = None
-        self.smoothed_trajectory = None
-        self.transforms = None
-        self.frame_queue = None
-        self.frame_queue_inds = None
-        self.prev_kps = None
-        self.prev_gray = None
-        self.vid_cap = None
-        self.writer = None
+        self.trajectory = self.smoothed_trajectory = self.transforms = None
+
+        self.frame_queue = self.frame_queue_inds = None
+        self.prev_kps = self.prev_gray = None
+
+        self.vid_cap = self.writer = None
 
         self.auto_border_flag = False
         self.extreme_frame_corners = {'min_x': 0, 'min_y': 0, 'max_x': 0, 'max_y': 0}
@@ -104,32 +92,6 @@ class VidStab:
             # gen cumsum for new row and append
             self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
 
-    def _set_extreme_corners(self, frame):
-        h, w = frame.shape[:2]
-        frame_corners = np.array([[0, 0],  # top left
-                                  [0, h - 1],  # bottom left
-                                  [w - 1, 0],  # top right
-                                  [w - 1, h - 1]],  # bottom right
-                                 dtype='float32')
-        frame_corners = np.array([frame_corners])
-
-        min_x = min_y = max_x = max_y = 0
-        for i in range(self.transforms.shape[0]):
-            transform = self.transforms[i, :]
-            transform_mat = vidstab_utils.build_transformation_matrix(transform)
-            transformed_frame_corners = cv2.transform(frame_corners, transform_mat)
-
-            delta_corners = transformed_frame_corners - frame_corners
-
-            delta_y_corners = delta_corners[0][:, 1].tolist()
-            delta_x_corners = delta_corners[0][:, 0].tolist()
-            min_x = min([min_x] + delta_x_corners)
-            min_y = min([min_y] + delta_y_corners)
-            max_x = max([max_x] + delta_x_corners)
-            max_y = max([max_y] + delta_y_corners)
-
-        self.extreme_frame_corners = {'min_x': min_x, 'min_y': min_y, 'max_x': max_x, 'max_y': max_y}
-
     def _populate_queues(self, smoothing_window, max_frames):
         n = min([smoothing_window, max_frames])
 
@@ -140,6 +102,12 @@ class VidStab:
 
             self.frame_queue.append(frame)
             self.frame_queue_inds.append(i)
+
+    def _update_frame_queue_inds(self):
+        if not self.frame_queue_inds:
+            self.frame_queue_inds.append(0)
+        else:
+            self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
 
     def _gen_next_raw_transform(self):
         current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
@@ -157,14 +125,26 @@ class VidStab:
         self._raw_transforms.append(transform_i[:])
         self._update_trajectory(transform_i)
 
-    def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
-        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
+    def _init_is_complete(self, gen_all, max_frames, smoothing_window):
         if gen_all:
-            message = 'Generating Transforms'
-        else:
-            message = 'Stabilizing'
-        bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, message)
+            return False
+
+        if self.frame_queue_inds[-1] >= max_frames - 1:
+            return True
+
+        if self.frame_queue_inds[-1] >= smoothing_window - 1:
+            return True
+
+        return False
+
+    def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
+        self._smoothing_window = smoothing_window
+
+        if max_frames is None:
+            max_frames = float('inf')
+
+        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, gen_all)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -178,36 +158,24 @@ class VidStab:
         self.frame_queue.append(prev_frame)
         self.prev_gray = prev_frame_gray[:]
 
-        if max_frames is None:
-            max_frames = float('inf')
-
-        # iterate through frames count
-        grabbed_frame = True
-
-        while grabbed_frame:
+        # iterate through frames
+        while True:
             # read current frame
             grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
-                if show_progress and bar is not None:
-                    bar.next()
+                general_utils.update_progress_bar(bar, show_progress)
                 break
 
             self.frame_queue.append(cur_frame)
-            if not self.frame_queue_inds:
-                self.frame_queue_inds.append(0)
-            else:
-                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+            self._update_frame_queue_inds()
             self._gen_next_raw_transform()
 
-            if not gen_all:
-                if (self.frame_queue_inds[-1] >= max_frames - 1 or
-                        self.frame_queue_inds[-1] >= smoothing_window - 1):
-                    break
+            if self._init_is_complete(gen_all, max_frames, smoothing_window):
+                break
 
-            if show_progress and bar is not None:
-                bar.next()
+            general_utils.update_progress_bar(bar, show_progress)
 
-        self._gen_transforms(smoothing_window)
+        self._gen_transforms()
 
         return bar
 
@@ -220,94 +188,71 @@ class VidStab:
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
 
-    def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
-                          border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
+    def _apply_transforms(self, output_path, max_frames, output_fourcc='MJPG',
+                          border_type='black', border_size=0, layer_func=None,
+                          playback=False, progress_bar=None):
 
-        if border_type not in ['black', 'reflect', 'replicate']:
-            raise ValueError('Invalid border type')
+        functional_border_size, functional_neg_border_size = border_utils.functional_border_sizes(border_size)
 
-        if border_size < 0:
-            neg_border_size = 100 + abs(border_size)
-            border_size = 100
-        else:
-            neg_border_size = 0
+        border_options = {
+            'border_type': border_type,
+            'border_size': functional_border_size,
+            'neg_border_size': functional_neg_border_size,
+            'extreme_frame_corners': self.extreme_frame_corners,
+            'auto_border_flag': self.auto_border_flag
+        }
 
-        grabbed_frame = True
-        prev_frame = None
-        while len(self.frame_queue) > 0 or grabbed_frame:
-            if progress_bar:
-                progress_bar.next()
+        layer_options = {
+            'layer_func': layer_func,
+            'prev_frame': None
+        }
+
+        while len(self.frame_queue) > 0:
+            general_utils.update_progress_bar(progress_bar)
 
             grabbed_frame, next_frame = self.vid_cap.read()
-            if grabbed_frame:
-                self.frame_queue.append(next_frame)
-                self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
-                self._gen_next_raw_transform()
-                self._gen_transforms(smoothing_window=smoothing_window)
+            if not grabbed_frame:
+                break
+
+            self.frame_queue.append(next_frame)
+            self._update_frame_queue_inds()
+            self._gen_next_raw_transform()
+            self._gen_transforms()
 
             i = self.frame_queue_inds.popleft()
-            frame_i = self.frame_queue.popleft()
-            transform_i = self.transforms[i, :]
-
             if i >= max_frames:
                 break
 
-            # build transformation matrix
-            transform = vidstab_utils.build_transformation_matrix(transform_i)
+            frame_i = self.frame_queue.popleft()
+            transform_i = self.transforms[i, :]
 
-            bordered_frame, border_mode = vidstab_utils.border_frame(frame_i, border_size, border_type)
+            transformed = vidstab_utils.transform_frame(frame_i,
+                                                        transform_i,
+                                                        border_options['border_size'],
+                                                        border_options['border_type'])
 
-            transformed = cv2.warpAffine(bordered_frame,
-                                         transform,
-                                         bordered_frame.shape[:2][::-1],
-                                         borderMode=border_mode)
+            transformed, layer_options = vidstab_utils.post_process_transformed_frame(transformed,
+                                                                                      border_options,
+                                                                                      layer_options)
 
-            buffer = border_size + neg_border_size
-
-            if self.auto_border_flag:
-                auto_x = math.floor(buffer - abs(self.extreme_frame_corners['min_x']))
-                auto_y = math.floor(buffer - abs(self.extreme_frame_corners['min_y']))
-                auto_w = math.ceil(transformed.shape[1] - 1 - (buffer - self.extreme_frame_corners['max_x']))
-                auto_h = math.ceil(transformed.shape[0] - 1 - (buffer - self.extreme_frame_corners['max_y']))
-                transformed = transformed[auto_y:auto_y + auto_h, auto_x:auto_x + auto_w]
-
-            if layer_func is not None:
-                if prev_frame is not None:
-                    transformed = layer_func(transformed, prev_frame)
-
-                prev_frame = transformed[:]
-
-            # drop alpha layer of image
-            transformed = transformed[:, :, :3]
-
-            if playback:
-                resized_transformed = imutils.resize(transformed, width=min([frame_i.shape[0], 1000]))
-                playback_frame = resized_transformed
-
-                cv2.imshow('VidStab Playback ({} frame delay if using live video;'
-                           ' press Q or ESC to quit)'.format(min([smoothing_window,
-                                                                 max_frames])),
-                           playback_frame)
-                key = cv2.waitKey(1)
-
-                if key == ord("q") or key == 27:
-                    break
+            break_playback = general_utils.playback_video(transformed, playback,
+                                                          delay=min([self._smoothing_window, max_frames]))
+            if break_playback:
+                break
 
             if self.writer is None:
                 self._init_writer(output_path, transformed.shape[:2], output_fourcc,
                                   fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
 
-            # write frame to output video
             self.writer.write(transformed)
 
         self.writer.release()
-        if progress_bar:
-            progress_bar.next()
-            progress_bar.finish()
+        general_utils.update_progress_bar(progress_bar, finish=True)
+        cv2.destroyAllWindows()
 
-    def _gen_transforms(self, smoothing_window):
+    def _gen_transforms(self):
         self.trajectory = np.array(self._trajectory)
-        self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=smoothing_window)
+        self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=self._smoothing_window)
         self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - self.trajectory)
 
     def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
@@ -337,8 +282,7 @@ class VidStab:
                                     gen_all=True,
                                     show_progress=show_progress)
 
-        if bar:
-            bar.finish()
+        general_utils.update_progress_bar(bar, finish=True)
 
     def apply_transforms(self, input_path, output_path, output_fourcc='MJPG',
                          border_type='black', border_size=0, layer_func=None, show_progress=True, playback=False):
@@ -358,7 +302,7 @@ class VidStab:
         :param border_size: Size of border in output.
                             Positive values will pad video equally on all sides,
                             negative values will crop video equally on all sides,
-                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames.
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
         :param layer_func: Function to layer frames in output.
                            The function should accept 2 parameters: foreground & background.
                            The current frame of video will be passed as foreground,
@@ -396,7 +340,7 @@ class VidStab:
         :param border_size: Size of border in output.
                             Positive values will pad video equally on all sides,
                             negative values will crop video equally on all sides,
-                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames.
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
         :param layer_func: Function to layer frames in output.
                            The function should accept 2 parameters: foreground & background.
                            The current frame of video will be passed as foreground,
@@ -446,15 +390,13 @@ class VidStab:
             self._populate_queues(smoothing_window, max_frames)
 
         if self.auto_border_flag:
-            self._set_extreme_corners(self.frame_queue[0])
-            abs_extreme_corners = [abs(x) for x in self.extreme_frame_corners.values()]
-            border_size = math.ceil(max(abs_extreme_corners))
+            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
+            border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
-        self._apply_transforms(output_path, max_frames, smoothing_window,
-                               border_type=border_type, border_size=border_size, layer_func=layer_func,
-                               playback=playback, output_fourcc=output_fourcc, progress_bar=bar)
-
-        cv2.destroyAllWindows()
+        self._apply_transforms(output_path, max_frames,
+                               border_type=border_type, border_size=border_size,
+                               layer_func=layer_func, playback=playback,
+                               output_fourcc=output_fourcc, progress_bar=bar)
 
     def plot_trajectory(self):
         """Plot video trajectory
@@ -471,32 +413,7 @@ class VidStab:
         >>> stabilizer.plot_trajectory()
         >>> plt.show()
         """
-        if self.transforms is None:
-            raise AttributeError('No trajectory to plot. '
-                                 'Use methods: gen_transforms or stabilize to generate the trajectory attributes')
-
-        with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
-
-            # x trajectory
-            ax1.plot(self.trajectory[:, 0], label='Trajectory')
-            ax1.plot(self.smoothed_trajectory[:, 0], label='Smoothed Trajectory')
-            ax1.set_ylabel('dx')
-
-            # y trajectory
-            ax2.plot(self.trajectory[:, 1], label='Trajectory')
-            ax2.plot(self.smoothed_trajectory[:, 1], label='Smoothed Trajectory')
-            ax2.set_ylabel('dy')
-
-            handles, labels = ax2.get_legend_handles_labels()
-            fig.legend(handles, labels, loc='upper right')
-
-            plt.xlabel('Frame Number')
-
-            fig.suptitle('Video Trajectory', x=0.15, y=0.96, ha='left')
-            fig.canvas.set_window_title('Trajectory')
-
-            return fig, (ax1, ax2)
+        return plot_utils.plot_trajectory(self.transforms, self.trajectory, self.smoothed_trajectory)
 
     def plot_transforms(self, radians=False):
         """Plot stabilizing transforms
@@ -514,34 +431,4 @@ class VidStab:
         >>> stabilizer.plot_transforms()
         >>> plt.show()
         """
-        if self.transforms is None:
-            raise AttributeError('No transforms to plot. '
-                                 'Use methods: gen_transforms or stabilize to generate the transforms attribute')
-
-        with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
-
-            ax1.plot(self.transforms[:, 0], label='delta x', color='C0')
-            ax1.plot(self.transforms[:, 1], label='delta y', color='C1')
-            ax1.set_ylabel('Delta Pixels', fontsize=10)
-
-            if radians:
-                ax2.plot(self.transforms[:, 2], label='delta angle', color='C2')
-                ax2.set_ylabel('Delta Radians', fontsize=10)
-            else:
-                ax2.plot(np.rad2deg(self.transforms[:, 2]), label='delta angle', color='C2')
-                ax2.set_ylabel('Delta Degrees', fontsize=10)
-
-            handles1, labels1 = ax1.get_legend_handles_labels()
-            handles2, labels2 = ax2.get_legend_handles_labels()
-            fig.legend(handles1 + handles2,
-                       labels1 + labels2,
-                       loc='upper right',
-                       ncol=1)
-
-            plt.xlabel('Frame Number')
-
-            fig.suptitle('Transformations for Stabilizing', x=0.15, y=0.96, ha='left')
-            fig.canvas.set_window_title('Transforms')
-
-            return fig, (ax1, ax2)
+        return plot_utils.plot_transforms(self.transforms, radians)

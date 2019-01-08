@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from . import border_utils
+from . import layer_utils
 
 
 def build_transformation_matrix(transform):
@@ -26,7 +28,7 @@ def border_frame(frame, border_size, border_type):
     :param frame: frame to apply border to
     :param border_size: int border size in number of pixels
     :param border_type: one of the following ['black', 'reflect', 'replicate']
-    :return: bordered version of frame
+    :return: bordered version of frame with alpha layer for frame overlay options
     """
     border_modes = {'black': cv2.BORDER_CONSTANT,
                     'reflect': cv2.BORDER_REFLECT,
@@ -92,3 +94,30 @@ def estimate_partial_transform(matched_keypoints):
         dx = dy = da = 0
 
     return [dx, dy, da]
+
+
+def transform_frame(frame, transform, border_size, border_type):
+    if border_type not in ['black', 'reflect', 'replicate']:
+        raise ValueError('Invalid border type')
+
+    transform = build_transformation_matrix(transform)
+    bordered_frame, border_mode = border_frame(frame, border_size, border_type)
+
+    h, w = bordered_frame.shape[:2]
+    transformed_frame = cv2.warpAffine(bordered_frame, transform, (w, h), borderMode=border_mode)
+
+    return transformed_frame
+
+
+def post_process_transformed_frame(transformed_frame, border_options, layer_options):
+    cropped_frame = border_utils.crop_frame(transformed_frame, border_options)
+
+    if layer_options['layer_func'] is not None:
+        cropped_frame, prev_frame = layer_utils.apply_layer_func(cropped_frame,
+                                                                 layer_options['prev_frame'],
+                                                                 layer_options['layer_func'])
+
+        layer_options['prev_frame'] = prev_frame
+
+    # drop alpha layer
+    return cropped_frame[:, :, :3], layer_options

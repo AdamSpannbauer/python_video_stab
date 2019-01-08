@@ -33,3 +33,19 @@ def layer_blend(foreground, background, foreground_alpha=.6):
                     background, 1 - foreground_alpha, 0, background)
 
     return background
+
+
+def apply_layer_func(cur_frame, prev_frame, layer_func):
+    """helper method to apply layering function in vidstab process
+
+    :param cur_frame: current frame to apply layer over prev_frame
+    :param prev_frame: previous frame to be layered over by cur_frame
+    :param layer_func: layering function to apply
+    :return: tuple of (layered_frames, prev_frame) where prev_frame is to be used in next layering operation
+    """
+    if prev_frame is not None:
+        cur_frame = layer_func(cur_frame, prev_frame)
+
+    prev_frame = cur_frame[:]
+
+    return cur_frame, prev_frame

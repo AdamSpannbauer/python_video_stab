@@ -1,4 +1,6 @@
+import cv2
 import numpy as np
+import imutils
 from progress.bar import IncrementalBar
 
 
@@ -11,8 +13,8 @@ def bfill_rolling_mean(arr, n=30):
 
     >>> arr = np.array([[1, 2, 3], [4, 5, 6]])
     >>> bfill_rolling_mean(arr, n=2)
-    array([[ 2.5,  3.5,  4.5],
-           [ 2.5,  3.5,  4.5]])
+    array([[2.5, 3.5, 4.5],
+           [2.5, 3.5, 4.5]])
     """
     if arr.shape[0] < n:
         raise ValueError('arr.shape[0] cannot be less than n')
@@ -31,33 +33,70 @@ def bfill_rolling_mean(arr, n=30):
     return np.vstack((bfill, trunc_roll_mean))
 
 
-def init_progress_bar(frame_count, max_frames, show_progress=True, message='Stabilizing'):
+def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False):
     """Helper to create progress bar for stabilizing processes
 
     :param frame_count: input video's cv2.CAP_PROP_FRAME_COUNT
     :param max_frames: user provided max number of frames to process
     :param show_progress: user input if bar should be created
-    :param message: progress bar label
+    :param gen_all: if False progress message is 'Stabilizing'; otherwise 'Generating Transforms'
     :return: a progress.bar.IncrementalBar
 
-    >>> init_progress_bar(30, float('inf'))
-    >>> # use bar methods...
-    Stabilizing |█████████████████████████▋      | 80%
+    >>> progress_bar = init_progress_bar(30, float('inf'))
+    >>> # Stabilizing |█████████████████████████▋      | 80%
     """
-    if show_progress:
-        # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
-        if frame_count <= 0 and max_frames == float('inf'):
-            bar = None
-            print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
-        else:
-            if frame_count <= 0 or frame_count > max_frames:
-                max_bar = max_frames
-            else:
-                max_bar = frame_count
-            bar = IncrementalBar(message,
-                                 max=max_bar,
-                                 suffix='%(percent)d%%')
-    else:
-        bar = None
+    if not show_progress:
+        return None
 
-    return bar
+    # frame count is negative during some cv2.CAP_PROP_FRAME_COUNT failures
+    if frame_count <= 0 and max_frames == float('inf'):
+        print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
+        return None
+
+    if frame_count <= 0 or frame_count > max_frames:
+        max_bar = max_frames
+    else:
+        max_bar = frame_count
+
+    if gen_all:
+        message = 'Generating Transforms'
+    else:
+        message = 'Stabilizing'
+
+    return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
+
+
+def update_progress_bar(bar, show_progress=True, finish=False):
+    """helper to handle progress bar updates in vidstab process
+
+    :param bar: progress bar to be updated
+    :param show_progress: user set flag of whether or not to display progress bar
+    :param finish: finish progress bar
+    :return: updated progress bar
+    """
+    if show_progress and bar is not None:
+        bar.next()
+
+        if finish:
+            bar.finish()
+
+
+def playback_video(display_frame, playback_flag, delay, max_display_width=750):
+    if not playback_flag:
+        return False
+
+    if display_frame.shape[1] > max_display_width:
+        display_frame = imutils.resize(display_frame, width=max_display_width)
+
+    cv2.imshow('VidStab Playback ({} frame delay if using live video;'
+               ' press Q or ESC to quit)'.format(delay),
+               display_frame)
+    key = cv2.waitKey(1)
+
+    if key == ord("q") or key == 27:
+        return True
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

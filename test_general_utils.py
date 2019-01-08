@@ -18,17 +18,17 @@ def test_bfill_rolling_mean():
 
 
 def test_init_progress_bar():
-    bar = utils.init_progress_bar(100, float('inf'), show_progress=True, message='Stabilizing')
+    bar = utils.init_progress_bar(100, float('inf'), show_progress=True, gen_all=False)
     assert bar.suffix == '%(percent)d%%'
     assert bar.max == 100
     assert bar.message == 'Stabilizing'
 
-    bar = utils.init_progress_bar(100, 50, show_progress=True, message='Test')
+    bar = utils.init_progress_bar(100, 50, show_progress=True, gen_all=True)
     assert bar.max == 50
-    assert bar.message == 'Test'
+    assert bar.message == 'Generating Transforms'
 
-    bar = utils.init_progress_bar(100, 50, show_progress=False, message='Stabilizing')
+    bar = utils.init_progress_bar(100, 50, show_progress=False)
     assert bar is None
 
-    bar = utils.init_progress_bar(-1, float('inf'), show_progress=True, message='Stabilizing')
+    bar = utils.init_progress_bar(-1, float('inf'), show_progress=True)
     assert bar is None
