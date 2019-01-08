@@ -154,6 +154,8 @@ class VidStab:
         return False
 
     def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
+        self._smoothing_window = smoothing_window
+
         if max_frames is None:
             max_frames = float('inf')
 
@@ -189,7 +191,7 @@ class VidStab:
 
             general_utils.update_progress_bar(bar, show_progress)
 
-        self._gen_transforms(smoothing_window)
+        self._gen_transforms()
 
         return bar
 
@@ -202,8 +204,9 @@ class VidStab:
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
 
-    def _apply_transforms(self, output_path, max_frames, smoothing_window, output_fourcc='MJPG',
-                          border_type='black', border_size=0, layer_func=None, playback=False, progress_bar=None):
+    def _apply_transforms(self, output_path, max_frames, output_fourcc='MJPG',
+                          border_type='black', border_size=0, layer_func=None,
+                          playback=False, progress_bar=None):
 
         functional_border_size, functional_neg_border_size = border_utils.functional_border_sizes(border_size)
 
@@ -230,7 +233,7 @@ class VidStab:
             self.frame_queue.append(next_frame)
             self._update_frame_queue_inds()
             self._gen_next_raw_transform()
-            self._gen_transforms(smoothing_window=smoothing_window)
+            self._gen_transforms()
 
             i = self.frame_queue_inds.popleft()
             if i >= max_frames:
@@ -248,7 +251,8 @@ class VidStab:
                                                                                       border_options,
                                                                                       layer_options)
 
-            break_playback = general_utils.playback_video(transformed, playback, min([smoothing_window, max_frames]))
+            break_playback = general_utils.playback_video(transformed, playback,
+                                                          delay=min([self._smoothing_window, max_frames]))
             if break_playback:
                 break
 
@@ -262,9 +266,9 @@ class VidStab:
         general_utils.update_progress_bar(progress_bar, finish=True)
         cv2.destroyAllWindows()
 
-    def _gen_transforms(self, smoothing_window):
+    def _gen_transforms(self):
         self.trajectory = np.array(self._trajectory)
-        self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=smoothing_window)
+        self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=self._smoothing_window)
         self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - self.trajectory)
 
     def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
@@ -405,9 +409,10 @@ class VidStab:
             self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
             border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
-        self._apply_transforms(output_path, max_frames, smoothing_window,
-                               border_type=border_type, border_size=border_size, layer_func=layer_func,
-                               playback=playback, output_fourcc=output_fourcc, progress_bar=bar)
+        self._apply_transforms(output_path, max_frames,
+                               border_type=border_type, border_size=border_size,
+                               layer_func=layer_func, playback=playback,
+                               output_fourcc=output_fourcc, progress_bar=bar)
 
     def plot_trajectory(self):
         """Plot video trajectory
