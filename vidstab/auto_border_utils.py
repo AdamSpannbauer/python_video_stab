@@ -37,28 +37,28 @@ def extreme_corners(frame, transforms):
     return {'min_x': min_x, 'min_y': min_y, 'max_x': max_x, 'max_y': max_y}
 
 
-def auto_border_start(min_corner_point, buffer):
+def auto_border_start(min_corner_point, border_size):
     """Determine upper-right corner coords for auto border crop
 
     :param min_corner_point: extreme corner component either 'min_x' or 'min_y'
-    :param buffer: determined by vidstab process
+    :param border_size: min border_size determined by extreme_frame_corners in vidstab process
     :return: adjusted extreme corner for cropping
     """
-    return math.floor(buffer - abs(min_corner_point))
+    return math.floor(border_size - abs(min_corner_point))
 
 
-def auto_border_length(frame_dim, extreme_corner, buffer):
+def auto_border_length(frame_dim, extreme_corner, border_size):
     """Determine height/width auto border crop
 
     :param frame_dim: height/width of frame to be auto border cropped (corresponds to extreme_corner)
     :param extreme_corner: extreme corner component either 'min_x' or 'min_y' (corresponds to frame_dim)
-    :param buffer: determined by vidstab process
+    :param border_size: min border_size determined by extreme_frame_corners in vidstab process
     :return: adjusted extreme corner for cropping
     """
     # Frame dims are counted from 1 but subset is done by indexing at 0
     # Offset by 1 to avoid indexing out of range
-    frame_dim = frame_dim - 1
-    return math.ceil(frame_dim - (buffer - extreme_corner))
+    # frame_dim = frame_dim - 1
+    return math.ceil(frame_dim - (border_size - extreme_corner))
 
 
 def auto_border_crop(frame, extreme_frame_corners, border_size):
@@ -69,6 +69,9 @@ def auto_border_crop(frame, extreme_frame_corners, border_size):
     :param border_size: min border_size determined by extreme_frame_corners in vidstab process
     :return: cropped frame determined by auto border process
     """
+    if border_size == 0:
+        return frame
+
     frame_h, frame_w = frame.shape[:2]
 
     x = auto_border_start(extreme_frame_corners['min_x'], border_size)

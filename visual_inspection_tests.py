@@ -23,7 +23,7 @@ local_vid = local_ostrich_vid
 # set params for test stabilization
 input_path = local_vid
 border_type = 'black'
-border_size = 150
+border_size = 'auto'
 layer_func = layer_overlay
 playback = True
 

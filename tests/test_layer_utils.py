@@ -68,22 +68,6 @@ def test_layer_overlay_rotated():
     assert np.allclose(overlay_2, overlay_2_expected)
 
 
-def apply_layer_func(cur_frame, prev_frame, layer_func):
-    """helper method to apply layering function in vidstab process
-
-    :param cur_frame: current frame to apply layer over prev_frame
-    :param prev_frame: previous frame to be layered over by cur_frame
-    :param layer_func: layering function to apply
-    :return: tuple of (layered_frames, prev_frame) where prev_frame is to be used in next layering operation
-    """
-    if prev_frame is not None:
-        cur_frame = layer_func(cur_frame, prev_frame)
-
-    prev_frame = cur_frame[:]
-
-    return cur_frame, prev_frame
-
-
 def test_apply_layer_func():
     black_frame = np.zeros((100, 200, 3), dtype='uint8')
     rand_frame = black_frame.copy()
