@@ -3,6 +3,7 @@
 Tests now a bit looser
 """
 import matplotlib
+import pytest
 from vidstab.plot_utils import plot_transforms, plot_trajectory
 from .download_pickled_transforms import download_pickled_transforms
 
@@ -27,6 +28,20 @@ def check_vidstab_plot(plot, expected_axes1, expected_axes2):
     axes2_check = axes2_lims == expected_axes2
 
     return all([fig_check, axes1_check, axes2_check])
+
+
+def test_plot_trajectory_exception():
+    with pytest.raises(AttributeError) as err:
+        plot_trajectory(None, None, None)
+
+    assert 'No trajectory to plot' in str(err.value)
+
+
+def test_plot_transforms_exception():
+    with pytest.raises(AttributeError) as err:
+        plot_transforms(None)
+
+    assert 'No transforms to plot' in str(err.value)
 
 
 def test_plot_trajectory():
