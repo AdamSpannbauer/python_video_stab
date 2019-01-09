@@ -188,6 +188,18 @@ class VidStab:
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
 
+    def _append_frame(self, frame, max_frames):
+        if frame is not None:
+            self.frame_queue.append(frame)
+            self._update_frame_queue_inds()
+            self._gen_next_raw_transform()
+            self._gen_transforms()
+
+        i = self.frame_queue_inds.popleft()
+        break_flag = True if i >= max_frames else False
+
+        return i, break_flag
+
     def _apply_transforms(self, output_path, max_frames, output_fourcc='MJPG',
                           border_type='black', border_size=0, layer_func=None,
                           playback=False, progress_bar=None):
@@ -207,20 +219,17 @@ class VidStab:
             'prev_frame': None
         }
 
-        while len(self.frame_queue) > 0:
+        while True:
             general_utils.update_progress_bar(progress_bar)
 
             grabbed_frame, next_frame = self.vid_cap.read()
-            if not grabbed_frame:
+
+            frames_to_process = len(self.frame_queue) > 0 or grabbed_frame
+            if not frames_to_process:
                 break
 
-            self.frame_queue.append(next_frame)
-            self._update_frame_queue_inds()
-            self._gen_next_raw_transform()
-            self._gen_transforms()
-
-            i = self.frame_queue_inds.popleft()
-            if i >= max_frames:
+            i, break_flag = self._append_frame(next_frame, max_frames)
+            if break_flag:
                 break
 
             frame_i = self.frame_queue.popleft()
