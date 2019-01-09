@@ -1,23 +1,56 @@
-"""Note: these tests do not show up in coverage reports"""
-
-from matplotlib.testing.decorators import image_comparison
-
+"""
+`@image_comparison` was removed in matplotlib 3.2
+Tests now a bit looser
+"""
+import matplotlib
 from vidstab.plot_utils import plot_transforms, plot_trajectory
 from .download_pickled_transforms import download_pickled_transforms
 
 transforms, trajectory, smooth_trajectory = download_pickled_transforms(window_size=30)
 
 
-@image_comparison(baseline_images=['plot_trajectory'], extensions=['png'])
+def int_axes_lims(axes):
+    x_lims = axes.get_xlim()
+    y_lims = axes.get_ylim()
+
+    return [int(x) for x in x_lims + y_lims]
+
+
+def check_vidstab_plot(plot, expected_axes1, expected_axes2):
+    fig, (axes1, axes2) = plot
+
+    axes1_lims = int_axes_lims(axes1)
+    axes2_lims = int_axes_lims(axes2)
+
+    fig_check = isinstance(fig, matplotlib.figure.Figure)
+    axes1_check = axes1_lims == expected_axes1
+    axes2_check = axes2_lims == expected_axes2
+
+    return all([fig_check, axes1_check, axes2_check])
+
+
 def test_plot_trajectory():
-    plot_trajectory(transforms, trajectory, smooth_trajectory)
+    plot = plot_trajectory(transforms, trajectory, smooth_trajectory)
+
+    expected_axes1 = [-15, 325, -384, 173]
+    expected_axes2 = [-15, 325, -17, 450]
+
+    assert check_vidstab_plot(plot, expected_axes1, expected_axes2)
 
 
-@image_comparison(baseline_images=['plot_transforms'], extensions=['png'])
 def test_plot_transforms():
-    plot_transforms(transforms, radians=False)
+    plot = plot_transforms(transforms, radians=False)
+
+    expected_axes1 = [-15, 325, -204, 113]
+    expected_axes2 = [-15, 325, -10, 5]
+
+    assert check_vidstab_plot(plot, expected_axes1, expected_axes2)
 
 
-@image_comparison(baseline_images=['plot_transforms_radians'], extensions=['png'])
 def test_plot_transforms_radians():
-    plot_transforms(transforms, radians=True)
+    plot = plot_transforms(transforms, radians=True)
+
+    expected_axes1 = [-15, 325, -204, 113]
+    expected_axes2 = [-15, 325, 0, 0]
+
+    assert check_vidstab_plot(plot, expected_axes1, expected_axes2)
