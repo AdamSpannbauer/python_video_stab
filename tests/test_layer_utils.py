@@ -95,7 +95,3 @@ def test_apply_layer_func():
     layered_frame = apply_layer_func(rand_frame, black_frame, layer_blend)
     expected_result = layer_blend(rand_frame, black_frame)
     assert np.allclose(layered_frame, expected_result)
-
-
-if __name__ == '__main__':
-    test_apply_layer_func()

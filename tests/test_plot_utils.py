@@ -1,3 +1,5 @@
+"""Note: these tests do not show up in coverage reports"""
+
 from matplotlib.testing.decorators import image_comparison
 
 from vidstab.plot_utils import plot_transforms, plot_trajectory

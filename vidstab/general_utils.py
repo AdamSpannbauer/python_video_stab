@@ -91,8 +91,3 @@ def playback_video(display_frame, playback_flag, delay, max_display_width=750):
 
     if key == ord("q") or key == 27:
         return True
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
