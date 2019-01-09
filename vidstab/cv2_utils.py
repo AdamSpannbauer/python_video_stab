@@ -1,3 +1,7 @@
+import imutils
+import cv2
+
+
 def safe_import_cv2():
     """Gracefully fail ModuleNotFoundError due to cv2
 
@@ -15,3 +19,13 @@ def safe_import_cv2():
         If you'd prefer to install OpenCV from source you can see the docs here:
             https://docs.opencv.org/3.4.1/da/df6/tutorial_py_table_of_contents_setup.html
         """)
+
+
+def cv2_estimateRigidTransform(from_pts, to_pts, full=False):
+    """Estimate transforms in OpenCV 3 or OpenCV 4"""
+    if imutils.is_cv4():
+        transform = cv2.estimateAffinePartial2D(from_pts, to_pts)[0]
+    else:
+        transform = cv2.estimateRigidTransform(from_pts, to_pts, full)
+
+    return transform

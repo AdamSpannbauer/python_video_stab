@@ -73,7 +73,7 @@ def test_estimate_partial_transform():
     matched_keypoints = utils.match_keypoints(optical_flow, frame_1_kps)
     partial_transform = utils.estimate_partial_transform(matched_keypoints)
 
-    assert np.allclose(partial_transform, expected)
+    assert np.allclose(partial_transform, expected, rtol=0.1)
 
 
 def test_transform_frame_exception():

@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from . import border_utils
 from . import layer_utils
+from .cv2_utils import cv2_estimateRigidTransform
 
 
 def build_transformation_matrix(transform):
@@ -80,7 +81,7 @@ def estimate_partial_transform(matched_keypoints):
     """
     cur_matched_kp, prev_matched_kp = matched_keypoints
 
-    transform = cv2.estimateRigidTransform(np.array(prev_matched_kp),
+    transform = cv2_estimateRigidTransform(np.array(prev_matched_kp),
                                            np.array(cur_matched_kp),
                                            False)
     if transform is not None:
