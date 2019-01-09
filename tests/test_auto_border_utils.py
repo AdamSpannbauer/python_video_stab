@@ -1,7 +1,22 @@
-# TODO: add test for vidstab.auto_border_utils.extreme_corners
-
 import numpy as np
 import vidstab.auto_border_utils as utils
+
+
+def test_extreme_corners():
+    white_frame = 255 * np.ones((100, 200, 3), dtype='uint8')
+    transforms = np.array([[-69.67148996, 67.21674617, -0.16193986]])
+
+    extreme_corners = utils.extreme_corners(white_frame, transforms)
+    extreme_corners = {k: int(v) for k, v in extreme_corners.items()}
+
+    expected_corners = {
+        'min_x': -72,
+        'min_y': 0,
+        'max_x': 0,
+        'max_y': 67
+    }
+
+    assert extreme_corners == expected_corners
 
 
 def test_auto_border_start():
