@@ -1,7 +1,7 @@
 # Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/logo/vidstab_logo_hex.png' width=125 align='right'/>
 
 [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab)
-[![Coverage Status](https://img.shields.io/codecov/c/github/AdamSpannbauer/python_video_stab/master.svg)](https://codecov.io/github/AdamSpannbauer/python_video_stab?branch=master)
+[![codecov](https://codecov.io/gh/AdamSpannbauer/python_video_stab/branch/master/graph/badge.svg)](https://codecov.io/gh/AdamSpannbauer/python_video_stab)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f3a17d211a2a437d21b1/maintainability)](https://codeclimate.com/github/AdamSpannbauer/python_video_stab/maintainability)
 [![PyPi version](https://pypip.in/v/vidstab/badge.png)](https://pypi.org/project/vidstab/)
 [![Last Commit](https://img.shields.io/github/last-commit/AdamSpannbauer/python_video_stab.svg)](https://github.com/AdamSpannbauer/python_video_stab/commits/master)
