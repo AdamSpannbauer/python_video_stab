@@ -5,7 +5,7 @@ Tests now a bit looser
 import matplotlib
 import pytest
 from vidstab.plot_utils import plot_transforms, plot_trajectory
-from .download_pickled_transforms import download_pickled_transforms
+from .pickled_transforms import download_pickled_transforms
 
 transforms, trajectory, smooth_trajectory = download_pickled_transforms(window_size=30)
 
