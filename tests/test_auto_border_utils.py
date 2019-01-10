@@ -1,13 +1,37 @@
 import numpy as np
+import cv2
 import vidstab.auto_border_utils as utils
+import vidstab.vidstab_utils as vidstab_utils
+
+
+WHITE_FRAME = 255 * np.ones((100, 200, 3), dtype='uint8')
+TEST_TRANSFORMS = np.array([[-69.67148996, 67.21674617, -0.16193986]])
+TEST_EXTREME_CORNERS = utils.extreme_corners(WHITE_FRAME, TEST_TRANSFORMS)
+
+
+def demo_auto_border_crop():
+    min_border = utils.min_auto_border_size(TEST_EXTREME_CORNERS)
+    h, w = WHITE_FRAME.shape[:2]
+
+    og_frame_corners = [(min_border, min_border),
+                        (min_border + w, min_border),
+                        (min_border, min_border + h),
+                        (min_border + w, min_border + h)]
+
+    transformed_frame = vidstab_utils.transform_frame(WHITE_FRAME, TEST_TRANSFORMS[0], min_border, 'black')
+
+    for x, y in og_frame_corners:
+        cv2.circle(transformed_frame, (x, y), 3, (0, 0, 255), -1)
+
+    cropped_transformed_frame = utils.auto_border_crop(transformed_frame, TEST_EXTREME_CORNERS, min_border)
+
+    cv2.imshow('pre-crop (red dots = original frame corners)', transformed_frame)
+    cv2.imshow('cropped (red dots = original corners)', cropped_transformed_frame)
+    cv2.waitKey(0)
 
 
 def test_extreme_corners():
-    white_frame = 255 * np.ones((100, 200, 3), dtype='uint8')
-    transforms = np.array([[-69.67148996, 67.21674617, -0.16193986]])
-
-    extreme_corners = utils.extreme_corners(white_frame, transforms)
-    extreme_corners = {k: int(v) for k, v in extreme_corners.items()}
+    extreme_corners = {k: int(v) for k, v in TEST_EXTREME_CORNERS.items()}
 
     expected_corners = {
         'min_x': -72,
@@ -72,3 +96,7 @@ def test_min_auto_border_size():
     extreme_frame_corners['min_x'] = -20
     min_size = utils.min_auto_border_size(extreme_frame_corners)
     assert min_size == 20
+
+
+if __name__ == '__main__':
+    demo_auto_border_crop()

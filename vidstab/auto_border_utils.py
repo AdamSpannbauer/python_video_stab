@@ -55,9 +55,6 @@ def auto_border_length(frame_dim, extreme_corner, border_size):
     :param border_size: min border_size determined by extreme_frame_corners in vidstab process
     :return: adjusted extreme corner for cropping
     """
-    # Frame dims are counted from 1 but subset is done by indexing at 0
-    # Offset by 1 to avoid indexing out of range
-    # frame_dim = frame_dim - 1
     return math.ceil(frame_dim - (border_size - extreme_corner))
 
 
