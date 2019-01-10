@@ -3,7 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# pycharm
 .idea*
+
+# large testing files
+pickled_transforms/*
 stable_video.avi
 input_video.mov
 *.avi
@@ -11,6 +15,8 @@ input_video.mov
 *.mp4
 *.png
 *.mov
+
+# keynote stuff
 *.key
 
 # C extensions
