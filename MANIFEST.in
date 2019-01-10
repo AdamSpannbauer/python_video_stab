@@ -1,1 +1,1 @@
-include test_*.py
+include tests/*.py

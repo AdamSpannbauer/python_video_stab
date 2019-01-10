@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from . import border_utils
 from . import layer_utils
+from .cv2_utils import cv2_estimateRigidTransform
 
 
 def build_transformation_matrix(transform):
@@ -80,7 +81,7 @@ def estimate_partial_transform(matched_keypoints):
     """
     cur_matched_kp, prev_matched_kp = matched_keypoints
 
-    transform = cv2.estimateRigidTransform(np.array(prev_matched_kp),
+    transform = cv2_estimateRigidTransform(np.array(prev_matched_kp),
                                            np.array(cur_matched_kp),
                                            False)
     if transform is not None:
@@ -113,11 +114,11 @@ def post_process_transformed_frame(transformed_frame, border_options, layer_opti
     cropped_frame = border_utils.crop_frame(transformed_frame, border_options)
 
     if layer_options['layer_func'] is not None:
-        cropped_frame, prev_frame = layer_utils.apply_layer_func(cropped_frame,
-                                                                 layer_options['prev_frame'],
-                                                                 layer_options['layer_func'])
+        cropped_frame = layer_utils.apply_layer_func(cropped_frame,
+                                                     layer_options['prev_frame'],
+                                                     layer_options['layer_func'])
 
-        layer_options['prev_frame'] = prev_frame
+        layer_options['prev_frame'] = cropped_frame
 
     # drop alpha layer
     return cropped_frame[:, :, :3], layer_options

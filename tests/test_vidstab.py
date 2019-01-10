@@ -1,9 +1,11 @@
 import tempfile
-import pickle
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlretrieve
 import pytest
 import numpy as np
+import imutils
+
 from vidstab import VidStab
+from .pickled_transforms import download_pickled_transforms, pickle_test_transforms
 
 # excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python
 # see: https://github.com/skvark/opencv-python/issues/126
@@ -61,23 +63,14 @@ def test_video_dep_funcs_run():
 
 
 def test_trajectory_transform_values():
-    base_url = 'https://s3.amazonaws.com/python-vidstab'
-
     for window in [15, 30, 60]:
         stabilizer = VidStab()
         stabilizer.gen_transforms(input_path=local_vid, smoothing_window=window)
 
-        transform_file = '{}/ostrich_transforms_{}.pickle'.format(base_url, window)
-        trajectory_file = '{}/np_ostrich_trajectory_{}.pickle'.format(base_url, window)
-        smooth_trajectory_file = '{}/np_ostrich_smooth_trajectory_{}.pickle'.format(base_url, window)
+        pickle_test_transforms(stabilizer, 'pickled_transforms')
 
-        with urlopen(transform_file) as f:
-            expected_transforms = pickle.load(f)
-        with urlopen(trajectory_file) as f:
-            expected_trajectory = pickle.load(f)
-        with urlopen(smooth_trajectory_file) as f:
-            expected_smooth_trajectory = pickle.load(f)
+        unpickled_transforms = download_pickled_transforms(window, cv4=imutils.is_cv4())
 
-        assert np.allclose(stabilizer.transforms, expected_transforms)
-        assert np.allclose(stabilizer.trajectory, expected_trajectory)
-        assert np.allclose(stabilizer.smoothed_trajectory, expected_smooth_trajectory)
+        assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
+        assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
+        assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])

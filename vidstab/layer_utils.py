@@ -46,6 +46,4 @@ def apply_layer_func(cur_frame, prev_frame, layer_func):
     if prev_frame is not None:
         cur_frame = layer_func(cur_frame, prev_frame)
 
-    prev_frame = cur_frame[:]
-
-    return cur_frame, prev_frame
+    return cur_frame

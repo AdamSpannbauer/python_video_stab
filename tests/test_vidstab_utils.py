@@ -1,8 +1,9 @@
 import pytest
 import numpy as np
 import cv2
-import vidstab.vidstab_utils as utils
 import imutils.feature.factories as kp_factory
+
+import vidstab.vidstab_utils as utils
 
 kp_detector = kp_factory.FeatureDetector_create('GFTT')
 frame_1 = np.zeros((200, 200, 3), dtype='uint8')
@@ -56,11 +57,14 @@ def test_border_frame():
 def test_match_keypoints():
     cur_matched_kps, prev_matched_kps = utils.match_keypoints(optical_flow, frame_1_kps)
 
-    cur_matched_kps = [np.rint(x).astype('int').tolist() for x in cur_matched_kps]
-    prev_matched_kps = [np.rint(x).astype('int').tolist() for x in prev_matched_kps]
+    cur_matched_kps = np.rint(cur_matched_kps).astype('int')
+    prev_matched_kps = np.rint(prev_matched_kps).astype('int')
 
-    assert cur_matched_kps == [[[130, 130]], [[50, 130]], [[130, 80]], [[50, 80]]]
-    assert prev_matched_kps == [[[100, 100]], [[20, 100]], [[100, 50]], [[20, 50]]]
+    cur_expected = np.array([[[130, 130]], [[50, 130]], [[130,  80]], [[50,  80]]], dtype='int')
+    prev_expected = cur_expected - 30
+
+    assert (cur_matched_kps == cur_expected).all()
+    assert (prev_matched_kps == prev_expected).all()
 
 
 def test_estimate_partial_transform():
@@ -69,8 +73,11 @@ def test_estimate_partial_transform():
     matched_keypoints = utils.match_keypoints(optical_flow, frame_1_kps)
     partial_transform = utils.estimate_partial_transform(matched_keypoints)
 
-    assert np.allclose(partial_transform, expected)
+    assert np.allclose(partial_transform, expected, rtol=0.1)
 
 
-if __name__ == '__main__':
-    test_border_frame()
+def test_transform_frame_exception():
+    with pytest.raises(ValueError) as err:
+        utils.transform_frame(None, None, None, border_type='fake')
+
+    assert 'Invalid border type' in str(err.value)

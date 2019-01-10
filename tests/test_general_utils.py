@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+
 import vidstab.general_utils as utils
 
 
@@ -32,3 +33,24 @@ def test_init_progress_bar():
 
     bar = utils.init_progress_bar(-1, float('inf'), show_progress=True)
     assert bar is None
+
+
+def update_progress_bar():
+    bar = utils.init_progress_bar(100, float('inf'))
+
+    utils.update_progress_bar(bar)
+    assert bar.percent == 1.0
+
+    utils.update_progress_bar(bar, show_progress=False)
+    assert bar.percent == 1.0
+
+    utils.update_progress_bar(bar, finish=True)
+    assert bar.percent == 2.0
+
+
+def test_playback_video():
+    break_playback = utils.playback_video(display_frame=None,
+                                          playback_flag=False,
+                                          delay=None)
+
+    assert not break_playback

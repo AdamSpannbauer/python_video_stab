@@ -2,9 +2,11 @@ import tempfile
 from urllib.request import urlretrieve
 import cv2
 import numpy as np
-from vidstab import layer_overlay
-from vidstab.vidstab_utils import border_frame
 import imutils
+
+from vidstab import layer_overlay, layer_blend
+from vidstab.layer_utils import apply_layer_func
+from vidstab.vidstab_utils import border_frame
 
 
 tmp_dir = tempfile.TemporaryDirectory()
@@ -64,3 +66,16 @@ def test_layer_overlay_rotated():
 
     assert np.allclose(overlay_1, overlay_1)
     assert np.allclose(overlay_2, overlay_2_expected)
+
+
+def test_apply_layer_func():
+    black_frame = np.zeros((100, 200, 3), dtype='uint8')
+    rand_frame = black_frame.copy()
+    add_random_circles(rand_frame)
+
+    layered_frame = apply_layer_func(rand_frame, None, layer_blend)
+    assert np.allclose(layered_frame, rand_frame)
+
+    layered_frame = apply_layer_func(rand_frame, black_frame, layer_blend)
+    expected_result = layer_blend(rand_frame, black_frame)
+    assert np.allclose(layered_frame, expected_result)
