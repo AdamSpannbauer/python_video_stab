@@ -10,7 +10,7 @@ __pycache__/
 temp.dat
 
 # release notes
-release_pipeline.txt
+release_pipeline.sh
 
 # large testing files
 pickled_transforms/*
