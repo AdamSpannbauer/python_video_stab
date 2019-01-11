@@ -1,3 +1,4 @@
+import warnings
 import cv2
 import numpy as np
 import imutils
@@ -53,7 +54,7 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False
     use_max_frames = bad_frame_count or frame_count > max_frames
 
     if bad_frame_count and max_frames == float('inf'):
-        print('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
+        warnings.warn('No progress bar will be shown. (Unable to grab frame count & no max_frames provided.)')
         return None
 
     max_bar = max_frames if use_max_frames else frame_count

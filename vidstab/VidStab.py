@@ -4,6 +4,7 @@ from .cv2_utils import safe_import_cv2
 safe_import_cv2()  # inform user of pip install vidstab[cv2] if ModuleNotFoundError
 
 import time
+import warnings
 from collections import deque
 import cv2
 import numpy as np
@@ -188,21 +189,23 @@ class VidStab:
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
 
-    def _append_frame(self, frame, max_frames):
+    def _append_frame(self, frame, max_frames, use_stored_transforms):
         if frame is not None:
             self.frame_queue.append(frame)
             self._update_frame_queue_inds()
-            self._gen_next_raw_transform()
-            self._gen_transforms()
+
+            if not use_stored_transforms:
+                self._gen_next_raw_transform()
+                self._gen_transforms()
 
         i = self.frame_queue_inds.popleft()
         break_flag = True if i >= max_frames else False
 
         return i, break_flag
 
-    def _apply_transforms(self, output_path, max_frames, output_fourcc='MJPG',
-                          border_type='black', border_size=0, layer_func=None,
-                          playback=False, progress_bar=None):
+    def _apply_transforms(self, output_path, max_frames, use_stored_transforms,
+                          output_fourcc='MJPG', border_type='black', border_size=0,
+                          layer_func=None, playback=False, progress_bar=None):
 
         functional_border_size, functional_neg_border_size = border_utils.functional_border_sizes(border_size)
 
@@ -228,11 +231,16 @@ class VidStab:
             if not frames_to_process:
                 break
 
-            i, break_flag = self._append_frame(next_frame, max_frames)
+            i, break_flag = self._append_frame(next_frame, max_frames, use_stored_transforms)
             if break_flag:
                 break
 
             frame_i = self.frame_queue.popleft()
+
+            if i >= self.transforms.shape[0]:
+                warnings.warn('Video is longer than available transformations; halting process.')
+                break
+
             transform_i = self.transforms[i, :]
 
             transformed = vidstab_utils.transform_frame(frame_i,
@@ -384,6 +392,7 @@ class VidStab:
         self.frame_queue_inds = deque(maxlen=smoothing_window)
 
         if self.auto_border_flag and not use_stored_transforms:
+            use_stored_transforms = True
             self.gen_transforms(input_path, smoothing_window=smoothing_window, show_progress=show_progress)
             self.vid_cap = cv2.VideoCapture(input_path)
             self.frame_queue = deque(maxlen=smoothing_window)
@@ -402,7 +411,7 @@ class VidStab:
             self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
             border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
-        self._apply_transforms(output_path, max_frames,
+        self._apply_transforms(output_path, max_frames, use_stored_transforms=use_stored_transforms,
                                border_type=border_type, border_size=border_size,
                                layer_func=layer_func, playback=playback,
                                output_fourcc=output_fourcc, progress_bar=bar)
