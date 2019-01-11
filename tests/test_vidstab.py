@@ -1,10 +1,10 @@
 import tempfile
-from urllib.request import urlretrieve
 import pytest
 import numpy as np
 import imutils
 
 from vidstab import VidStab
+from vidstab.download_videos import download_ostrich_video, download_truncated_ostrich_video
 from .pickled_transforms import download_pickled_transforms, pickle_test_transforms
 
 # excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python
@@ -13,14 +13,11 @@ kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]
 
 tmp_dir = tempfile.TemporaryDirectory()
 
-remote_trunc_vid = 'https://s3.amazonaws.com/python-vidstab/trunc_video.avi'
-remote_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
+truncated_ostrich_video = '{}/trunc_vid.avi'.format(tmp_dir.name)
+ostrich_video = '{}/vid.avi'.format(tmp_dir.name)
 
-local_trunc_vid = '{}/trunc_vid.avi'.format(tmp_dir.name)
-local_vid = '{}/vid.avi'.format(tmp_dir.name)
-
-urlretrieve(remote_trunc_vid, local_trunc_vid)
-urlretrieve(remote_vid, local_vid)
+download_truncated_ostrich_video(truncated_ostrich_video)
+download_ostrich_video(ostrich_video)
 
 
 # test that all keypoint detection methods load without error
@@ -44,7 +41,7 @@ def test_kp_options():
 def test_video_dep_funcs_run():
     # just tests to check functions run
     stabilizer = VidStab()
-    stabilizer.gen_transforms(local_trunc_vid, smoothing_window=2, show_progress=True)
+    stabilizer.gen_transforms(truncated_ostrich_video, smoothing_window=2, show_progress=True)
 
     assert stabilizer.smoothed_trajectory.shape == stabilizer.trajectory.shape
     assert stabilizer.transforms.shape == stabilizer.trajectory.shape
@@ -52,12 +49,12 @@ def test_video_dep_funcs_run():
     with tempfile.TemporaryDirectory() as tmpdir:
         output_vid = '{}/test_output.avi'.format(tmpdir)
         try:
-            stabilizer.apply_transforms(local_trunc_vid, output_vid)
+            stabilizer.apply_transforms(truncated_ostrich_video, output_vid)
         except Exception as e:
             pytest.fail("stabilizer.apply_transforms ran into {}".format(e))
 
         try:
-            stabilizer.stabilize(local_trunc_vid, output_vid, smoothing_window=2)
+            stabilizer.stabilize(truncated_ostrich_video, output_vid, smoothing_window=2)
         except Exception as e:
             pytest.fail("stabilizer.stabilize ran into {}".format(e))
 
@@ -65,7 +62,7 @@ def test_video_dep_funcs_run():
 def test_trajectory_transform_values():
     for window in [15, 30, 60]:
         stabilizer = VidStab()
-        stabilizer.gen_transforms(input_path=local_vid, smoothing_window=window)
+        stabilizer.gen_transforms(input_path=ostrich_video, smoothing_window=window)
 
         pickle_test_transforms(stabilizer, 'pickled_transforms')
 

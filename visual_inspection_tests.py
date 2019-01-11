@@ -1,43 +1,56 @@
 """Playback tests for visual inspection of output
+
+PROFILING PIPELINE:
+$ python -m cProfile -o temp.dat visual_inspection_tests.py
+$ snakeviz temp.dat
 """
-from urllib.request import urlretrieve
 import tempfile
-import matplotlib.pyplot as plt
-
 from vidstab import VidStab, layer_overlay
+import vidstab.download_videos as dl
 
-# download videos for testing
 tmp_dir = tempfile.TemporaryDirectory()
 
-remote_ostrich_vid = 'https://s3.amazonaws.com/python-vidstab/ostrich.mp4'
-local_ostrich_vid = '{}/ostrich.mp4'.format(tmp_dir.name)
-urlretrieve(remote_ostrich_vid, local_ostrich_vid)
-local_vid = local_ostrich_vid
+##################################################################
+# TEST APPLYING OSTRICH TRANSFORMS TO DIFFERENT VIDEO
+##################################################################
+# download_to_path = f'{tmp_dir.name}/test_video.mp4'
+# dl.download_ostrich_video(download_to_path)
+# stabilizer = VidStab()
+# stabilizer.gen_transforms(download_to_path)
+# download_to_path = f'{tmp_dir.name}/test_video.mp4'
+# dl.download_skateline_video(download_to_path)
+# stabilizer.apply_transforms(download_to_path, 'stable.avi', border_size='auto', playback=True)
 
-# remote_skateline_vid = 'https://s3.amazonaws.com/python-vidstab/thrasher.mp4'
-# local_skateline_vid = '{}/skateline.mp4'.format(tmp_dir.name)
-# urlretrieve(remote_skateline_vid, local_skateline_vid)
-# local_vid = local_skateline_vid
 
-
-# set params for test stabilization
-input_path = local_vid
-border_type = 'black'
-border_size = 'auto'
-layer_func = layer_overlay
-playback = True
-
+##################################################################
+# TEST TYPICAL STABILIZATION PROCESS
+##################################################################
+download_to_path = f'{tmp_dir.name}/test_video.mp4'
+# dl.download_ostrich_video(download_to_path)
+dl.download_skateline_video(download_to_path)
 
 stabilizer = VidStab()
-stabilizer.stabilize(input_path,
-                     '{}/stable.avi'.format(tmp_dir.name),
-                     border_type=border_type,
-                     border_size=border_size,
-                     layer_func=layer_func,
-                     playback=playback)
 
-stabilizer.plot_transforms()
-plt.show()
+stabilizer.stabilize(download_to_path,
+                     'stable.avi',
+                     max_frames=30,
+                     border_type='black',
+                     border_size='auto',
+                     layer_func=layer_overlay,
+                     playback=True)
 
-stabilizer.plot_transforms(radians=True)
-plt.show()
+##################################################################
+# TEST PLOT OUTPUT
+##################################################################
+# import matplotlib.pyplot as plt
+#
+# download_to_path = f'{tmp_dir.name}/test_video.mp4'
+# dl.download_ostrich_video(download_to_path)
+# stabilizer = VidStab()
+# stabilizer.gen_transforms(download_to_path)
+#
+# stabilizer.plot_transforms()
+# plt.show()
+#
+# stabilizer.plot_transforms(radians=True)
+# plt.show()
