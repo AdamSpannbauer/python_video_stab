@@ -77,7 +77,7 @@ def auto_border_crop(frame, extreme_frame_corners, border_size):
     w = auto_border_length(frame_w, extreme_frame_corners['max_x'], border_size)
     h = auto_border_length(frame_h, extreme_frame_corners['max_y'], border_size)
 
-    return frame[y:y + h, x:x + w]
+    return frame[y:h, x:w]
 
 
 def min_auto_border_size(extreme_frame_corners):

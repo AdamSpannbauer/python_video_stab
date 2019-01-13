@@ -13,15 +13,23 @@ def demo_auto_border_crop():
     min_border = utils.min_auto_border_size(TEST_EXTREME_CORNERS)
     h, w = WHITE_FRAME.shape[:2]
 
-    og_frame_corners = [(min_border, min_border),
-                        (min_border + w, min_border),
-                        (min_border, min_border + h),
-                        (min_border + w, min_border + h)]
+    og_frame_corners = np.array([[min_border, min_border],
+                                 [min_border + w, min_border],
+                                 [min_border, min_border + h],
+                                 [min_border + w, min_border + h]])
+
+    transformed_frame_corners = [(min_border - 69, min_border + 67),
+                                 (min_border - 53, min_border + 164),
+                                 (min_border + 126, min_border + 35),
+                                 (min_border + 142, min_border + 132)]
 
     transformed_frame = vidstab_utils.transform_frame(WHITE_FRAME, TEST_TRANSFORMS[0], min_border, 'black')
 
-    for x, y in og_frame_corners:
-        cv2.circle(transformed_frame, (x, y), 3, (0, 0, 255), -1)
+    for xy in og_frame_corners:
+        cv2.circle(transformed_frame, tuple(xy), 3, (0, 0, 255), -1)
+
+    for xy in transformed_frame_corners:
+        cv2.circle(transformed_frame, tuple(xy), 3, (255, 0, 255), -1)
 
     cropped_transformed_frame = utils.auto_border_crop(transformed_frame, TEST_EXTREME_CORNERS, min_border)
 
@@ -56,7 +64,6 @@ def test_auto_border_length():
 
 
 def test_auto_border_crop():
-    black_frame = np.zeros((100, 200, 3), dtype='uint8')
     extreme_frame_corners = {
         'min_x': 0,
         'min_y': 0,
@@ -64,8 +71,8 @@ def test_auto_border_crop():
         'max_y': 0
     }
 
-    cropped_frame = utils.auto_border_crop(black_frame, extreme_frame_corners, 0)
-    assert cropped_frame.shape == black_frame.shape
+    cropped_frame = utils.auto_border_crop(WHITE_FRAME, extreme_frame_corners, 0)
+    assert cropped_frame.shape == WHITE_FRAME.shape
 
     extreme_frame_corners = {
         'min_x': -10,
@@ -74,8 +81,8 @@ def test_auto_border_crop():
         'max_y': 10
     }
     min_border_size = utils.min_auto_border_size(extreme_frame_corners)
-    cropped_frame = utils.auto_border_crop(black_frame, extreme_frame_corners, min_border_size)
-    assert cropped_frame.shape == (90, 185, 3)
+    cropped_frame = utils.auto_border_crop(WHITE_FRAME, extreme_frame_corners, min_border_size)
+    assert cropped_frame.shape == (90, 175, 3)
 
 
 def test_min_auto_border_size():
