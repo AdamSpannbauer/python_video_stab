@@ -9,9 +9,6 @@ __pycache__/
 # profiling data
 temp.dat
 
-# release notes
-release_pipeline.sh
-
 # large testing files
 pickled_transforms/*
 stable_video.avi
