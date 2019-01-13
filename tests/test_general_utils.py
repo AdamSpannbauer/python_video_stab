@@ -31,7 +31,8 @@ def test_init_progress_bar():
     bar = utils.init_progress_bar(100, 50, show_progress=False)
     assert bar is None
 
-    bar = utils.init_progress_bar(-1, float('inf'), show_progress=True)
+    with pytest.warns(UserWarning, match='No progress bar will be shown.'):
+        bar = utils.init_progress_bar(-1, float('inf'), show_progress=True)
     assert bar is None
 
 

@@ -48,15 +48,8 @@ def test_video_dep_funcs_run():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         output_vid = '{}/test_output.avi'.format(tmpdir)
-        try:
-            stabilizer.apply_transforms(truncated_ostrich_video, output_vid)
-        except Exception as e:
-            pytest.fail("stabilizer.apply_transforms ran into {}".format(e))
-
-        try:
-            stabilizer.stabilize(truncated_ostrich_video, output_vid, smoothing_window=2)
-        except Exception as e:
-            pytest.fail("stabilizer.stabilize ran into {}".format(e))
+        stabilizer.apply_transforms(truncated_ostrich_video, output_vid)
+        stabilizer.stabilize(truncated_ostrich_video, output_vid, smoothing_window=2)
 
 
 def test_trajectory_transform_values():

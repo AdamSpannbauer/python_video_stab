@@ -190,6 +190,10 @@ class VidStab:
                                       fps, (w, h), True)
 
     def _append_frame(self, frame, max_frames, use_stored_transforms):
+        i = None
+        if len(self.frame_queue_inds) == self.frame_queue_inds.maxlen:
+            i = self.frame_queue_inds.popleft()
+
         if frame is not None:
             self.frame_queue.append(frame)
             self._update_frame_queue_inds()
@@ -198,7 +202,7 @@ class VidStab:
                 self._gen_next_raw_transform()
                 self._gen_transforms()
 
-        i = self.frame_queue_inds.popleft()
+        i = self.frame_queue_inds.popleft() if i is None else i
         break_flag = True if i >= max_frames else False
 
         return i, break_flag
