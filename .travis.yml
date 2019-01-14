@@ -9,6 +9,6 @@ install:
   - pip install pytest pytest-cov
   - pip install codecov
 script:
-  - pytest --cov=vidstab tests/
+  - pytest --cov=vidstab --cov-report term-missing tests/
 after_success:
   - codecov

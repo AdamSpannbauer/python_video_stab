@@ -14,7 +14,7 @@ from . import vidstab_utils
 from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
-from .pop_deque import PopDeque
+from .frame_queue import FrameQueue
 
 
 class VidStab:
@@ -72,11 +72,10 @@ class VidStab:
         self._trajectory = []
         self.trajectory = self.smoothed_trajectory = self.transforms = None
 
-        self.frame_queue = PopDeque()
-        self.frame_queue_inds = PopDeque()
+        self.frame_queue = FrameQueue()
         self.prev_kps = self.prev_gray = None
 
-        self.vid_cap = self.writer = None
+        self.writer = None
 
         self.auto_border_flag = False
         self.extreme_frame_corners = {'min_x': 0, 'min_y': 0, 'max_x': 0, 'max_y': 0}
@@ -94,19 +93,8 @@ class VidStab:
             # gen cumsum for new row and append
             self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
 
-    def _populate_queues(self, smoothing_window, max_frames):
-        n = min([smoothing_window, max_frames])
-
-        for i in range(n):
-            grabbed_frame, frame = self.vid_cap.read()
-            if not grabbed_frame:
-                break
-
-            self.frame_queue.append(frame)
-            self.frame_queue_inds.increment_append(pop_append=False)
-
     def _gen_next_raw_transform(self):
-        current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
+        current_frame_gray = cv2.cvtColor(self.frame_queue.frames[-1], cv2.COLOR_BGR2GRAY)
 
         # calc flow of movement
         optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
@@ -125,10 +113,8 @@ class VidStab:
         if gen_all:
             return False
 
-        if self.frame_queue_inds[-1] >= max_frames - 1:
-            return True
-
-        if self.frame_queue_inds[-1] >= smoothing_window - 1:
+        max_ind = min([max_frames, smoothing_window])
+        if self.frame_queue.inds[-1] >= max_ind:
             return True
 
         return False
@@ -139,33 +125,27 @@ class VidStab:
         if max_frames is None:
             max_frames = float('inf')
 
-        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_count = self.frame_queue.source_frame_count
         bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, gen_all)
 
         # read first frame
-        grabbed_frame, prev_frame = self.vid_cap.read()
+        _, _ = self.frame_queue.read_frame()
         # convert to gray scale
-        prev_frame_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+        prev_frame_gray = cv2.cvtColor(self.frame_queue.frames[-1], cv2.COLOR_BGR2GRAY)
         # detect keypoints
         prev_kps = self.kp_detector.detect(prev_frame_gray)
         self.prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
 
-        # store frame
-        self.frame_queue.append(prev_frame)
-        # TODO: should this be incremented here? (previously not)
-        # self.frame_queue_inds.increment_append(pop_append=False)
         self.prev_gray = prev_frame_gray[:]
 
         # iterate through frames
         while True:
             # read current frame
-            grabbed_frame, cur_frame = self.vid_cap.read()
-            if not grabbed_frame:
+            _, break_flag = self.frame_queue.read_frame(pop_ind=False)
+            if not self.frame_queue.grabbed_frame:
                 general_utils.update_progress_bar(bar, show_progress)
                 break
 
-            self.frame_queue.append(cur_frame)
-            self.frame_queue_inds.increment_append(pop_append=False)
             self._gen_next_raw_transform()
 
             if self._init_is_complete(gen_all, max_frames, smoothing_window):
@@ -185,21 +165,6 @@ class VidStab:
         self.writer = cv2.VideoWriter(output_path,
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
-
-    def _append_frame(self, frame, max_frames, use_stored_transforms):
-        i = None
-        if frame is not None:
-            self.frame_queue.pop_append(frame)
-            i = self.frame_queue_inds.increment_append()
-
-            if not use_stored_transforms:
-                self._gen_next_raw_transform()
-                self._gen_transforms()
-
-        i = self.frame_queue_inds.popleft() if i is None else i
-        break_flag = True if i >= max_frames else False
-
-        return i, break_flag
 
     def _apply_transforms(self, output_path, max_frames, use_stored_transforms,
                           output_fourcc='MJPG', border_type='black', border_size=0,
@@ -223,17 +188,18 @@ class VidStab:
         while True:
             general_utils.update_progress_bar(progress_bar)
 
-            grabbed_frame, next_frame = self.vid_cap.read()
-
-            frames_to_process = len(self.frame_queue) > 0 or grabbed_frame
-            if not frames_to_process:
+            i, break_flag = self.frame_queue.read_frame()
+            if not self.frame_queue.frames_to_process():
                 break
 
-            i, break_flag = self._append_frame(next_frame, max_frames, use_stored_transforms)
             if break_flag:
                 break
 
-            frame_i = self.frame_queue.popleft()
+            if not use_stored_transforms:
+                self._gen_next_raw_transform()
+                self._gen_transforms()
+
+            frame_i = self.frame_queue.frames.popleft()
 
             if i >= self.transforms.shape[0]:
                 warnings.warn('Video is longer than available transformations; halting process.')
@@ -257,7 +223,7 @@ class VidStab:
 
             if self.writer is None:
                 self._init_writer(output_path, transformed.shape[:2], output_fourcc,
-                                  fps=int(self.vid_cap.get(cv2.CAP_PROP_FPS)))
+                                  fps=self.frame_queue.source_fps)
 
             self.writer.write(transformed)
 
@@ -289,9 +255,8 @@ class VidStab:
         >>> stabilizer.apply_transforms(input_path='input_video.mov', output_path='stable_video.avi')
         """
         self._smoothing_window = smoothing_window
-        self.vid_cap = cv2.VideoCapture(input_path)
-        self.frame_queue = PopDeque(maxlen=smoothing_window)
-        self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
+        self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
+        self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=float('inf'))
         bar = self._init_trajectory(smoothing_window=smoothing_window,
                                     max_frames=float('inf'),
                                     gen_all=True,
@@ -379,34 +344,35 @@ class VidStab:
         if border_size == 'auto':
             self.auto_border_flag = True
 
-        self.vid_cap = cv2.VideoCapture(input_path)
-        frame_count = int(self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
 
         # wait for camera to start up
         if isinstance(input_path, int):
             time.sleep(0.1)
 
-        self.frame_queue = PopDeque(maxlen=smoothing_window)
-        self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
+        self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=max_frames)
 
         if self.auto_border_flag and not use_stored_transforms:
             use_stored_transforms = True
             self.gen_transforms(input_path, smoothing_window=smoothing_window, show_progress=show_progress)
-            self.vid_cap = cv2.VideoCapture(input_path)
-            self.frame_queue = PopDeque(maxlen=smoothing_window)
-            self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
+            self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
+            self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=max_frames)
 
-            bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress)
-            self._populate_queues(smoothing_window, max_frames)
+            bar = general_utils.init_progress_bar(self.frame_queue.source_frame_count,
+                                                  max_frames,
+                                                  show_progress)
+            self.frame_queue.populate_queue(smoothing_window)
 
         elif not use_stored_transforms:
             bar = self._init_trajectory(smoothing_window, max_frames, show_progress=show_progress)
         else:
-            bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress)
-            self._populate_queues(smoothing_window, max_frames)
+            bar = general_utils.init_progress_bar(self.frame_queue.source_frame_count,
+                                                  max_frames,
+                                                  show_progress)
+            self.frame_queue.populate_queue(smoothing_window)
 
         if self.auto_border_flag:
-            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue[0], self.transforms)
+            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue.frames[0], self.transforms)
             border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
         self._apply_transforms(output_path, max_frames, use_stored_transforms=use_stored_transforms,
