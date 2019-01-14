@@ -5,7 +5,6 @@ safe_import_cv2()  # inform user of pip install vidstab[cv2] if ModuleNotFoundEr
 
 import time
 import warnings
-from collections import deque
 import cv2
 import numpy as np
 import imutils.feature.factories as kp_factory
@@ -15,6 +14,7 @@ from . import vidstab_utils
 from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
+from .pop_deque import PopDeque
 
 
 class VidStab:
@@ -72,7 +72,8 @@ class VidStab:
         self._trajectory = []
         self.trajectory = self.smoothed_trajectory = self.transforms = None
 
-        self.frame_queue = self.frame_queue_inds = None
+        self.frame_queue = PopDeque()
+        self.frame_queue_inds = PopDeque()
         self.prev_kps = self.prev_gray = None
 
         self.vid_cap = self.writer = None
@@ -102,13 +103,7 @@ class VidStab:
                 break
 
             self.frame_queue.append(frame)
-            self.frame_queue_inds.append(i)
-
-    def _update_frame_queue_inds(self):
-        if not self.frame_queue_inds:
-            self.frame_queue_inds.append(0)
-        else:
-            self.frame_queue_inds.append(self.frame_queue_inds[-1] + 1)
+            self.frame_queue_inds.increment_append(pop_append=False)
 
     def _gen_next_raw_transform(self):
         current_frame_gray = cv2.cvtColor(self.frame_queue[-1], cv2.COLOR_BGR2GRAY)
@@ -157,6 +152,8 @@ class VidStab:
 
         # store frame
         self.frame_queue.append(prev_frame)
+        # TODO: should this be incremented here? (previously not)
+        # self.frame_queue_inds.increment_append(pop_append=False)
         self.prev_gray = prev_frame_gray[:]
 
         # iterate through frames
@@ -168,7 +165,7 @@ class VidStab:
                 break
 
             self.frame_queue.append(cur_frame)
-            self._update_frame_queue_inds()
+            self.frame_queue_inds.increment_append(pop_append=False)
             self._gen_next_raw_transform()
 
             if self._init_is_complete(gen_all, max_frames, smoothing_window):
@@ -191,12 +188,9 @@ class VidStab:
 
     def _append_frame(self, frame, max_frames, use_stored_transforms):
         i = None
-        if len(self.frame_queue_inds) == self.frame_queue_inds.maxlen:
-            i = self.frame_queue_inds.popleft()
-
         if frame is not None:
-            self.frame_queue.append(frame)
-            self._update_frame_queue_inds()
+            self.frame_queue.pop_append(frame)
+            i = self.frame_queue_inds.increment_append()
 
             if not use_stored_transforms:
                 self._gen_next_raw_transform()
@@ -296,8 +290,8 @@ class VidStab:
         """
         self._smoothing_window = smoothing_window
         self.vid_cap = cv2.VideoCapture(input_path)
-        self.frame_queue = deque(maxlen=smoothing_window)
-        self.frame_queue_inds = deque(maxlen=smoothing_window)
+        self.frame_queue = PopDeque(maxlen=smoothing_window)
+        self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
         bar = self._init_trajectory(smoothing_window=smoothing_window,
                                     max_frames=float('inf'),
                                     gen_all=True,
@@ -392,15 +386,15 @@ class VidStab:
         if isinstance(input_path, int):
             time.sleep(0.1)
 
-        self.frame_queue = deque(maxlen=smoothing_window)
-        self.frame_queue_inds = deque(maxlen=smoothing_window)
+        self.frame_queue = PopDeque(maxlen=smoothing_window)
+        self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
 
         if self.auto_border_flag and not use_stored_transforms:
             use_stored_transforms = True
             self.gen_transforms(input_path, smoothing_window=smoothing_window, show_progress=show_progress)
             self.vid_cap = cv2.VideoCapture(input_path)
-            self.frame_queue = deque(maxlen=smoothing_window)
-            self.frame_queue_inds = deque(maxlen=smoothing_window)
+            self.frame_queue = PopDeque(maxlen=smoothing_window)
+            self.frame_queue_inds = PopDeque(maxlen=smoothing_window)
 
             bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress)
             self._populate_queues(smoothing_window, max_frames)
