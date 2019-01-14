@@ -58,9 +58,17 @@ def init_progress_bar(frame_count, max_frames, show_progress=True, gen_all=False
         return None
 
     max_bar = max_frames if use_max_frames else frame_count
-    message = 'Generating Transforms' if gen_all else 'Stabilizing'
+    message = progress_message(gen_all)
 
     return IncrementalBar(message, max=max_bar, suffix='%(percent)d%%')
+
+
+def progress_message(gen_all):
+    """Decide progress bar message based on gen_all flag"""
+    if gen_all:
+        return 'Generating Transforms'
+    else:
+        return 'Stabilizing'
 
 
 def update_progress_bar(bar, show_progress=True, finish=False):
