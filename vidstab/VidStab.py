@@ -67,7 +67,7 @@ class VidStab:
         else:
             self.kp_detector = kp_factory.FeatureDetector_create(kp_method, *args, **kwargs)
 
-        self._smoothing_window = None
+        self._smoothing_window = 30
         self._raw_transforms = []
         self._trajectory = []
         self.trajectory = self.smoothed_trajectory = self.transforms = None
