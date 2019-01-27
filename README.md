@@ -7,7 +7,7 @@
 [![Last Commit](https://img.shields.io/github/last-commit/AdamSpannbauer/python_video_stab.svg)](https://github.com/AdamSpannbauer/python_video_stab/commits/master)
 [![Downloads](https://pepy.tech/badge/vidstab)](https://pepy.tech/project/vidstab)
 
- Python video stabilization using OpenCV. 
+ Python video stabilization using OpenCV. Full [searchable documentation here](https://adamspannbauer.github.io/python_video_stab).
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
