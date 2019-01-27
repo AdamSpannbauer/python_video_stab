@@ -17,6 +17,19 @@
  
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
 
+## Contents:
+1. [Installation](#installation)
+   * [Install `vidstab` without installing OpenCV](#install-vidstab-without-installing-opencv)
+   * [Install vidstab & OpenCV](#install-vidstab-opencv)   
+2. [Basic Usage](#basic-usage)
+   * [Using from command line](#using-from-command-line)
+   * [Using VidStab class](#using-vidstab-class)
+3. [Advanced Usage](#advanced-usage)
+   * [Plotting frame to frame transformations](#plotting-frame-to-frame-transformations)
+   * [Using borders](#using-borders)
+   * [Using Frame Layering](#using-frame-layering)
+   * [Working with live video](#working-with-live-video)
+
 ## Installation
 
 > ```diff
@@ -35,7 +48,7 @@ The below commands will install `vidstab` without OpenCV included.
 pip install vidstab
 ```
 
-#### From Github
+#### From GitHub
 
 ```bash
 pip install git+https://github.com/AdamSpannbauer/python_video_stab.git
@@ -62,7 +75,7 @@ pip install vidstab[cv2]
  pip install -e git+https://github.com/AdamSpannbauer/python_video_stab.git#egg=vidstab[cv2]
 ```
 
-## Usage
+## Basic usage
 
 The `VidStab` class can be used as a command line script or in your own custom python code.
 
@@ -95,6 +108,8 @@ stabilizer.stabilize(input_path='input_video.mp4', output_path='stable_video.avi
 stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
 ```
+
+## Advanced usage
 
 ### Plotting frame to frame transformations
 
