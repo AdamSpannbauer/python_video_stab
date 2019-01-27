@@ -10,6 +10,15 @@ def layer_overlay(foreground, background):
     :param foreground: image to be laid over top of background image
     :param background: image to over laid with foreground image
     :return: return combined image where foreground is laid over background
+
+    >>> from vidstab import VidStab, layer_overlay, layer_blend
+    >>>
+    >>> stabilizer = VidStab()
+    >>>
+    >>> stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
+    >>>                      output_path=OUTPUT_VIDEO_PATH,
+    >>>                      border_size=100,
+    >>>                      layer_func=layer_overlay)
     """
     overlaid = foreground.copy()
     negative_space = np.where(foreground[:, :, 3] == 0)
@@ -28,6 +37,15 @@ def layer_blend(foreground, background, foreground_alpha=.6):
     :param background: image to over laid with foreground image
     :param foreground_alpha: alpha to apply to foreground; (1 - foreground_alpha) applied to background
     :return: return combined image where foreground is laid over background with alpha
+
+    >>> from vidstab import VidStab, layer_overlay, layer_blend
+    >>>
+    >>> stabilizer = VidStab()
+    >>>
+    >>> stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
+    >>>                      output_path=OUTPUT_VIDEO_PATH,
+    >>>                      border_size=100,
+    >>>                      layer_func=layer_blend)
     """
     cv2.addWeighted(foreground, foreground_alpha,
                     background, 1 - foreground_alpha, 0, background)
