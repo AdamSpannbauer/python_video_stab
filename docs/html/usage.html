@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage Examples &mdash; Python Video Stabilization with OpenCV</title>
+  <title>Basic usage &mdash; Python Video Stabilization with OpenCV</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="VidStab Documentation" href="module_docs.html" />
+    <link rel="next" title="Module documentation" href="module_docs.html" />
     <link rel="prev" title="Install Options" href="installation.html" /> 
 
   
@@ -87,21 +87,30 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Install Options</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage Examples</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#using-from-command-line">Using from command line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-vidstab-class">Using <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#advanced-usage">Advanced usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-frame-to-frame-transformations">Plotting frame to frame transformations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-borders">Using borders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-frame-layering">Using Frame Layering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automatic-border-sizing">Automatic border sizing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#working-with-live-video">Working with live video</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#transform-file-writing-reading">Transform file writing &amp; reading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generating-and-saving-transforms-to-file">Generating and saving transforms to file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-and-using-transforms-from-file">Reading and using transforms from file</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="module_docs.html"><code class="docutils literal notranslate"><span class="pre">VidStab</span></code> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs.html">Module documentation</a></li>
 </ul>
 
             
@@ -147,7 +156,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Usage Examples</li>
+      <li>Basic usage</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -166,8 +175,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="usage-examples">
-<h1>Usage Examples<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="basic-usage">
+<h1>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class can be used as a command line script or in your
 own custom python code.</p>
 <div class="section" id="using-from-command-line">
@@ -199,6 +208,9 @@ own custom python code.</p>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="advanced-usage">
+<h1>Advanced usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="plotting-frame-to-frame-transformations">
 <h2>Plotting frame to frame transformations<a class="headerlink" href="#plotting-frame-to-frame-transformations" title="Permalink to this headline">¶</a></h2>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
@@ -225,8 +237,8 @@ own custom python code.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><img alt="image3" src="https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png" /></td>
-<td><img alt="image4" src="https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png" /></td>
+<tr class="row-even"><td><img alt="image2" src="https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png" /></td>
+<td><img alt="image3" src="https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png" /></td>
 </tr>
 </tbody>
 </table>
@@ -255,39 +267,9 @@ own custom python code.</p>
                      <span class="n">border_type</span><span class="o">=</span><span class="s1">&#39;replicate&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<table border="1" class="docutils">
-<colgroup>
-<col width="48%" />
-<col width="53%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><code class="docutils literal notranslate"><span class="pre">border_size=0</span></code></th>
-<th class="head"><code class="docutils literal notranslate"><span class="pre">border_size=100</span></code></th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><img alt="image5" src="https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif" /></td>
-<td><img alt="image6" src="https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif" /></td>
-</tr>
-</tbody>
-</table>
-<table border="1" class="docutils">
-<colgroup>
-<col width="100%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><code class="docutils literal notranslate"><span class="pre">border_size='auto'</span></code></th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><a class="reference internal" href="https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif"><img alt="image11" src="https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif" style="width: 45%;" /></a></td>
-</tr>
-</tbody>
-</table>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<table border="1" class="docutils">
+<table><tr><td><p align="center"><p>border_size=0</p>
+</p></td><td><p align="center"><p>border_size=100</p>
+</p></td></tr><tr><td><p align="center"></p></td><td><p align="center"></p></td></tr></table><table border="1" class="docutils">
 <colgroup>
 <col width="48%" />
 <col width="52%" />
@@ -298,12 +280,14 @@ own custom python code.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><img alt="image7" src="https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif" /></td>
-<td><img alt="image8" src="https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif" /></td>
+<tr class="row-even"><td><img alt="image4" src="https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif" /></td>
+<td><img alt="image5" src="https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif" /></td>
 </tr>
 </tbody>
 </table>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=9pypPqbV_GM"><em>Video</em></a> <em>used with permission from</em> <a class="reference external" href="https://www.facebook.com/happylivinginfl/"><em>HappyLiving</em></a></p>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=9pypPqbV_GM">Video</a><em>used with
+permission
+from</em><a class="reference external" href="https://www.facebook.com/happylivinginfl/">HappyLiving</a></p>
 </div>
 <div class="section" id="using-frame-layering">
 <h2>Using Frame Layering<a class="headerlink" href="#using-frame-layering" title="Permalink to this headline">¶</a></h2>
@@ -313,7 +297,7 @@ own custom python code.</p>
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 
 <span class="c1"># use vidstab.layer_overlay for generating a trail effect</span>
-<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="n">input_vid</span><span class="p">,</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">,</span>
                      <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;trail_stable_video.avi&#39;</span><span class="p">,</span>
                      <span class="n">border_type</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
                      <span class="n">border_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -327,7 +311,7 @@ own custom python code.</p>
     <span class="k">return</span> <span class="n">layer_blend</span><span class="p">(</span><span class="n">foreground</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">foreground_alpha</span><span class="o">=.</span><span class="mi">8</span><span class="p">)</span>
 
 <span class="c1"># use custom overlay function</span>
-<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="n">input_vid</span><span class="p">,</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">,</span>
                      <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;blend_stable_video.avi&#39;</span><span class="p">,</span>
                      <span class="n">border_type</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
                      <span class="n">border_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -345,23 +329,53 @@ own custom python code.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><img alt="image9" src="https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif" /></td>
-<td><img alt="image10" src="https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif" /></td>
+<tr class="row-even"><td><img alt="image6" src="https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif" /></td>
+<td><img alt="image7" src="https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif" /></td>
 </tr>
 </tbody>
 </table>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=9pypPqbV_GM"><em>Video</em></a> <em>used with permission from</em> <a class="reference external" href="https://www.facebook.com/happylivinginfl/"><em>HappyLiving</em></a></p>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=9pypPqbV_GM">Video</a><em>used with
+permission
+from</em><a class="reference external" href="https://www.facebook.com/happylivinginfl/">HappyLiving</a></p>
+</div>
+<div class="section" id="automatic-border-sizing">
+<h2>Automatic border sizing<a class="headerlink" href="#automatic-border-sizing" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span>
+
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">,</span>
+                     <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;auto_border_stable_video.avi&#39;</span><span class="p">,</span>
+                     <span class="n">border_size</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                     <span class="c1"># frame layering to show performance of auto sizing</span>
+                     <span class="n">layer_func</span><span class="o">=</span><span class="n">layer_overlay</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="image8" src="https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif" /></p>
 </div>
 <div class="section" id="working-with-live-video">
 <h2>Working with live video<a class="headerlink" href="#working-with-live-video" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class can also process live video streams.  The underlying video reader is <a class="reference external" href="https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html"><code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code></a> (documentation linked).
-The relevant snippet from the documentation for stabilizing live video is:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class can also process live video streams. The
+underlying video reader is
+<code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code>(<a class="reference external" href="https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html">documentation</a>).
+The relevant snippet from the documentation for stabilizing live video
+is:</p>
 <blockquote>
-<div><em>Its argument can be either the device index or the name of a video file. Device index is just the number to specify which camera. Normally one camera will be connected (as in my case). So I simply pass 0 (or -1). You can select the second camera by passing 1 and so on.</em></div></blockquote>
-<p>The <code class="docutils literal notranslate"><span class="pre">input_path</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize</span></code> method can accept integers that will be passed directly to <code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code> as a device index.  You can also pass a device index to the <code class="docutils literal notranslate"><span class="pre">--input</span></code> argument for command line usage.</p>
-<p>One notable difference between live feeds and video files is that webcam footage does not have a definite end point.
-The options for ending a live video stabilization are to set the max length using the <code class="docutils literal notranslate"><span class="pre">max_frames</span></code> argument or to manually stop the process by pressing the <code class="docutils literal notranslate"><span class="pre">Esc</span></code> key or the <code class="docutils literal notranslate"><span class="pre">Q</span></code> key.
-If <code class="docutils literal notranslate"><span class="pre">max_frames</span></code> is not provided then no progress bar can be displayed for live video stabilization processes.</p>
+<div><em>Its argument can be either the device index or the name of a video
+file. Device index is just the number to specify which camera.
+Normally one camera will be connected (as in my case). So I simply
+pass 0 (or -1). You can select the second camera by passing 1 and so
+on.</em></div></blockquote>
+<p>The <code class="docutils literal notranslate"><span class="pre">input_path</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize</span></code> method can
+accept integers that will be passed directly to <code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code> as
+a device index. You can also pass a device index to the <code class="docutils literal notranslate"><span class="pre">--input</span></code>
+argument for command line usage.</p>
+<p>One notable difference between live feeds and video files is that webcam
+footage does not have a definite end point. The options for ending a
+live video stabilization are to set the max length using the
+<code class="docutils literal notranslate"><span class="pre">max_frames</span></code> argument or to manually stop the process by pressing the
+Esc key or the Q key. If <code class="docutils literal notranslate"><span class="pre">max_frames</span></code> is not provided then no progress
+bar can be displayed for live video stabilization processes.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
@@ -373,7 +387,51 @@ If <code class="docutils literal notranslate"><span class="pre">max_frames</span
                      <span class="n">playback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif"><img alt="https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif" class="align-center" src="https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif" style="width: 50%;" /></a>
+<p><img alt="image9" src="https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif" /></p>
+</div>
+</div>
+<div class="section" id="transform-file-writing-reading">
+<h2>Transform file writing &amp; reading<a class="headerlink" href="#transform-file-writing-reading" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generating-and-saving-transforms-to-file">
+<h3>Generating and saving transforms to file<a class="headerlink" href="#generating-and-saving-transforms-to-file" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
+
+<span class="c1"># Download video if needed</span>
+<span class="n">download_ostrich_video</span><span class="p">(</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">)</span>
+
+<span class="c1"># Generate transforms and save to TRANSFORMATIONS_PATH as csv (no headers)</span>
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">gen_transforms</span><span class="p">(</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">TRANSFORMATIONS_PATH</span><span class="p">,</span> <span class="n">stabilizer</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>File at <code class="docutils literal notranslate"><span class="pre">TRANSFORMATIONS_PATH</span></code> is of the form shown below. The 3
+columns represent delta x, delta y, and delta angle respectively.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="mf">9.249733913760086068e+01</span><span class="p">,</span><span class="mf">2.953221378387767970e+01</span><span class="p">,</span><span class="o">-</span><span class="mf">2.875918912994855636e-02</span>
+<span class="o">-</span><span class="mf">8.801434576214279559e+01</span><span class="p">,</span><span class="mf">2.741942225927152776e+01</span><span class="p">,</span><span class="o">-</span><span class="mf">2.715232319470826938e-02</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reading-and-using-transforms-from-file">
+<h3>Reading and using transforms from file<a class="headerlink" href="#reading-and-using-transforms-from-file" title="Permalink to this headline">¶</a></h3>
+<p>Below example reads a file of transforms and applies to an arbitrary
+video. The transform file is of the form shown in <a class="reference external" href="#generating-and-saving-transforms-to-file">above
+section</a>.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+
+<span class="c1"># Read in csv transform data, of form (delta x, delta y, delta angle):</span>
+<span class="n">transforms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">TRANSFORMATIONS_PATH</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create stabilizer and supply numpy array of transforms</span>
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+
+<span class="c1"># Apply stabilizing transforms to INPUT_VIDEO_PATH and save to OUTPUT_VIDEO_PATH</span>
+<span class="n">stabilizer</span><span class="o">.</span><span class="n">apply_transforms</span><span class="p">(</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">,</span> <span class="n">OUTPUT_VIDEO_PATH</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -386,7 +444,7 @@ If <code class="docutils literal notranslate"><span class="pre">max_frames</span
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="module_docs.html" class="btn btn-neutral float-right" title="VidStab Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="module_docs.html" class="btn btn-neutral float-right" title="Module documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="installation.html" class="btn btn-neutral" title="Install Options" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

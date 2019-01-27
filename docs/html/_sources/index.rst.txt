@@ -21,7 +21,7 @@ Usage
    usage
    :maxdepth: 2
 
-``VidStab`` Class Documentation
+Module documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. toctree::
    module_docs

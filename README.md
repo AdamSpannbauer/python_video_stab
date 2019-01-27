@@ -7,7 +7,7 @@
 [![Last Commit](https://img.shields.io/github/last-commit/AdamSpannbauer/python_video_stab.svg)](https://github.com/AdamSpannbauer/python_video_stab/commits/master)
 [![Downloads](https://pepy.tech/badge/vidstab)](https://pepy.tech/project/vidstab)
 
- Python video stabilization using OpenCV. 
+ Python video stabilization using OpenCV. Full [searchable documentation here](https://adamspannbauer.github.io/python_video_stab).
  
  This module contains a single class (`VidStab`) used for video stabilization. This class is based on the work presented by Nghia Ho in [SIMPLE VIDEO STABILIZATION USING OPENCV](http://nghiaho.com/?p=2093). The foundation code was found in a comment on Nghia Ho's post by the commenter with username koala.
  
@@ -16,6 +16,20 @@
 ![](https://s3.amazonaws.com/python-vidstab/readme/input_ostrich.gif)    |  ![](https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif)
  
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
+
+## Contents:
+1. [Installation](#installation)
+   * [Install `vidstab` without installing OpenCV](#install-vidstab-without-installing-opencv)
+   * [Install vidstab & OpenCV](#install-vidstab-opencv)   
+2. [Basic Usage](#basic-usage)
+   * [Using from command line](#using-from-command-line)
+   * [Using VidStab class](#using-vidstab-class)
+3. [Advanced Usage](#advanced-usage)
+   * [Plotting frame to frame transformations](#plotting-frame-to-frame-transformations)
+   * [Using borders](#using-borders)
+   * [Using Frame Layering](#using-frame-layering)
+   * [Working with live video](#working-with-live-video)
+   * [Transform File Writing & Reading](#transform-file-writing--reading)
 
 ## Installation
 
@@ -35,7 +49,7 @@ The below commands will install `vidstab` without OpenCV included.
 pip install vidstab
 ```
 
-#### From Github
+#### From GitHub
 
 ```bash
 pip install git+https://github.com/AdamSpannbauer/python_video_stab.git
@@ -62,7 +76,7 @@ pip install vidstab[cv2]
  pip install -e git+https://github.com/AdamSpannbauer/python_video_stab.git#egg=vidstab[cv2]
 ```
 
-## Usage
+## Basic usage
 
 The `VidStab` class can be used as a command line script or in your own custom python code.
 
@@ -95,6 +109,8 @@ stabilizer.stabilize(input_path='input_video.mp4', output_path='stable_video.avi
 stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
 stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
 ```
+
+## Advanced usage
 
 ### Plotting frame to frame transformations
 
@@ -131,10 +147,6 @@ stabilizer.stabilize(input_path='input_video.mov',
                      output_path='wide_stable_video.avi', 
                      border_type='black', 
                      border_size=100)
-stabilizer.stabilize(input_path='input_video.mov', 
-                     output_path='wide_stable_video.avi', 
-                     border_type='black', 
-                     border_size='auto')
 
 # filled in borders
 stabilizer.stabilize(input_path='input_video.mov', 
@@ -154,12 +166,6 @@ stabilizer.stabilize(input_path='input_video.mov',
     <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/stable_ostrich.gif'></p></td>
     <td><p align='center'><img src='https://s3.amazonaws.com/python-vidstab/readme/wide_stable_ostrich.gif'></p></td>
   </tr>
-  <tr>
-    <td colspan="2"><p align='center'><code>border_size='auto'</code></p></td>
-  </tr>
-  <tr>
-    <td colspan="2"><p align='center'><img width='45%' src='https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif'></p></td>
-  </tr>
 </table>
 
 `border_type='reflect'`                 |  `border_type='replicate'`
@@ -177,7 +183,7 @@ from vidstab import VidStab, layer_overlay, layer_blend
 stabilizer = VidStab()
 
 # use vidstab.layer_overlay for generating a trail effect
-stabilizer.stabilize(input_path=input_vid,
+stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
                      output_path='trail_stable_video.avi',
                      border_type='black',
                      border_size=100,
@@ -191,7 +197,7 @@ def layer_custom(foreground, background):
     return layer_blend(foreground, background, foreground_alpha=.8)
 
 # use custom overlay function
-stabilizer.stabilize(input_path=input_vid,
+stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
                      output_path='blend_stable_video.avi',
                      border_type='black',
                      border_size=100,
@@ -203,6 +209,25 @@ stabilizer.stabilize(input_path=input_vid,
 ![](https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif)  |  ![](https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif)
 
 *[Video](https://www.youtube.com/watch?v=9pypPqbV_GM) used with permission from [HappyLiving](https://www.facebook.com/happylivinginfl/)*
+
+
+### Automatic border sizing
+
+```python
+from vidstab import VidStab, layer_overlay
+
+stabilizer = VidStab()
+
+stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
+                     output_path='auto_border_stable_video.avi', 
+                     border_size='auto',
+                     # frame layering to show performance of auto sizing
+                     layer_func=layer_overlay)
+```
+
+<p align='center'>
+  <img width='45%' src='https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif'>
+</p>
 
 
 ### Working with live video
@@ -233,3 +258,46 @@ stabilizer.stabilize(input_path=0,
 <p align='center'>
   <img width='50%' src='https://s3.amazonaws.com/python-vidstab/readme/webcam_stable.gif'>
 </p>
+
+### Transform file writing & reading 
+
+#### Generating and saving transforms to file
+
+```python
+import numpy as np
+from vidstab import VidStab, download_ostrich_video
+
+# Download video if needed
+download_ostrich_video(INPUT_VIDEO_PATH)
+
+# Generate transforms and save to TRANSFORMATIONS_PATH as csv (no headers)
+stabilizer = VidStab()
+stabilizer.gen_transforms(INPUT_VIDEO_PATH)
+np.savetxt(TRANSFORMATIONS_PATH, stabilizer.transforms, delimiter=',')
+```
+
+File at `TRANSFORMATIONS_PATH` is of the form shown below.  The 3 columns represent delta x, delta y, and delta angle respectively.
+
+```
+-9.249733913760086068e+01,2.953221378387767970e+01,-2.875918912994855636e-02
+-8.801434576214279559e+01,2.741942225927152776e+01,-2.715232319470826938e-02
+```
+
+#### Reading and using transforms from file
+
+Below example reads a file of transforms and applies to an arbitrary video.  The transform file is of the form shown in [above section](#generating-and-saving-transforms-to-file).
+
+```python
+import numpy as np
+from vidstab import VidStab
+
+# Read in csv transform data, of form (delta x, delta y, delta angle):
+transforms = np.loadtxt(TRANSFORMATIONS_PATH, delimiter=',')
+
+# Create stabilizer and supply numpy array of transforms
+stabilizer = VidStab()
+stabilizer.transforms = transforms
+
+# Apply stabilizing transforms to INPUT_VIDEO_PATH and save to OUTPUT_VIDEO_PATH
+stabilizer.apply_transforms(INPUT_VIDEO_PATH, OUTPUT_VIDEO_PATH)
+```

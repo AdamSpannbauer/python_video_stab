@@ -14,6 +14,13 @@ def download_ostrich_video(download_to_path):
 
     :param download_to_path: path to save video to
     :return: None
+
+    >>> from vidstab import VidStab, download_ostrich_video
+    >>> path = 'ostrich.mp4'
+    >>> download_ostrich_video(path)
+    >>>
+    >>> stabilizer = VidStab()
+    >>> stabilizer.stabilize(path, OUTPUT_VIDEO_PATH)
     """
     urlretrieve(REMOTE_OSTRICH_VID_PATH, download_to_path)
 
