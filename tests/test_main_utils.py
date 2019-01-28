@@ -1,4 +1,5 @@
 import tempfile
+import argparse
 import pytest
 from vidstab import layer_overlay
 import vidstab.main_utils as utils
@@ -13,6 +14,11 @@ def test_str_int():
 def test_str_2_bool():
     assert utils.str_2_bool('y')
     assert not utils.str_2_bool('0')
+
+    with pytest.raises(argparse.ArgumentTypeError) as err:
+        utils.str_2_bool('foo')
+
+    assert 'Boolean value expected.' in str(err.value)
 
 
 def test_process_max_frames_arg():
