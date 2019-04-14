@@ -33,11 +33,11 @@ class FrameQueue:
         else:
             raise TypeError('Not yet support for non cv2.VideoCapture frame source.')
 
-    def read_frame(self, pop_ind=True):
+    def read_frame(self, pop_ind=True, array=None):
         if isinstance(self.source, cv2.VideoCapture):
             self.grabbed_frame, frame = self.source.read()
         else:
-            raise TypeError('Not yet support for non cv2.VideoCapture frame source.')
+            frame = array
 
         return self._append_frame(frame, pop_ind)
 
