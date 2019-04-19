@@ -1,4 +1,5 @@
 import cv2
+from .frame import Frame
 from .pop_deque import PopDeque
 
 
@@ -43,7 +44,7 @@ class FrameQueue:
 
     def _append_frame(self, frame, pop_ind=True):
         if frame is not None:
-            self.frames.append(frame)
+            self.frames.append(Frame(frame))
             self.i = self.inds.increment_append()
 
         if pop_ind and self.i is None:

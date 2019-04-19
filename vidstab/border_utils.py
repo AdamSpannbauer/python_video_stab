@@ -1,4 +1,5 @@
 from .auto_border_utils import auto_border_crop
+from .frame import Frame
 
 
 def functional_border_sizes(border_size):
@@ -41,11 +42,17 @@ def crop_frame(frame, border_options):
         return frame
 
     if border_options['auto_border_flag']:
-        cropped_frame = auto_border_crop(frame, border_options['extreme_frame_corners'], border_options['border_size'])
+        cropped_frame_image = auto_border_crop(frame.image,
+                                               border_options['extreme_frame_corners'],
+                                               border_options['border_size'])
 
     else:
-        frame_h, frame_w = frame.shape[:2]
-        cropped_frame = frame[border_options['neg_border_size']:(frame_h - border_options['neg_border_size']),
-                              border_options['neg_border_size']:(frame_w - border_options['neg_border_size'])]
+        frame_h, frame_w = frame.image.shape[:2]
+        cropped_frame_image = frame.image[
+                              border_options['neg_border_size']:(frame_h - border_options['neg_border_size']),
+                              border_options['neg_border_size']:(frame_w - border_options['neg_border_size'])
+                              ]
+
+    cropped_frame = Frame(cropped_frame_image, color_format=frame.color_format)
 
     return cropped_frame

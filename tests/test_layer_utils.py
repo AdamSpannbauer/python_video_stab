@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import imutils
 
+from vidstab.frame import Frame
 from vidstab import layer_overlay, layer_blend
 from vidstab.layer_utils import apply_layer_func
 from vidstab.vidstab_utils import border_frame
@@ -27,9 +28,12 @@ def add_random_circles(img, n=50, seed=None):
 
 
 def test_layer_overlay():
-    black_frame = np.zeros((100, 200, 3), dtype='uint8')
-    rand_frame = black_frame.copy()
-    add_random_circles(rand_frame)
+    black_frame_image = np.zeros((100, 200, 3), dtype='uint8')
+    rand_frame_image = black_frame_image.copy()
+    add_random_circles(rand_frame_image)
+
+    black_frame = Frame(black_frame_image)
+    rand_frame = Frame(rand_frame_image)
 
     black_frame, _ = border_frame(black_frame, border_size=0, border_type='black')
     rand_frame, _ = border_frame(rand_frame, border_size=0, border_type='black')
@@ -42,11 +46,14 @@ def test_layer_overlay():
 
 
 def test_layer_overlay_rotated():
-    black_frame = np.zeros((100, 200, 3), dtype='uint8')
-    rand_frame_1 = black_frame.copy()
-    rand_frame_2 = black_frame.copy()
-    add_random_circles(rand_frame_1, seed=42)
-    add_random_circles(rand_frame_2, seed=8675309)
+    black_frame_image = np.zeros((100, 200, 3), dtype='uint8')
+    rand_frame_1_image = black_frame_image.copy()
+    rand_frame_2_image = black_frame_image.copy()
+    add_random_circles(rand_frame_1_image, seed=42)
+    add_random_circles(rand_frame_2_image, seed=8675309)
+
+    rand_frame_1 = Frame(rand_frame_1_image)
+    rand_frame_2 = Frame(rand_frame_2_image)
 
     rand_frame_1, _ = border_frame(rand_frame_1, border_size=0, border_type='black')
     rand_frame_2, _ = border_frame(rand_frame_2, border_size=0, border_type='black')
@@ -69,13 +76,16 @@ def test_layer_overlay_rotated():
 
 
 def test_apply_layer_func():
-    black_frame = np.zeros((100, 200, 3), dtype='uint8')
-    rand_frame = black_frame.copy()
-    add_random_circles(rand_frame)
+    black_frame_image = np.zeros((100, 200, 3), dtype='uint8')
+    rand_frame_image = black_frame_image.copy()
+    add_random_circles(rand_frame_image)
+
+    black_frame = Frame(black_frame_image)
+    rand_frame = Frame(rand_frame_image)
 
     layered_frame = apply_layer_func(rand_frame, None, layer_blend)
-    assert np.allclose(layered_frame, rand_frame)
+    assert np.allclose(layered_frame.image, rand_frame.image)
 
     layered_frame = apply_layer_func(rand_frame, black_frame, layer_blend)
-    expected_result = layer_blend(rand_frame, black_frame)
-    assert np.allclose(layered_frame, expected_result)
+    expected_result = layer_blend(rand_frame.image, black_frame.image)
+    assert np.allclose(layered_frame.image, expected_result)

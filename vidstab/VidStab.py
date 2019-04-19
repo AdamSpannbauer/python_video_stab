@@ -92,6 +92,7 @@ class VidStab:
     def _update_prev_frame(self, current_frame_gray):
         self.prev_gray = current_frame_gray[:]
         self.prev_kps = self.kp_detector.detect(self.prev_gray)
+        # noinspection PyArgumentList
         self.prev_kps = np.array([kp.pt for kp in self.prev_kps], dtype='float32').reshape(-1, 1, 2)
 
     def _update_trajectory(self, transform):
@@ -102,7 +103,8 @@ class VidStab:
             self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
 
     def _gen_next_raw_transform(self):
-        current_frame_gray = self._ensure_gray_frame(self.frame_queue.frames[-1])
+        current_frame = self.frame_queue.frames[-1]
+        current_frame_gray = current_frame.gray_image
 
         # calc flow of movement
         optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
@@ -129,21 +131,15 @@ class VidStab:
 
         return False
 
-    @staticmethod
-    def _ensure_gray_frame(frame):
-        if len(frame.shape) == 2:
-            return frame
-
-        if frame.shape[2] == 3:
-            return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
     def _process_first_frame(self, array=None):
         # read first frame
         _, _ = self.frame_queue.read_frame(array=array)
         # convert to gray scale
-        prev_frame_gray = self._ensure_gray_frame(self.frame_queue.frames[-1])
+        prev_frame = self.frame_queue.frames[-1]
+        prev_frame_gray = prev_frame.gray_image
         # detect keypoints
         prev_kps = self.kp_detector.detect(prev_frame_gray)
+        # noinspection PyArgumentList
         self.prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
 
         self.prev_gray = prev_frame_gray[:]
@@ -325,6 +321,8 @@ class VidStab:
                                                                                        self.border_options,
                                                                                        self.layer_options)
 
+        transformed = transformed.cvt_color(frame_i.color_format)
+
         return transformed
 
     def stabilize_frame(self, input_frame, smoothing_window=30,
@@ -435,7 +433,8 @@ class VidStab:
             self.frame_queue.populate_queue(smoothing_window)
 
         if self.auto_border_flag:
-            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue.frames[0], self.transforms)
+            frame_1 = self.frame_queue.frames[0]
+            self.extreme_frame_corners = auto_border_utils.extreme_corners(frame_1.image, self.transforms)
             border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
         self._apply_transforms(output_path, max_frames, use_stored_transforms=use_stored_transforms,
