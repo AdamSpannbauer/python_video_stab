@@ -44,8 +44,3 @@ class PopDeque(deque):
             return None
 
         return popped_element
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
