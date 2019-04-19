@@ -50,7 +50,9 @@ class FrameQueue:
         if pop_ind and self.i is None:
             self.i = self.inds.popleft()
 
-        if pop_ind:
+        if (pop_ind
+                and self.i is not None
+                and self.max_frames is not None):
             break_flag = self.i >= self.max_frames
         else:
             break_flag = None
