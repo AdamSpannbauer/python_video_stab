@@ -1,7 +1,8 @@
 import tempfile
-import pytest
-import numpy as np
+import cv2
 import imutils
+import numpy as np
+import pytest
 
 from vidstab import VidStab
 from vidstab.download_videos import download_ostrich_video, download_truncated_ostrich_video
@@ -64,3 +65,27 @@ def test_trajectory_transform_values():
         assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
         assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
         assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])
+
+
+def test_stabilize_frame():
+    # Init stabilizer and video reader
+    stabilizer = VidStab()
+    vidcap = cv2.VideoCapture(ostrich_video)
+
+    window_size = 30
+    while True:
+        grabbed_frame, frame = vidcap.read()
+
+        # Pass frame to stabilizer even if frame is None
+        stabilized_frame = stabilizer.stabilize_frame(input_frame=frame,
+                                                      smoothing_window=window_size,
+                                                      border_size=10)
+
+        if stabilized_frame is None:
+            break
+
+    unpickled_transforms = download_pickled_transforms(window_size, cv4=imutils.is_cv4())
+
+    assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
+    assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
+    assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])
