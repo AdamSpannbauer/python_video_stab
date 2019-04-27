@@ -382,6 +382,92 @@ recalculating them?</li>
 </div>
 </dd></dl>
 
+<dl class="method">
+<dt id="vidstab.VidStab.stabilize_frame">
+<code class="descname">stabilize_frame</code><span class="sig-paren">(</span><em>input_frame</em>, <em>smoothing_window=30</em>, <em>border_type='black'</em>, <em>border_size=0</em>, <em>layer_func=None</em>, <em>use_stored_transforms=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vidstab.VidStab.stabilize_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stabilize single frame of video being iterated</p>
+<p>Perform video stabilization a single frame at a time.  Outputted stabilized frame will be on a
+<code class="docutils literal notranslate"><span class="pre">smoothing_window</span></code> delay.  When frames processed is <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">smoothing_window</span></code>, black frames will be returned.
+When frames processed is <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">smoothing_window</span></code>, the stabilized frame <code class="docutils literal notranslate"><span class="pre">smoothing_window</span></code> ago will be
+returned.  When <code class="docutils literal notranslate"><span class="pre">input_frame</span> <span class="pre">is</span> <span class="pre">None</span></code> stabilization will still be attempted, if there are not frames left to
+process then <code class="docutils literal notranslate"><span class="pre">None</span></code> will be returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_frame</strong> – An OpenCV image (as numpy array) or None</li>
+<li><strong>smoothing_window</strong> – window size to use when smoothing trajectory</li>
+<li><strong>border_type</strong> – How to handle negative space created by stabilization translations/rotations.
+Options: <code class="docutils literal notranslate"><span class="pre">['black',</span> <span class="pre">'reflect',</span> <span class="pre">'replicate']</span></code></li>
+<li><strong>border_size</strong> – Size of border in output.
+Positive values will pad video equally on all sides,
+negative values will crop video equally on all sides,
+<code class="docutils literal notranslate"><span class="pre">'auto'</span></code> will attempt to minimally pad to avoid cutting off portions of transformed frames</li>
+<li><strong>layer_func</strong> – Function to layer frames in output.
+The function should accept 2 parameters: foreground &amp; background.
+The current frame of video will be passed as foreground,
+the previous frame will be passed as the background
+(after the first frame of output the background will be the output of
+layer_func on the last iteration)</li>
+<li><strong>use_stored_transforms</strong> – should stored transforms from last stabilization be used instead of
+recalculating them?</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>1 of 3 outputs will be returned:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Case 1 - Stabilization process is still warming up</dt>
+<dd><ul class="first last">
+<li><strong>An all black frame of same shape as input_frame is returned.</strong></li>
+<li>A minimum of <code class="docutils literal notranslate"><span class="pre">smoothing_window</span></code> frames need to be processed to perform stabilization.</li>
+<li>This behavior was based on <code class="docutils literal notranslate"><span class="pre">cv2.bgsegm.createBackgroundSubtractorMOG()</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Case 2 - Stabilization process is warmed up and <code class="docutils literal notranslate"><span class="pre">input_frame</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None</span></code></dt>
+<dd><ul class="first last">
+<li><strong>A stabilized frame is returned</strong></li>
+<li>This will not be the stabilized version of <code class="docutils literal notranslate"><span class="pre">input_frame</span></code>.
+Stabilization is on an <code class="docutils literal notranslate"><span class="pre">smoothing_window</span></code> frame delay</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Case 3 - Stabilization process is finished</dt>
+<dd><ul class="first last">
+<li><strong>None</strong></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vidstab.VidStab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vidcap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="s1">&#39;input_video.mov&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window_size</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">grabbed_frame</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vidcap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Pass frame to stabilizer even if frame is None</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># stabilized_frame will be an all black frame until iteration 30</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">stabilized_frame</span> <span class="o">=</span> <span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize_frame</span><span class="p">(</span><span class="n">input_frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                  <span class="n">smoothing_window</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">if</span> <span class="n">stabilized_frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="c1"># There are no more frames available to stabilize</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">break</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </div>
