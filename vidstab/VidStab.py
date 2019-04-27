@@ -15,6 +15,7 @@ from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
 from .frame_queue import FrameQueue
+from . frame import Frame
 
 
 class VidStab:
@@ -77,13 +78,22 @@ class VidStab:
 
         self.writer = None
 
+        self.layer_options = {
+            'layer_func': None,
+            'prev_frame': None
+        }
+
+        self.border_options = {}
         self.auto_border_flag = False
         self.extreme_frame_corners = {'min_x': 0, 'min_y': 0, 'max_x': 0, 'max_y': 0}
         self.frame_corners = None
 
+        self._default_stabilize_frame_output = None
+
     def _update_prev_frame(self, current_frame_gray):
         self.prev_gray = current_frame_gray[:]
         self.prev_kps = self.kp_detector.detect(self.prev_gray)
+        # noinspection PyArgumentList
         self.prev_kps = np.array([kp.pt for kp in self.prev_kps], dtype='float32').reshape(-1, 1, 2)
 
     def _update_trajectory(self, transform):
@@ -94,7 +104,8 @@ class VidStab:
             self._trajectory.append([self._trajectory[-1][j] + x for j, x in enumerate(transform)])
 
     def _gen_next_raw_transform(self):
-        current_frame_gray = cv2.cvtColor(self.frame_queue.frames[-1], cv2.COLOR_BGR2GRAY)
+        current_frame = self.frame_queue.frames[-1]
+        current_frame_gray = current_frame.gray_image
 
         # calc flow of movement
         optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
@@ -109,15 +120,30 @@ class VidStab:
         self._raw_transforms.append(transform_i[:])
         self._update_trajectory(transform_i)
 
-    def _init_is_complete(self, gen_all, max_frames, smoothing_window):
+    def _init_is_complete(self, gen_all):
         if gen_all:
             return False
 
-        max_ind = min([max_frames, smoothing_window])
+        max_ind = min([self.frame_queue.max_frames,
+                       self.frame_queue.max_len])
+
         if self.frame_queue.inds[-1] >= max_ind:
             return True
 
         return False
+
+    def _process_first_frame(self, array=None):
+        # read first frame
+        _, _ = self.frame_queue.read_frame(array=array)
+        # convert to gray scale
+        prev_frame = self.frame_queue.frames[-1]
+        prev_frame_gray = prev_frame.gray_image
+        # detect keypoints
+        prev_kps = self.kp_detector.detect(prev_frame_gray)
+        # noinspection PyArgumentList
+        self.prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
+
+        self.prev_gray = prev_frame_gray[:]
 
     def _init_trajectory(self, smoothing_window, max_frames, gen_all=False, show_progress=False):
         self._smoothing_window = smoothing_window
@@ -128,15 +154,7 @@ class VidStab:
         frame_count = self.frame_queue.source_frame_count
         bar = general_utils.init_progress_bar(frame_count, max_frames, show_progress, gen_all)
 
-        # read first frame
-        _, _ = self.frame_queue.read_frame()
-        # convert to gray scale
-        prev_frame_gray = cv2.cvtColor(self.frame_queue.frames[-1], cv2.COLOR_BGR2GRAY)
-        # detect keypoints
-        prev_kps = self.kp_detector.detect(prev_frame_gray)
-        self.prev_kps = np.array([kp.pt for kp in prev_kps], dtype='float32').reshape(-1, 1, 2)
-
-        self.prev_gray = prev_frame_gray[:]
+        self._process_first_frame()
 
         # iterate through frames
         while True:
@@ -148,7 +166,7 @@ class VidStab:
 
             self._gen_next_raw_transform()
 
-            if self._init_is_complete(gen_all, max_frames, smoothing_window):
+            if self._init_is_complete(gen_all):
                 break
 
             general_utils.update_progress_bar(bar, show_progress)
@@ -166,13 +184,10 @@ class VidStab:
                                       cv2.VideoWriter_fourcc(*output_fourcc),
                                       fps, (w, h), True)
 
-    def _apply_transforms(self, output_path, max_frames, use_stored_transforms,
-                          output_fourcc='MJPG', border_type='black', border_size=0,
-                          layer_func=None, playback=False, progress_bar=None):
-
+    def _set_border_options(self, border_size, border_type):
         functional_border_size, functional_neg_border_size = border_utils.functional_border_sizes(border_size)
 
-        border_options = {
+        self.border_options = {
             'border_type': border_type,
             'border_size': functional_border_size,
             'neg_border_size': functional_neg_border_size,
@@ -180,41 +195,28 @@ class VidStab:
             'auto_border_flag': self.auto_border_flag
         }
 
-        layer_options = {
-            'layer_func': layer_func,
-            'prev_frame': None
-        }
+    def _apply_transforms(self, output_path, max_frames, use_stored_transforms,
+                          output_fourcc='MJPG', border_type='black', border_size=0,
+                          layer_func=None, playback=False, progress_bar=None):
+
+        self._set_border_options(border_size, border_type)
+        self.layer_options['layer_func'] = layer_func
 
         while True:
             general_utils.update_progress_bar(progress_bar)
-
             i, break_flag = self.frame_queue.read_frame()
-            if not self.frame_queue.frames_to_process():
-                break
 
-            if break_flag:
+            if not self.frame_queue.frames_to_process() or break_flag:
                 break
 
             if not use_stored_transforms:
                 self._gen_next_raw_transform()
-                self._gen_transforms()
 
-            frame_i = self.frame_queue.frames.popleft()
+            transformed = self._apply_next_transform(i, use_stored_transforms=use_stored_transforms)
 
-            if i >= self.transforms.shape[0]:
+            if transformed is None:
                 warnings.warn('Video is longer than available transformations; halting process.')
                 break
-
-            transform_i = self.transforms[i, :]
-
-            transformed = vidstab_utils.transform_frame(frame_i,
-                                                        transform_i,
-                                                        border_options['border_size'],
-                                                        border_options['border_type'])
-
-            transformed, layer_options = vidstab_utils.post_process_transformed_frame(transformed,
-                                                                                      border_options,
-                                                                                      layer_options)
 
             break_playback = general_utils.playback_video(transformed, playback,
                                                           delay=min([self._smoothing_window, max_frames]))
@@ -302,6 +304,122 @@ class VidStab:
                        border_type=border_type, border_size=border_size, layer_func=layer_func, playback=playback,
                        use_stored_transforms=True, show_progress=show_progress, output_fourcc=output_fourcc)
 
+    def _apply_next_transform(self, i, use_stored_transforms=False):
+        if not use_stored_transforms:
+            self._gen_transforms()
+
+        frame_i = self.frame_queue.frames.popleft()
+
+        try:
+            transform_i = self.transforms[i, :]
+        except IndexError:
+            return None
+
+        transformed = vidstab_utils.transform_frame(frame_i,
+                                                    transform_i,
+                                                    self.border_options['border_size'],
+                                                    self.border_options['border_type'])
+
+        transformed, self.layer_options = vidstab_utils.post_process_transformed_frame(transformed,
+                                                                                       self.border_options,
+                                                                                       self.layer_options)
+
+        transformed = transformed.cvt_color(frame_i.color_format)
+
+        return transformed
+
+    def stabilize_frame(self, input_frame, smoothing_window=30,
+                        border_type='black', border_size=0, layer_func=None,
+                        use_stored_transforms=False):
+        """Stabilize single frame of video being iterated
+
+        Perform video stabilization a single frame at a time.  Outputted stabilized frame will be on a
+        ``smoothing_window`` delay.  When frames processed is ``< smoothing_window``, black frames will be returned.
+        When frames processed is ``>= smoothing_window``, the stabilized frame ``smoothing_window`` ago will be
+        returned.  When ``input_frame is None`` stabilization will still be attempted, if there are not frames left to
+        process then ``None`` will be returned.
+
+        :param input_frame: An OpenCV image (as numpy array) or None
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param border_type: How to handle negative space created by stabilization translations/rotations.
+                            Options: ``['black', 'reflect', 'replicate']``
+        :param border_size: Size of border in output.
+                            Positive values will pad video equally on all sides,
+                            negative values will crop video equally on all sides,
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
+        :param layer_func: Function to layer frames in output.
+                           The function should accept 2 parameters: foreground & background.
+                           The current frame of video will be passed as foreground,
+                           the previous frame will be passed as the background
+                           (after the first frame of output the background will be the output of
+                           layer_func on the last iteration)
+        :param use_stored_transforms: should stored transforms from last stabilization be used instead of
+                                      recalculating them?
+        :return: 1 of 3 outputs will be returned:
+
+            * Case 1 - Stabilization process is still warming up
+                + **An all black frame of same shape as input_frame is returned.**
+                + A minimum of ``smoothing_window`` frames need to be processed to perform stabilization.
+                + This behavior was based on ``cv2.bgsegm.createBackgroundSubtractorMOG()``.
+            * Case 2 - Stabilization process is warmed up and ``input_frame is not None``
+                + **A stabilized frame is returned**
+                + This will not be the stabilized version of ``input_frame``.
+                  Stabilization is on an ``smoothing_window`` frame delay
+            * Case 3 - Stabilization process is finished
+                + **None**
+
+        >>> from vidstab.VidStab import VidStab
+        >>> stabilizer = VidStab()
+        >>> vidcap = cv2.VideoCapture('input_video.mov')
+        >>> while True:
+        >>>     grabbed_frame, frame = vidcap.read()
+        >>>     # Pass frame to stabilizer even if frame is None
+        >>>     # stabilized_frame will be an all black frame until iteration 30
+        >>>     stabilized_frame = stabilizer.stabilize_frame(input_frame=frame,
+        >>>                                                   smoothing_window=30)
+        >>>     if stabilized_frame is None:
+        >>>         # There are no more frames available to stabilize
+        >>>         break
+        """
+        self._set_border_options(border_size, border_type)
+        self.layer_options['layer_func'] = layer_func
+
+        # Store first frame
+        if self.frame_queue.max_len is None:
+            self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=float('inf'))
+
+            self._process_first_frame(array=input_frame)
+
+            blank_frame = Frame(np.zeros_like(input_frame))
+            blank_frame = border_utils.crop_frame(blank_frame, self.border_options)
+
+            if self.border_options['border_size'] > 0:
+                blank_frame_alpha, _ = vidstab_utils.border_frame(blank_frame,
+                                                                  self.border_options['border_size'],
+                                                                  self.border_options['border_type'])
+
+                blank_frame_np = Frame(blank_frame_alpha).cvt_color(blank_frame.color_format)
+                blank_frame = Frame(blank_frame_np)
+
+            self._default_stabilize_frame_output = blank_frame.image
+
+            return self._default_stabilize_frame_output
+
+        if len(self.frame_queue.frames) == 0:
+            return None
+
+        if input_frame is not None:
+            _, _ = self.frame_queue.read_frame(array=input_frame, pop_ind=False)
+            if not use_stored_transforms:
+                self._gen_next_raw_transform()
+
+        if not self._init_is_complete(gen_all=False):
+            return self._default_stabilize_frame_output
+
+        stabilized_frame = self._apply_next_transform(self.frame_queue.i, use_stored_transforms=use_stored_transforms)
+
+        return stabilized_frame
+
     def stabilize(self, input_path, output_path, smoothing_window=30, max_frames=float('inf'),
                   border_type='black', border_size=0, layer_func=None, playback=False,
                   use_stored_transforms=False, show_progress=True, output_fourcc='MJPG'):
@@ -372,7 +490,8 @@ class VidStab:
             self.frame_queue.populate_queue(smoothing_window)
 
         if self.auto_border_flag:
-            self.extreme_frame_corners = auto_border_utils.extreme_corners(self.frame_queue.frames[0], self.transforms)
+            frame_1 = self.frame_queue.frames[0]
+            self.extreme_frame_corners = auto_border_utils.extreme_corners(frame_1.image, self.transforms)
             border_size = auto_border_utils.min_auto_border_size(self.extreme_frame_corners)
 
         self._apply_transforms(output_path, max_frames, use_stored_transforms=use_stored_transforms,

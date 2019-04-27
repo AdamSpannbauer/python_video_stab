@@ -28,6 +28,7 @@
    * [Plotting frame to frame transformations](#plotting-frame-to-frame-transformations)
    * [Using borders](#using-borders)
    * [Using Frame Layering](#using-frame-layering)
+   * [Stabilizing a frame at a time](#stabilizing-a-frame-at-a-time)
    * [Working with live video](#working-with-live-video)
    * [Transform File Writing & Reading](#transform-file-writing--reading)
 
@@ -227,6 +228,101 @@ stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
 
 <p align='center'>
   <img width='45%' src='https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif'>
+</p>
+
+
+### Stabilizing a frame at a time
+
+The method `VidStab.stabilize_frame()` can accept `numpy` arrays to allow stabilization processing a frame at a time.
+This can allow pre/post processing for each frame to be stabilized; see examples below.
+
+#### Simplest form
+
+```python
+from vidstab.VidStab import VidStab
+
+stabilizer = VidStab()
+vidcap = cv2.VideoCapture('input_video.mov')
+
+while True:
+     grabbed_frame, frame = vidcap.read()
+     
+     if frame is not None:
+        # Perform any pre-processing of frame before stabilization here
+        pass
+     
+     # Pass frame to stabilizer even if frame is None
+     # stabilized_frame will be an all black frame until iteration 30
+     stabilized_frame = stabilizer.stabilize_frame(input_frame=frame,
+                                                   smoothing_window=30)
+     if stabilized_frame is None:
+         # There are no more frames available to stabilize
+         break
+     
+     # Perform any post-processing of stabilized frame here
+     pass
+```
+
+#### Example with object tracking
+
+```python
+import os
+import cv2
+from vidstab import VidStab, layer_overlay, download_ostrich_video
+
+# Download test video to stabilize
+if not os.path.isfile("ostrich.mp4"):
+    download_ostrich_video("ostrich.mp4")
+
+# Initialize object tracker, stabilizer, and video reader
+object_tracker = cv2.TrackerCSRT_create()
+stabilizer = VidStab()
+vidcap = cv2.VideoCapture("ostrich.mp4")
+
+# Initialize bounding box for drawing rectangle around tracked object
+object_bounding_box = None
+
+while True:
+    grabbed_frame, frame = vidcap.read()
+
+    # Pass frame to stabilizer even if frame is None
+    stabilized_frame = stabilizer.stabilize_frame(input_frame=frame, border_size=50)
+
+    # If stabilized_frame is None then there are no frames left to process
+    if stabilized_frame is None:
+        break
+
+    # Draw rectangle around tracked object if tracking has started
+    if object_bounding_box is not None:
+        success, object_bounding_box = object_tracker.update(stabilized_frame)
+
+        if success:
+            (x, y, w, h) = [int(v) for v in object_bounding_box]
+            cv2.rectangle(stabilized_frame, (x, y), (x + w, y + h),
+                          (0, 255, 0), 2)
+
+    # Display stabilized output
+    cv2.imshow('Frame', stabilized_frame)
+
+    key = cv2.waitKey(5)
+
+    # Select ROI for tracking and begin object tracking
+    # Non-zero frame indicates stabilization process is warmed up
+    if stabilized_frame.sum() > 0 and object_bounding_box is None:
+        object_bounding_box = cv2.selectROI("Frame",
+                                            stabilized_frame,
+                                            fromCenter=False,
+                                            showCrosshair=True)
+        object_tracker.init(stabilized_frame, object_bounding_box)
+    elif key == 27:
+        break
+
+vidcap.release()
+cv2.destroyAllWindows()
+```
+
+<p align='center'>
+  <img width='50%' src='https://s3.amazonaws.com/python-vidstab/readme/obj_tracking_vidstab_1.gif'>
 </p>
 
 

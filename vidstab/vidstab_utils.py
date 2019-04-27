@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from . import border_utils
 from . import layer_utils
+from .frame import Frame
 from .cv2_utils import cv2_estimateRigidTransform
 
 
@@ -36,17 +37,19 @@ def border_frame(frame, border_size, border_type):
                     'replicate': cv2.BORDER_REPLICATE}
     border_mode = border_modes[border_type]
 
-    bordered_frame = cv2.copyMakeBorder(frame,
-                                        top=border_size,
-                                        bottom=border_size,
-                                        left=border_size,
-                                        right=border_size,
-                                        borderType=border_mode,
-                                        value=[0, 0, 0])
+    bordered_frame_image = cv2.copyMakeBorder(frame.image,
+                                              top=border_size,
+                                              bottom=border_size,
+                                              left=border_size,
+                                              right=border_size,
+                                              borderType=border_mode,
+                                              value=[0, 0, 0])
 
-    alpha_bordered_frame = cv2.cvtColor(bordered_frame, cv2.COLOR_BGR2BGRA)
+    bordered_frame = Frame(bordered_frame_image, color_format=frame.color_format)
+
+    alpha_bordered_frame = bordered_frame.bgra_image
     alpha_bordered_frame[:, :, 3] = 0
-    h, w = frame.shape[:2]
+    h, w = frame.image.shape[:2]
     alpha_bordered_frame[border_size:border_size + h, border_size:border_size + w, 3] = 255
 
     return alpha_bordered_frame, border_mode
@@ -102,10 +105,12 @@ def transform_frame(frame, transform, border_size, border_type):
         raise ValueError('Invalid border type')
 
     transform = build_transformation_matrix(transform)
-    bordered_frame, border_mode = border_frame(frame, border_size, border_type)
+    bordered_frame_image, border_mode = border_frame(frame, border_size, border_type)
 
-    h, w = bordered_frame.shape[:2]
-    transformed_frame = cv2.warpAffine(bordered_frame, transform, (w, h), borderMode=border_mode)
+    h, w = bordered_frame_image.shape[:2]
+    transformed_frame_image = cv2.warpAffine(bordered_frame_image, transform, (w, h), borderMode=border_mode)
+
+    transformed_frame = Frame(transformed_frame_image, color_format='BGRA')
 
     return transformed_frame
 
@@ -120,5 +125,4 @@ def post_process_transformed_frame(transformed_frame, border_options, layer_opti
 
         layer_options['prev_frame'] = cropped_frame
 
-    # drop alpha layer
-    return cropped_frame[:, :, :3], layer_options
+    return cropped_frame, layer_options

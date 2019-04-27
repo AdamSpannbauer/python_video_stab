@@ -1,4 +1,5 @@
 import cv2
+from .frame import Frame
 from .pop_deque import PopDeque
 
 
@@ -33,23 +34,25 @@ class FrameQueue:
         else:
             raise TypeError('Not yet support for non cv2.VideoCapture frame source.')
 
-    def read_frame(self, pop_ind=True):
+    def read_frame(self, pop_ind=True, array=None):
         if isinstance(self.source, cv2.VideoCapture):
             self.grabbed_frame, frame = self.source.read()
         else:
-            raise TypeError('Not yet support for non cv2.VideoCapture frame source.')
+            frame = array
 
         return self._append_frame(frame, pop_ind)
 
     def _append_frame(self, frame, pop_ind=True):
         if frame is not None:
-            self.frames.append(frame)
+            self.frames.append(Frame(frame))
             self.i = self.inds.increment_append()
 
         if pop_ind and self.i is None:
             self.i = self.inds.popleft()
 
-        if pop_ind:
+        if (pop_ind
+                and self.i is not None
+                and self.max_frames is not None):
             break_flag = self.i >= self.max_frames
         else:
             break_flag = None

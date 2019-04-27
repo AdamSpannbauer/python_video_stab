@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import imutils.feature.factories as kp_factory
 
+from vidstab.frame import Frame
 import vidstab.vidstab_utils as utils
 
 kp_detector = kp_factory.FeatureDetector_create('GFTT')
@@ -15,6 +16,7 @@ cv2.rectangle(frame_2, (50, 80), (130, 130), (255, 0, 0), -1)
 frame_1_gray = cv2.cvtColor(frame_1, cv2.COLOR_BGR2GRAY)
 frame_2_gray = cv2.cvtColor(frame_2, cv2.COLOR_BGR2GRAY)
 frame_1_kps = kp_detector.detect(frame_1_gray)
+# noinspection PyArgumentList
 frame_1_kps = np.array([kp.pt for kp in frame_1_kps], dtype='float32').reshape(-1, 1, 2)
 
 optical_flow = cv2.calcOpticalFlowPyrLK(frame_1_gray,
@@ -34,7 +36,8 @@ def test_build_transformation_matrix():
 
 
 def test_border_frame():
-    frame = np.zeros((10, 10, 3), dtype='uint8')
+    frame_image = np.zeros((10, 10, 3), dtype='uint8')
+    frame = Frame(frame_image)
 
     bordered_frame, border_mode = utils.border_frame(frame, border_size=100, border_type='black')
     assert bordered_frame.shape == (210, 210, 4)

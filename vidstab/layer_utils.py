@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from .frame import Frame
 
 
 def layer_overlay(foreground, background):
@@ -62,6 +63,7 @@ def apply_layer_func(cur_frame, prev_frame, layer_func):
     :return: tuple of (layered_frames, prev_frame) where prev_frame is to be used in next layering operation
     """
     if prev_frame is not None:
-        cur_frame = layer_func(cur_frame, prev_frame)
+        cur_frame_image = layer_func(cur_frame.image, prev_frame.image)
+        cur_frame = Frame(cur_frame_image, color_format=cur_frame.color_format)
 
     return cur_frame
