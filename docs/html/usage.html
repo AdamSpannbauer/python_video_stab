@@ -97,6 +97,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#using-borders">Using borders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-frame-layering">Using Frame Layering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#automatic-border-sizing">Automatic border sizing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stabilizing-a-frame-at-a-time">Stabilizing a frame at a time</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#simplest-form">Simplest form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-with-object-tracking">Example with object tracking</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#working-with-live-video">Working with live video</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
 </ul>
@@ -352,6 +357,98 @@ from</em><a class="reference external" href="https://www.facebook.com/happylivin
 </pre></div>
 </div>
 <p><img alt="image8" src="https://s3.amazonaws.com/python-vidstab/readme/auto_border_stable_ostrich.gif" /></p>
+</div>
+<div class="section" id="stabilizing-a-frame-at-a-time">
+<h2>Stabilizing a frame at a time<a class="headerlink" href="#stabilizing-a-frame-at-a-time" title="Permalink to this headline">¶</a></h2>
+<p>The method <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize_frame()</span></code> can accept <code class="docutils literal notranslate"><span class="pre">numpy</span></code> arrays to
+allow stabilization processing a frame at a time. This can allow
+pre/post processing for each frame to be stabilized; see examples below.</p>
+<div class="section" id="simplest-form">
+<h3>Simplest form<a class="headerlink" href="#simplest-form" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab.VidStab</span> <span class="k">import</span> <span class="n">VidStab</span>
+
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="n">vidcap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="s1">&#39;input_video.mov&#39;</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+     <span class="n">grabbed_frame</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vidcap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+     <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Perform any pre-processing of frame before stabilization here</span>
+        <span class="k">pass</span>
+
+     <span class="c1"># Pass frame to stabilizer even if frame is None</span>
+     <span class="c1"># stabilized_frame will be an all black frame until iteration 30</span>
+     <span class="n">stabilized_frame</span> <span class="o">=</span> <span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize_frame</span><span class="p">(</span><span class="n">input_frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span>
+                                                   <span class="n">smoothing_window</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+     <span class="k">if</span> <span class="n">stabilized_frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+         <span class="c1"># There are no more frames available to stabilize</span>
+         <span class="k">break</span>
+
+     <span class="c1"># Perform any post-processing of stabilized frame here</span>
+     <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-with-object-tracking">
+<h3>Example with object tracking<a class="headerlink" href="#example-with-object-tracking" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
+
+<span class="c1"># Download test video to stabilize</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;ostrich.mp4&quot;</span><span class="p">):</span>
+    <span class="n">download_ostrich_video</span><span class="p">(</span><span class="s2">&quot;ostrich.mp4&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize object tracker, stabilizer, and video reader</span>
+<span class="n">object_tracker</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">TrackerCSRT_create</span><span class="p">()</span>
+<span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
+<span class="n">vidcap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="s2">&quot;ostrich.mp4&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize bounding box for drawing rectangle around tracked object</span>
+<span class="n">object_bounding_box</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">grabbed_frame</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vidcap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># Pass frame to stabilizer even if frame is None</span>
+    <span class="n">stabilized_frame</span> <span class="o">=</span> <span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize_frame</span><span class="p">(</span><span class="n">input_frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">border_size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+
+    <span class="c1"># If stabilized_frame is None then there are no frames left to process</span>
+    <span class="k">if</span> <span class="n">stabilized_frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">break</span>
+
+    <span class="c1"># Draw rectangle around tracked object if tracking has started</span>
+    <span class="k">if</span> <span class="n">object_bounding_box</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">object_bounding_box</span> <span class="o">=</span> <span class="n">object_tracker</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">stabilized_frame</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">object_bounding_box</span><span class="p">]</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">stabilized_frame</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">h</span><span class="p">),</span>
+                          <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Display stabilized output</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;Frame&#39;</span><span class="p">,</span> <span class="n">stabilized_frame</span><span class="p">)</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># Select ROI for tracking and begin object tracking</span>
+    <span class="c1"># Non-zero frame indicates stabilization process is warmed up</span>
+    <span class="k">if</span> <span class="n">stabilized_frame</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">object_bounding_box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">object_bounding_box</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">selectROI</span><span class="p">(</span><span class="s2">&quot;Frame&quot;</span><span class="p">,</span>
+                                            <span class="n">stabilized_frame</span><span class="p">,</span>
+                                            <span class="n">fromCenter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                            <span class="n">showCrosshair</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">object_tracker</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">stabilized_frame</span><span class="p">,</span> <span class="n">object_bounding_box</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="mi">27</span><span class="p">:</span>
+        <span class="k">break</span>
+
+<span class="n">vidcap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="image10" src="https://s3.amazonaws.com/python-vidstab/readme/obj_tracking_vidstab_1.gif" /></p>
+</div>
 </div>
 <div class="section" id="working-with-live-video">
 <h2>Working with live video<a class="headerlink" href="#working-with-live-video" title="Permalink to this headline">¶</a></h2>

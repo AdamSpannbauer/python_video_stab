@@ -454,7 +454,6 @@ Stabilization is on an <code class="docutils literal notranslate"><span class="p
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vidstab.VidStab</span> <span class="k">import</span> <span class="n">VidStab</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">vidcap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="s1">&#39;input_video.mov&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">window_size</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">grabbed_frame</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vidcap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Pass frame to stabilizer even if frame is None</span>
