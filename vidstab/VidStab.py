@@ -15,6 +15,7 @@ from . import border_utils
 from . import auto_border_utils
 from . import plot_utils
 from .frame_queue import FrameQueue
+from . frame import Frame
 
 
 class VidStab:
@@ -208,6 +209,9 @@ class VidStab:
             if not self.frame_queue.frames_to_process() or break_flag:
                 break
 
+            if not use_stored_transforms:
+                self._gen_next_raw_transform()
+
             transformed = self._apply_next_transform(i, use_stored_transforms=use_stored_transforms)
 
             if transformed is None:
@@ -302,7 +306,6 @@ class VidStab:
 
     def _apply_next_transform(self, i, use_stored_transforms=False):
         if not use_stored_transforms:
-            self._gen_next_raw_transform()
             self._gen_transforms()
 
         frame_i = self.frame_queue.frames.popleft()
@@ -338,7 +341,7 @@ class VidStab:
 
             self._process_first_frame(array=input_frame)
 
-            blank_frame = np.zeros_like(input_frame)
+            blank_frame = Frame(np.zeros_like(input_frame))
             blank_frame = border_utils.crop_frame(blank_frame, self.border_options)
 
             if self.border_options['border_size'] > 0:
@@ -353,13 +356,15 @@ class VidStab:
         if len(self.frame_queue.frames) == 0:
             return None
 
-        i, _ = self.frame_queue.read_frame(array=input_frame, pop_ind=False)
-        self._gen_next_raw_transform()
+        if input_frame is not None:
+            _, _ = self.frame_queue.read_frame(array=input_frame, pop_ind=False)
+            if not use_stored_transforms:
+                self._gen_next_raw_transform()
 
         if not self._init_is_complete(gen_all=False):
             return self._default_stabilize_frame_output
 
-        stabilized_frame = self._apply_next_transform(i, use_stored_transforms=use_stored_transforms)
+        stabilized_frame = self._apply_next_transform(self.frame_queue.i, use_stored_transforms=use_stored_transforms)
 
         return stabilized_frame
 
