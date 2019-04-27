@@ -371,7 +371,6 @@ class VidStab:
         >>> from vidstab.VidStab import VidStab
         >>> stabilizer = VidStab()
         >>> vidcap = cv2.VideoCapture('input_video.mov')
-        >>> window_size = 30
         >>> while True:
         >>>     grabbed_frame, frame = vidcap.read()
         >>>     # Pass frame to stabilizer even if frame is None
@@ -395,11 +394,14 @@ class VidStab:
             blank_frame = border_utils.crop_frame(blank_frame, self.border_options)
 
             if self.border_options['border_size'] > 0:
-                blank_frame, _ = vidstab_utils.border_frame(blank_frame,
-                                                            self.border_options['border_size'],
-                                                            self.border_options['border_type'])
+                blank_frame_alpha, _ = vidstab_utils.border_frame(blank_frame,
+                                                                  self.border_options['border_size'],
+                                                                  self.border_options['border_type'])
 
-            self._default_stabilize_frame_output = blank_frame
+                blank_frame_np = Frame(blank_frame_alpha).cvt_color(blank_frame.color_format)
+                blank_frame = Frame(blank_frame_np)
+
+            self._default_stabilize_frame_output = blank_frame.image
 
             return self._default_stabilize_frame_output
 
