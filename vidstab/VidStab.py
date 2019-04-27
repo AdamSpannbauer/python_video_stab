@@ -331,7 +331,57 @@ class VidStab:
     def stabilize_frame(self, input_frame, smoothing_window=30,
                         border_type='black', border_size=0, layer_func=None,
                         use_stored_transforms=False):
+        """Stabilize single frame of video being iterated
 
+        Perform video stabilization a single frame at a time.  Outputted stabilized frame will be on a
+        ``smoothing_window`` delay.  When frames processed is ``< smoothing_window``, black frames will be returned.
+        When frames processed is ``>= smoothing_window``, the stabilized frame ``smoothing_window`` ago will be
+        returned.  When ``input_frame is None`` stabilization will still be attempted, if there are not frames left to
+        process then ``None`` will be returned.
+
+        :param input_frame: An OpenCV image (as numpy array) or None
+        :param smoothing_window: window size to use when smoothing trajectory
+        :param border_type: How to handle negative space created by stabilization translations/rotations.
+                            Options: ``['black', 'reflect', 'replicate']``
+        :param border_size: Size of border in output.
+                            Positive values will pad video equally on all sides,
+                            negative values will crop video equally on all sides,
+                            ``'auto'`` will attempt to minimally pad to avoid cutting off portions of transformed frames
+        :param layer_func: Function to layer frames in output.
+                           The function should accept 2 parameters: foreground & background.
+                           The current frame of video will be passed as foreground,
+                           the previous frame will be passed as the background
+                           (after the first frame of output the background will be the output of
+                           layer_func on the last iteration)
+        :param use_stored_transforms: should stored transforms from last stabilization be used instead of
+                                      recalculating them?
+        :return: 1 of 3 outputs will be returned:
+
+            * Case 1 - Stabilization process is still warming up
+                + **An all black frame of same shape as input_frame is returned.**
+                + A minimum of ``smoothing_window`` frames need to be processed to perform stabilization.
+                + This behavior was based on ``cv2.bgsegm.createBackgroundSubtractorMOG()``.
+            * Case 2 - Stabilization process is warmed up and ``input_frame is not None``
+                + **A stabilized frame is returned**
+                + This will not be the stabilized version of ``input_frame``.
+                  Stabilization is on an ``smoothing_window`` frame delay
+            * Case 3 - Stabilization process is finished
+                + **None**
+
+        >>> from vidstab.VidStab import VidStab
+        >>> stabilizer = VidStab()
+        >>> vidcap = cv2.VideoCapture('input_video.mov')
+        >>> window_size = 30
+        >>> while True:
+        >>>     grabbed_frame, frame = vidcap.read()
+        >>>     # Pass frame to stabilizer even if frame is None
+        >>>     # stabilized_frame will be an all black frame until iteration 30
+        >>>     stabilized_frame = stabilizer.stabilize_frame(input_frame=frame,
+        >>>                                                   smoothing_window=30)
+        >>>     if stabilized_frame is None:
+        >>>         # There are no more frames available to stabilize
+        >>>         break
+        """
         self._set_border_options(border_size, border_type)
         self.layer_options['layer_func'] = layer_func
 
