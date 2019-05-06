@@ -39,6 +39,19 @@ def test_kp_options():
     assert 'invalid keyword argument' in str(err.value)
 
 
+def test_invalid_input_path():
+    stabilizer = VidStab(kp_method='FAST', threshold=42, nonmaxSuppression=False)
+    with pytest.raises(FileNotFoundError) as err:
+        stabilizer.gen_transforms("fake_input_path.mp4")
+
+    assert "fake_input_path.mp4 does not exist" in str(err.value)
+
+    with pytest.raises(FileNotFoundError) as err:
+        stabilizer.stabilize("fake_input_path.mp4", "output.avi")
+
+    assert "fake_input_path.mp4 does not exist" in str(err.value)
+
+
 def test_video_dep_funcs_run():
     # just tests to check functions run
     stabilizer = VidStab()

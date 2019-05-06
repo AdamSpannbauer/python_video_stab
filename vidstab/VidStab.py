@@ -3,6 +3,7 @@
 from .cv2_utils import safe_import_cv2
 safe_import_cv2()  # inform user of pip install vidstab[cv2] if ModuleNotFoundError
 
+import os
 import time
 import warnings
 import cv2
@@ -257,6 +258,10 @@ class VidStab:
         >>> stabilizer.apply_transforms(input_path='input_video.mov', output_path='stable_video.avi')
         """
         self._smoothing_window = smoothing_window
+
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(f'{input_path} does not exist')
+
         self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
         self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=float('inf'))
         bar = self._init_trajectory(smoothing_window=smoothing_window,
@@ -461,6 +466,9 @@ class VidStab:
         """
         if border_size == 'auto':
             self.auto_border_flag = True
+
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(f'{input_path} does not exist')
 
         self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
 
