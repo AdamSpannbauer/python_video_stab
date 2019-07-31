@@ -388,6 +388,7 @@ class VidStab:
         """
         self._set_border_options(border_size, border_type)
         self.layer_options['layer_func'] = layer_func
+        self._smoothing_window = smoothing_window
 
         # Store first frame
         if self.frame_queue.max_len is None:
