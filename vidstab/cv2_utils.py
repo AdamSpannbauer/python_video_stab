@@ -23,6 +23,9 @@ def safe_import_cv2():
 
 def cv2_estimateRigidTransform(from_pts, to_pts, full=False):
     """Estimate transforms in OpenCV 3 or OpenCV 4"""
+    if not from_pts.shape[0] or not to_pts.shape[0]:
+        return None
+
     if imutils.is_cv4():
         transform = cv2.estimateAffinePartial2D(from_pts, to_pts)[0]
     else:
