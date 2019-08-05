@@ -1,7 +1,7 @@
 import builtins
 import sys
 import pytest
-from vidstab.cv2_utils import safe_import_cv2
+from vidstab.cv2_utils import safe_import_cv2, cv2_estimateRigidTransform
 
 
 @pytest.fixture
@@ -29,3 +29,10 @@ def test_missing_cv2():
         safe_import_cv2()
 
     assert 'pip install vidstab[cv2]' in str(err.value)
+
+
+def test_cv2_estimateRigidTransform():
+    missing_kps = np.empty((0,))
+    transform = cv2_estimateRigidTransform(missing_kps, missing_kps)
+
+    assert transform is None
