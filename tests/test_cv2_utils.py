@@ -1,6 +1,7 @@
 import builtins
 import sys
 import pytest
+import numpy as np
 from vidstab.cv2_utils import safe_import_cv2, cv2_estimateRigidTransform
 
 
