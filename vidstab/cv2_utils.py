@@ -21,6 +21,7 @@ def safe_import_cv2():
         """)
 
 
+# noinspection PyPep8Naming
 def cv2_estimateRigidTransform(from_pts, to_pts, full=False):
     """Estimate transforms in OpenCV 3 or OpenCV 4"""
     if not from_pts.shape[0] or not to_pts.shape[0]:
