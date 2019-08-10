@@ -128,14 +128,14 @@ class VidStab:
         max_ind = min([self.frame_queue.max_frames,
                        self.frame_queue.max_len])
 
-        if self.frame_queue.inds[-1] >= max_ind:
+        if self.frame_queue.inds[-1] >= max_ind - 1:
             return True
 
         return False
 
     def _process_first_frame(self, array=None):
         # read first frame
-        _, _ = self.frame_queue.read_frame(array=array)
+        _, _, _ = self.frame_queue.read_frame(array=array, pop_ind=False)
         # convert to gray scale
         prev_frame = self.frame_queue.frames[-1]
         prev_frame_gray = prev_frame.gray_image
@@ -160,7 +160,7 @@ class VidStab:
         # iterate through frames
         while True:
             # read current frame
-            _, break_flag = self.frame_queue.read_frame(pop_ind=False)
+            _, _, break_flag = self.frame_queue.read_frame(pop_ind=False)
             if not self.frame_queue.grabbed_frame:
                 general_utils.update_progress_bar(bar, show_progress)
                 break
@@ -205,7 +205,7 @@ class VidStab:
 
         while True:
             general_utils.update_progress_bar(progress_bar)
-            i, break_flag = self.frame_queue.read_frame()
+            i, frame_i, break_flag = self.frame_queue.read_frame()
 
             if not self.frame_queue.frames_to_process() or break_flag:
                 break
@@ -213,7 +213,7 @@ class VidStab:
             if not use_stored_transforms:
                 self._gen_next_raw_transform()
 
-            transformed = self._apply_next_transform(i, use_stored_transforms=use_stored_transforms)
+            transformed = self._apply_next_transform(i, frame_i, use_stored_transforms=use_stored_transforms)
 
             if transformed is None:
                 warnings.warn('Video is longer than available transformations; halting process.')
@@ -263,7 +263,7 @@ class VidStab:
             raise FileNotFoundError(f'{input_path} does not exist')
 
         self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
-        self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=float('inf'))
+        self.frame_queue.reset_queue(max_len=smoothing_window + 1, max_frames=float('inf'))
         bar = self._init_trajectory(smoothing_window=smoothing_window,
                                     max_frames=float('inf'),
                                     gen_all=True,
@@ -309,11 +309,15 @@ class VidStab:
                        border_type=border_type, border_size=border_size, layer_func=layer_func, playback=playback,
                        use_stored_transforms=True, show_progress=show_progress, output_fourcc=output_fourcc)
 
-    def _apply_next_transform(self, i, use_stored_transforms=False):
+    def _apply_next_transform(self, i, frame_i, use_stored_transforms=False):
         if not use_stored_transforms:
             self._gen_transforms()
 
-        frame_i = self.frame_queue.frames.popleft()
+        if i is None:
+            i = self.frame_queue.inds.popleft()
+
+        if frame_i is None:
+            frame_i = self.frame_queue.frames.popleft()
 
         try:
             transform_i = self.transforms[i, :]
@@ -392,7 +396,7 @@ class VidStab:
 
         # Store first frame
         if self.frame_queue.max_len is None:
-            self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=float('inf'))
+            self.frame_queue.reset_queue(max_len=smoothing_window + 1, max_frames=float('inf'))
 
             self._process_first_frame(array=input_frame)
 
@@ -414,15 +418,18 @@ class VidStab:
         if len(self.frame_queue.frames) == 0:
             return None
 
+        frame_i = None
         if input_frame is not None:
-            _, _ = self.frame_queue.read_frame(array=input_frame, pop_ind=False)
+            _, frame_i, _ = self.frame_queue.read_frame(array=input_frame, pop_ind=False)
             if not use_stored_transforms:
                 self._gen_next_raw_transform()
 
         if not self._init_is_complete(gen_all=False):
             return self._default_stabilize_frame_output
 
-        stabilized_frame = self._apply_next_transform(self.frame_queue.i, use_stored_transforms=use_stored_transforms)
+        stabilized_frame = self._apply_next_transform(self.frame_queue.i,
+                                                      frame_i,
+                                                      use_stored_transforms=use_stored_transforms)
 
         return stabilized_frame
 
@@ -477,13 +484,13 @@ class VidStab:
         if isinstance(input_path, int):
             time.sleep(0.1)
 
-        self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=max_frames)
+        self.frame_queue.reset_queue(max_len=smoothing_window + 1, max_frames=max_frames)
 
         if self.auto_border_flag and not use_stored_transforms:
             use_stored_transforms = True
             self.gen_transforms(input_path, smoothing_window=smoothing_window, show_progress=show_progress)
             self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
-            self.frame_queue.reset_queue(max_len=smoothing_window, max_frames=max_frames)
+            self.frame_queue.reset_queue(max_len=smoothing_window + 1, max_frames=max_frames)
 
             bar = general_utils.init_progress_bar(self.frame_queue.source_frame_count,
                                                   max_frames,
