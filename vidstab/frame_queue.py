@@ -43,8 +43,9 @@ class FrameQueue:
         return self._append_frame(frame, pop_ind)
 
     def _append_frame(self, frame, pop_ind=True):
+        popped_frame = None
         if frame is not None:
-            self.frames.append(Frame(frame))
+            popped_frame = self.frames.pop_append(Frame(frame))
             self.i = self.inds.increment_append()
 
         if pop_ind and self.i is None:
@@ -57,13 +58,13 @@ class FrameQueue:
         else:
             break_flag = None
 
-        return self.i, break_flag
+        return self.i, popped_frame, break_flag
 
     def populate_queue(self, smoothing_window):
         n = min([smoothing_window, self.max_frames])
 
         for i in range(n):
-            _, _ = self.read_frame(pop_ind=False)
+            _, _, _ = self.read_frame(pop_ind=False)
             if not self.grabbed_frame:
                 break
 

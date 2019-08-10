@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 
+from vidstab.frame import Frame
 from vidstab.frame_queue import FrameQueue
 
 
@@ -27,10 +28,17 @@ def test_set_frame_source():
 
 
 def test_read_frame():
-    frame_queue = FrameQueue()
+    frame_queue = FrameQueue(max_len=1)
     black_frame_image = np.zeros((3, 3, 3), dtype='uint8')
 
-    i, break_flag = frame_queue.read_frame(array=black_frame_image)
+    i, frame, break_flag = frame_queue.read_frame(array=black_frame_image, pop_ind=False)
+
+    assert i is None
+    assert frame is None
+    assert break_flag is None
+
+    i, frame, break_flag = frame_queue.read_frame(array=black_frame_image)
 
     assert i == 0
+    assert isinstance(frame, Frame)
     assert break_flag is None

@@ -6,7 +6,7 @@ import pytest
 
 from vidstab import VidStab
 from vidstab.download_videos import download_ostrich_video, download_truncated_ostrich_video
-from .pickled_transforms import download_pickled_transforms, pickle_test_transforms
+from tests.pickled_transforms import download_pickled_transforms, pickle_test_transforms
 
 # excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python
 # see: https://github.com/skvark/opencv-python/issues/126
@@ -102,3 +102,7 @@ def test_stabilize_frame():
     assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
     assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
     assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])
+
+
+if __name__ == '__main__':
+    test_stabilize_frame()
