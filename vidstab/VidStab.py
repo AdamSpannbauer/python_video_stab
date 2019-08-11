@@ -475,7 +475,7 @@ class VidStab:
         if border_size == 'auto':
             self.auto_border_flag = True
 
-        if not os.path.exists(input_path):
+        if not os.path.exists(input_path) and not isinstance(input_path, int):
             raise FileNotFoundError(f'{input_path} does not exist')
 
         self.frame_queue.set_frame_source(cv2.VideoCapture(input_path))
