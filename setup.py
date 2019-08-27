@@ -19,7 +19,6 @@ setup(name='vidstab',
       license='MIT',
       install_requires=[
           'numpy',
-          'pandas',
           'imutils>=0.5.2',
           'progress',
           'matplotlib',
