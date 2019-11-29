@@ -17,12 +17,12 @@ wheel_name="$(find ./dist -iname '*.whl')"
 version_number=$(cut -d- -f2 <<<"$wheel_name")
 
 # confirm release tar and version number
-printf "\nRelease tar will be: $release_file\n"
-printf "Release version/tag will be: $version_number\n\n"
+printf "\nRelease tar will be: %s\n" "$release_file"
+printf "Release version/tag will be: %s\n\n" "$version_number"
 
 # prompt if builds should be published
 echo -n "Confirm release (y/n)? "
-read answer
+read -r answer
 
 # release if requested
 if [[ "$answer" != "${answer#[Yy]}" ]] ;then
