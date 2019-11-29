@@ -16,8 +16,8 @@ def layer_overlay(foreground, background):
     >>>
     >>> stabilizer = VidStab()
     >>>
-    >>> stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
-    >>>                      output_path=OUTPUT_VIDEO_PATH,
+    >>> stabilizer.stabilize(input_path='my_shaky_video.avi',
+    >>>                      output_path='stabilized_output.avi',
     >>>                      border_size=100,
     >>>                      layer_func=layer_overlay)
     """
@@ -43,8 +43,8 @@ def layer_blend(foreground, background, foreground_alpha=.6):
     >>>
     >>> stabilizer = VidStab()
     >>>
-    >>> stabilizer.stabilize(input_path=INPUT_VIDEO_PATH,
-    >>>                      output_path=OUTPUT_VIDEO_PATH,
+    >>> stabilizer.stabilize(input_path='my_shaky_video.avi',
+    >>>                      output_path='stabilized_output.avi',
     >>>                      border_size=100,
     >>>                      layer_func=layer_blend)
     """

@@ -67,6 +67,7 @@ def test_match_keypoints():
     prev_expected = cur_expected - 30
 
     assert (cur_matched_kps == cur_expected).all()
+    # noinspection PyUnresolvedReferences
     assert (prev_matched_kps == prev_expected).all()
 
 

@@ -5,7 +5,6 @@ $ python -m cProfile -o temp.dat visual_inspection_tests.py
 $ snakeviz temp.dat
 """
 import tempfile
-import warnings
 from vidstab import VidStab, layer_overlay
 import vidstab.download_videos as dl
 

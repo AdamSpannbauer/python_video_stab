@@ -44,6 +44,7 @@ def pickle_test_transforms(vidstab_obj, path):
         '{}/np_ostrich_smooth_trajectory_{}{}'
     ]
 
+    # noinspection PyProtectedMember
     paths = [p.format(path, vidstab_obj._smoothing_window, suffix) for p in base_paths]
 
     pickle_dump(vidstab_obj.transforms, paths[0])
