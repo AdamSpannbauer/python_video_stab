@@ -10,6 +10,7 @@ def missing_cv2(monkeypatch):
     """Monkey patch import to test missing cv2"""
     import_og = builtins.__import__
 
+    # noinspection PyShadowingBuiltins, PyUnusedLocal
     def mocked_import(name, globals, locals, fromlist, level):
         if name == 'cv2':
             raise ModuleNotFoundError()
@@ -32,6 +33,7 @@ def test_missing_cv2():
     assert 'pip install vidstab[cv2]' in str(err.value)
 
 
+# noinspection PyPep8Naming
 def test_cv2_estimateRigidTransform():
     missing_kps = np.empty((0,))
     transform = cv2_estimateRigidTransform(missing_kps, missing_kps)

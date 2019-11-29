@@ -30,6 +30,7 @@ def cv2_estimateRigidTransform(from_pts, to_pts, full=False):
     if imutils.is_cv4():
         transform = cv2.estimateAffinePartial2D(from_pts, to_pts)[0]
     else:
+        # noinspection PyUnresolvedReferences
         transform = cv2.estimateRigidTransform(from_pts, to_pts, full)
 
     return transform

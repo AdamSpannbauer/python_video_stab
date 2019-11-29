@@ -20,7 +20,7 @@ def download_ostrich_video(download_to_path):
     >>> download_ostrich_video(path)
     >>>
     >>> stabilizer = VidStab()
-    >>> stabilizer.stabilize(path, OUTPUT_VIDEO_PATH)
+    >>> stabilizer.stabilize(path, 'output_path.avi')
     """
     urlretrieve(REMOTE_OSTRICH_VID_PATH, download_to_path)
 

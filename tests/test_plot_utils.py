@@ -23,6 +23,7 @@ def check_vidstab_plot(plot, expected_axes1, expected_axes2):
     axes1_lims = int_axes_lims(axes1)
     axes2_lims = int_axes_lims(axes2)
 
+    # noinspection PyUnresolvedReferences
     fig_check = isinstance(fig, matplotlib.figure.Figure)
     axes1_check = axes1_lims == expected_axes1
     axes2_check = axes2_lims == expected_axes2
