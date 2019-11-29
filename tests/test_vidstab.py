@@ -8,22 +8,24 @@ from vidstab import VidStab
 from vidstab.download_videos import download_ostrich_video, download_truncated_ostrich_video
 from .pickled_transforms import download_pickled_transforms, pickle_test_transforms
 
+# atol value to use when comparing results using np.allclose
+NP_ALLCLOSE_ATOL = 1e-3
+
 # excluding non-free "SIFT" & "SURF" methods do to exclusion from opencv-contrib-python
 # see: https://github.com/skvark/opencv-python/issues/126
-kp_methods = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]
+KP_METHODS = ["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]
 
 tmp_dir = tempfile.TemporaryDirectory()
+TRUNCATED_OSTRICH_VIDEO = '{}/trunc_vid.avi'.format(tmp_dir.name)
+OSTRICH_VIDEO = '{}/vid.avi'.format(tmp_dir.name)
 
-truncated_ostrich_video = '{}/trunc_vid.avi'.format(tmp_dir.name)
-ostrich_video = '{}/vid.avi'.format(tmp_dir.name)
-
-download_truncated_ostrich_video(truncated_ostrich_video)
-download_ostrich_video(ostrich_video)
+download_truncated_ostrich_video(TRUNCATED_OSTRICH_VIDEO)
+download_ostrich_video(OSTRICH_VIDEO)
 
 
 # test that all keypoint detection methods load without error
 def test_default_init():
-    for kp in kp_methods:
+    for kp in KP_METHODS:
         print('testing kp method {}'.format(kp))
         assert VidStab(kp_method=kp).kp_method == kp
 
@@ -55,35 +57,40 @@ def test_invalid_input_path():
 def test_video_dep_funcs_run():
     # just tests to check functions run
     stabilizer = VidStab()
-    stabilizer.gen_transforms(truncated_ostrich_video, smoothing_window=2, show_progress=True)
+    stabilizer.gen_transforms(TRUNCATED_OSTRICH_VIDEO, smoothing_window=2, show_progress=True)
 
     assert stabilizer.smoothed_trajectory.shape == stabilizer.trajectory.shape
     assert stabilizer.transforms.shape == stabilizer.trajectory.shape
 
     with tempfile.TemporaryDirectory() as tmpdir:
         output_vid = '{}/test_output.avi'.format(tmpdir)
-        stabilizer.apply_transforms(truncated_ostrich_video, output_vid)
-        stabilizer.stabilize(truncated_ostrich_video, output_vid, smoothing_window=2)
+        stabilizer.apply_transforms(TRUNCATED_OSTRICH_VIDEO, output_vid)
+        stabilizer.stabilize(TRUNCATED_OSTRICH_VIDEO, output_vid, smoothing_window=2)
+
+
+def check_transforms(stabilizer, is_cv4=True):
+    # noinspection PyProtectedMember
+    unpickled_transforms = download_pickled_transforms(stabilizer._smoothing_window, cv4=is_cv4)
+
+    assert np.allclose(stabilizer.transforms, unpickled_transforms[0], atol=NP_ALLCLOSE_ATOL)
+    assert np.allclose(stabilizer.trajectory, unpickled_transforms[1], atol=NP_ALLCLOSE_ATOL)
+    assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2], atol=NP_ALLCLOSE_ATOL)
 
 
 def test_trajectory_transform_values():
     for window in [15, 30, 60]:
         stabilizer = VidStab()
-        stabilizer.gen_transforms(input_path=ostrich_video, smoothing_window=window)
+        stabilizer.gen_transforms(input_path=OSTRICH_VIDEO, smoothing_window=window)
 
         pickle_test_transforms(stabilizer, 'pickled_transforms')
 
-        unpickled_transforms = download_pickled_transforms(window, cv4=imutils.is_cv4())
-
-        assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
-        assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
-        assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])
+        check_transforms(stabilizer, is_cv4=imutils.is_cv4())
 
 
 def test_stabilize_frame():
     # Init stabilizer and video reader
     stabilizer = VidStab()
-    vidcap = cv2.VideoCapture(ostrich_video)
+    vidcap = cv2.VideoCapture(OSTRICH_VIDEO)
 
     window_size = 30
     while True:
@@ -97,8 +104,9 @@ def test_stabilize_frame():
         if stabilized_frame is None:
             break
 
-    unpickled_transforms = download_pickled_transforms(window_size, cv4=imutils.is_cv4())
+    check_transforms(stabilizer, is_cv4=imutils.is_cv4())
 
-    assert np.allclose(stabilizer.transforms, unpickled_transforms[0])
-    assert np.allclose(stabilizer.trajectory, unpickled_transforms[1])
-    assert np.allclose(stabilizer.smoothed_trajectory, unpickled_transforms[2])
+
+if __name__ == '__main__':
+    test_trajectory_transform_values()
+    test_stabilize_frame()
