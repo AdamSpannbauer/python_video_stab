@@ -136,6 +136,10 @@ class VidStab:
     def _process_first_frame(self, array=None):
         # read first frame
         _, _, _ = self.frame_queue.read_frame(array=array, pop_ind=False)
+
+        if array is None and len(self.frame_queue.frames) == 0:
+            raise ValueError('First frame is None. Check if input file/stream is correct.')
+
         # convert to gray scale
         prev_frame = self.frame_queue.frames[-1]
         prev_frame_gray = prev_frame.gray_image
