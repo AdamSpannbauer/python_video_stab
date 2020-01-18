@@ -85,3 +85,21 @@ def test_transform_frame_exception():
         utils.transform_frame(None, None, None, border_type='fake')
 
     assert 'Invalid border type' in str(err.value)
+
+
+def test_none_optical_flow():
+    prev_gray = np.ones((1208, 1920, 3)) * 250
+    current_frame_gray = np.ones((1208, 1920, 3)) * 250
+    prev_kps = np.array([], dtype='float32')
+    # noinspection PyArgumentList
+    prev_kps = prev_kps.reshape(0, 1, 2)
+
+    none_optical_flow = cv2.calcOpticalFlowPyrLK(prev_gray,
+                                                 current_frame_gray,
+                                                 prev_kps,
+                                                 None)
+
+    matched_keypoints = utils.match_keypoints(none_optical_flow, prev_kps)
+    transform_i = utils.estimate_partial_transform(matched_keypoints)
+
+    assert transform_i == [0, 0, 0]
