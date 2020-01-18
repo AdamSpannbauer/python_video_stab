@@ -53,6 +53,12 @@ def test_invalid_input_path():
 
     assert "fake_input_path.mp4 does not exist" in str(err.value)
 
+    with pytest.raises(ValueError) as err:
+        tmp_file = tempfile.NamedTemporaryFile(suffix=".mp4")
+        stabilizer.stabilize(tmp_file.name, "output.avi")
+
+    assert "First frame is None" in str(err.value)
+
 
 def test_video_dep_funcs_run():
     # just tests to check functions run
@@ -105,8 +111,3 @@ def test_stabilize_frame():
             break
 
     check_transforms(stabilizer, is_cv4=imutils.is_cv4())
-
-
-if __name__ == '__main__':
-    test_trajectory_transform_values()
-    test_stabilize_frame()
