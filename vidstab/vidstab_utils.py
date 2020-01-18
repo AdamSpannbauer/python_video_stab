@@ -67,6 +67,10 @@ def match_keypoints(optical_flow, prev_kps):
     # storage for keypoints with status 1
     prev_matched_kp = []
     cur_matched_kp = []
+
+    if status is None:
+        return cur_matched_kp, prev_matched_kp
+
     for i, matched in enumerate(status):
         # store coords of keypoints that appear in both
         if matched:
