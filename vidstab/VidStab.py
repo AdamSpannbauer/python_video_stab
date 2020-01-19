@@ -8,6 +8,7 @@ import time
 import warnings
 import cv2
 import numpy as np
+import imutils
 import imutils.feature.factories as kp_factory
 import matplotlib.pyplot as plt
 from . import general_utils
@@ -47,7 +48,7 @@ class VidStab:
     :ivar transforms: a 2d numpy array storing the transformations used from frame to frame
     """
 
-    def __init__(self, kp_method='GFTT', *args, **kwargs):
+    def __init__(self, kp_method='GFTT', processing_max_dim=100, *args, **kwargs):
         """instantiate VidStab class
 
         :param kp_method: String of the type of keypoint detector to use. Available options are:
@@ -68,6 +69,9 @@ class VidStab:
                                                                  blockSize=3)
         else:
             self.kp_detector = kp_factory.FeatureDetector_create(kp_method, *args, **kwargs)
+
+        self.processing_max_dim = processing_max_dim
+        self._processing_resize_kwargs = {}
 
         self._smoothing_window = 30
         self._raw_transforms = []
@@ -91,6 +95,25 @@ class VidStab:
 
         self._default_stabilize_frame_output = None
 
+    def _resize_frame(self, frame):
+        if self._processing_resize_kwargs == {}:
+            if self.processing_max_dim:
+                shape = frame.shape
+                max_dim_size = max(shape)
+
+                if max_dim_size <= self.processing_max_dim:
+                    self._processing_resize_kwargs = None
+                else:
+                    max_dim_ind = shape.index(max_dim_size)
+                    max_dim_name = ['height', 'width'][max_dim_ind]
+                    self._processing_resize_kwargs = {max_dim_name: self.processing_max_dim}
+
+        if self._processing_resize_kwargs is None:
+            return frame
+
+        resized = imutils.resize(frame, **self._processing_resize_kwargs)
+        return resized
+
     def _update_prev_frame(self, current_frame_gray):
         self.prev_gray = current_frame_gray[:]
         self.prev_kps = self.kp_detector.detect(self.prev_gray)
@@ -107,6 +130,7 @@ class VidStab:
     def _gen_next_raw_transform(self):
         current_frame = self.frame_queue.frames[-1]
         current_frame_gray = current_frame.gray_image
+        current_frame_gray = self._resize_frame(current_frame_gray)
 
         # calc flow of movement
         optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
@@ -143,6 +167,8 @@ class VidStab:
         # convert to gray scale
         prev_frame = self.frame_queue.frames[-1]
         prev_frame_gray = prev_frame.gray_image
+        prev_frame_gray = self._resize_frame(prev_frame_gray)
+
         # detect keypoints
         prev_kps = self.kp_detector.detect(prev_frame_gray)
         # noinspection PyArgumentList
