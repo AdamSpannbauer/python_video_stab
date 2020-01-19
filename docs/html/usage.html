@@ -19,34 +19,36 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Module documentation" href="module_docs.html" />
     <link rel="prev" title="Install Options" href="installation.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -186,18 +188,18 @@
 own custom python code.</p>
 <div class="section" id="using-from-command-line">
 <h2>Using from command line<a class="headerlink" href="#using-from-command-line" title="Permalink to this headline">¶</a></h2>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using defaults</span>
-<span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">vidstab</span> <span class="o">--</span><span class="nb">input</span> <span class="n">input_video</span><span class="o">.</span><span class="n">mov</span> <span class="o">--</span><span class="n">output</span> <span class="n">stable_video</span><span class="o">.</span><span class="n">avi</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using defaults</span>
+python3 -m vidstab --input input_video.mov --output stable_video.avi
 </pre></div>
 </div>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using a specific keypoint detector</span>
-<span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">vidstab</span> <span class="o">-</span><span class="n">i</span> <span class="n">input_video</span><span class="o">.</span><span class="n">mov</span> <span class="o">-</span><span class="n">o</span> <span class="n">stable_video</span><span class="o">.</span><span class="n">avi</span> <span class="o">-</span><span class="n">k</span> <span class="n">GFTT</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using a specific keypoint detector</span>
+python3 -m vidstab -i input_video.mov -o stable_video.avi -k GFTT
 </pre></div>
 </div>
 </div>
 <div class="section" id="using-vidstab-class">
 <h2>Using <code class="docutils literal notranslate"><span class="pre">VidStab</span></code> class<a class="headerlink" href="#using-vidstab-class" title="Permalink to this headline">¶</a></h2>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 
 <span class="c1"># Using defaults</span>
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
@@ -218,7 +220,7 @@ own custom python code.</p>
 <h1>Advanced usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="plotting-frame-to-frame-transformations">
 <h2>Plotting frame to frame transformations<a class="headerlink" href="#plotting-frame-to-frame-transformations" title="Permalink to this headline">¶</a></h2>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
@@ -231,26 +233,26 @@ own custom python code.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="54%" />
-<col width="46%" />
+<col style="width: 54%" />
+<col style="width: 46%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Trajectories</th>
-<th class="head">Transforms</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Trajectories</p></th>
+<th class="head"><p>Transforms</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><img alt="image2" src="https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png" /></td>
-<td><img alt="image3" src="https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png" /></td>
+<tbody>
+<tr class="row-even"><td><p><img alt="image2" src="https://s3.amazonaws.com/python-vidstab/readme/trajectory_plot.png" /></p></td>
+<td><p><img alt="image3" src="https://s3.amazonaws.com/python-vidstab/readme/transforms_plot.png" /></p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="using-borders">
 <h2>Using borders<a class="headerlink" href="#using-borders" title="Permalink to this headline">¶</a></h2>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 
@@ -274,19 +276,19 @@ own custom python code.</p>
 </div>
 <table><tr><td><p align="center"><p>border_size=0</p>
 </p></td><td><p align="center"><p>border_size=100</p>
-</p></td></tr><tr><td><p align="center"></p></td><td><p align="center"></p></td></tr></table><table border="1" class="docutils">
+</p></td></tr><tr><td><p align="center"></p></td><td><p align="center"></p></td></tr></table><table class="docutils align-default">
 <colgroup>
-<col width="48%" />
-<col width="52%" />
+<col style="width: 48%" />
+<col style="width: 52%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><code class="docutils literal notranslate"><span class="pre">border_type='reflect'</span></code></th>
-<th class="head"><code class="docutils literal notranslate"><span class="pre">border_type='replicate'</span></code></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">border_type='reflect'</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">border_type='replicate'</span></code></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><img alt="image4" src="https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif" /></td>
-<td><img alt="image5" src="https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif" /></td>
+<tbody>
+<tr class="row-even"><td><p><img alt="image4" src="https://s3.amazonaws.com/python-vidstab/readme/reflect_stable_ostrich.gif" /></p></td>
+<td><p><img alt="image5" src="https://s3.amazonaws.com/python-vidstab/readme/replicate_stable_ostrich.gif" /></p></td>
 </tr>
 </tbody>
 </table>
@@ -296,7 +298,7 @@ from</em><a class="reference external" href="https://www.facebook.com/happylivin
 </div>
 <div class="section" id="using-frame-layering">
 <h2>Using Frame Layering<a class="headerlink" href="#using-frame-layering" title="Permalink to this headline">¶</a></h2>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span><span class="p">,</span> <span class="n">layer_blend</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span><span class="p">,</span> <span class="n">layer_blend</span>
 
 <span class="c1"># init vid stabilizer</span>
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
@@ -323,19 +325,19 @@ from</em><a class="reference external" href="https://www.facebook.com/happylivin
                      <span class="n">layer_func</span><span class="o">=</span><span class="n">layer_custom</span><span class="p">)</span>
 </pre></div>
 </div>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="51%" />
-<col width="49%" />
+<col style="width: 51%" />
+<col style="width: 49%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><code class="docutils literal notranslate"><span class="pre">layer_func=vidstab.layer_overlay</span></code></th>
-<th class="head"><code class="docutils literal notranslate"><span class="pre">layer_func=vidstab.layer_blend</span></code></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">layer_func=vidstab.layer_overlay</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">layer_func=vidstab.layer_blend</span></code></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><img alt="image6" src="https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif" /></td>
-<td><img alt="image7" src="https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif" /></td>
+<tbody>
+<tr class="row-even"><td><p><img alt="image6" src="https://s3.amazonaws.com/python-vidstab/readme/trail_stable_ostrich.gif" /></p></td>
+<td><p><img alt="image7" src="https://s3.amazonaws.com/python-vidstab/readme/blend_stable_ostrich.gif" /></p></td>
 </tr>
 </tbody>
 </table>
@@ -345,7 +347,7 @@ from</em><a class="reference external" href="https://www.facebook.com/happylivin
 </div>
 <div class="section" id="automatic-border-sizing">
 <h2>Automatic border sizing<a class="headerlink" href="#automatic-border-sizing" title="Permalink to this headline">¶</a></h2>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span>
 
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 
@@ -365,7 +367,7 @@ allow stabilization processing a frame at a time. This can allow
 pre/post processing for each frame to be stabilized; see examples below.</p>
 <div class="section" id="simplest-form">
 <h3>Simplest form<a class="headerlink" href="#simplest-form" title="Permalink to this headline">¶</a></h3>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab.VidStab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab.VidStab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 <span class="n">vidcap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="s1">&#39;input_video.mov&#39;</span><span class="p">)</span>
@@ -392,9 +394,9 @@ pre/post processing for each frame to be stabilized; see examples below.</p>
 </div>
 <div class="section" id="example-with-object-tracking">
 <h3>Example with object tracking<a class="headerlink" href="#example-with-object-tracking" title="Permalink to this headline">¶</a></h3>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">cv2</span>
-<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">layer_overlay</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
 
 <span class="c1"># Download test video to stabilize</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;ostrich.mp4&quot;</span><span class="p">):</span>
@@ -458,11 +460,12 @@ underlying video reader is
 The relevant snippet from the documentation for stabilizing live video
 is:</p>
 <blockquote>
-<div><em>Its argument can be either the device index or the name of a video
+<div><p><em>Its argument can be either the device index or the name of a video
 file. Device index is just the number to specify which camera.
 Normally one camera will be connected (as in my case). So I simply
 pass 0 (or -1). You can select the second camera by passing 1 and so
-on.</em></div></blockquote>
+on.</em></p>
+</div></blockquote>
 <p>The <code class="docutils literal notranslate"><span class="pre">input_path</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">VidStab.stabilize</span></code> method can
 accept integers that will be passed directly to <code class="docutils literal notranslate"><span class="pre">cv2.VideoCapture</span></code> as
 a device index. You can also pass a device index to the <code class="docutils literal notranslate"><span class="pre">--input</span></code>
@@ -475,7 +478,7 @@ Esc key or the Q key. If <code class="docutils literal notranslate"><span class=
 bar can be displayed for live video stabilization processes.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 
 <span class="n">stabilizer</span> <span class="o">=</span> <span class="n">VidStab</span><span class="p">()</span>
 <span class="n">stabilizer</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">input_path</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -491,8 +494,8 @@ bar can be displayed for live video stabilization processes.</p>
 <h2>Transform file writing &amp; reading<a class="headerlink" href="#transform-file-writing-reading" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="generating-and-saving-transforms-to-file">
 <h3>Generating and saving transforms to file<a class="headerlink" href="#generating-and-saving-transforms-to-file" title="Permalink to this headline">¶</a></h3>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span><span class="p">,</span> <span class="n">download_ostrich_video</span>
 
 <span class="c1"># Download video if needed</span>
 <span class="n">download_ostrich_video</span><span class="p">(</span><span class="n">INPUT_VIDEO_PATH</span><span class="p">)</span>
@@ -515,8 +518,8 @@ columns represent delta x, delta y, and delta angle respectively.</p>
 <p>Below example reads a file of transforms and applies to an arbitrary
 video. The transform file is of the form shown in <a class="reference external" href="#generating-and-saving-transforms-to-file">above
 section</a>.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">vidstab</span> <span class="k">import</span> <span class="n">VidStab</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">vidstab</span> <span class="kn">import</span> <span class="n">VidStab</span>
 
 <span class="c1"># Read in csv transform data, of form (delta x, delta y, delta angle):</span>
 <span class="n">transforms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">TRANSFORMATIONS_PATH</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
@@ -544,7 +547,7 @@ section</a>.</p>
         <a href="module_docs.html" class="btn btn-neutral float-right" title="Module documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installation.html" class="btn btn-neutral" title="Install Options" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Install Options" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -570,35 +573,16 @@ section</a>.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
