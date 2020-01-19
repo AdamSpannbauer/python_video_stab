@@ -130,6 +130,7 @@ class VidStab:
                 max_dim_size = max(shape)
 
                 if max_dim_size <= self.processing_max_dim:
+                    self.processing_max_dim = max_dim_size
                     self._processing_resize_kwargs = None
                 else:
                     max_dim_ind = shape.index(max_dim_size)
