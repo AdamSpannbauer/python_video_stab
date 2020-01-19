@@ -38,23 +38,51 @@ class VidStab:
                         ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]``.
                         ``["SIFT", "SURF"]`` are additional non-free options available depending
                         on your build of OpenCV.  The non-free detectors are not tested with this package.
+    :param processing_max_dim: Working with large frames can harm performance (especially in live video).
+                                   Setting this parameter can restrict frame size while processing.
+                                   The outputted frames will remain the original size.
+
+                                   For example:
+
+                                   * If an input frame shape is `(200, 400, 3)` and `processing_max_dim` is
+                                     100.  The frame will be resized to `(50, 100, 3)` before processing.
+
+                                   * If an input frame shape is `(400, 200, 3)` and `processing_max_dim` is
+                                     100.  The frame will be resized to `(100, 50, 3)` before processing.
+
+                                   * If an input frame shape is `(50, 50, 3)` and `processing_max_dim` is
+                                     100.  The frame be unchanged for processing.
+
     :param args: Positional arguments for keypoint detector.
     :param kwargs: Keyword arguments for keypoint detector.
 
     :ivar kp_method: a string naming the keypoint detector being used
+    :ivar processing_max_dim: max image dimension while processing transforms
     :ivar kp_detector: the keypoint detector object being used
     :ivar trajectory: a 2d showing the trajectory of the input video
     :ivar smoothed_trajectory: a 2d numpy array showing the smoothed trajectory of the input video
     :ivar transforms: a 2d numpy array storing the transformations used from frame to frame
     """
 
-    def __init__(self, kp_method='GFTT', processing_max_dim=100, *args, **kwargs):
+    def __init__(self, kp_method='GFTT', processing_max_dim=float('inf'), *args, **kwargs):
         """instantiate VidStab class
 
         :param kp_method: String of the type of keypoint detector to use. Available options are:
                         ``["GFTT", "BRISK", "DENSE", "FAST", "HARRIS", "MSER", "ORB", "STAR"]``.
                         ``["SIFT", "SURF"]`` are additional non-free options available depending
                         on your build of OpenCV.  The non-free detectors are not tested with this package.
+        :param processing_max_dim: Working with large frames can harm performance (especially in live video).
+                                   Setting this parameter can restrict frame size while processing.
+                                   The outputted frames will remain the original size.
+
+                                   For example:
+                                     * If an input frame shape is `(200, 400, 3)` and `processing_max_dim` is
+                                   100.  The frame will be resized to `(50, 100, 3)` before processing.
+                                     * If an input frame shape is `(400, 200, 3)` and `processing_max_dim` is
+                                   100.  The frame will be resized to `(100, 50, 3)` before processing.
+                                     * If an input frame shape is `(50, 50, 3)` and `processing_max_dim` is
+                                   100.  The frame be unchanged for processing.
+
         :param args: Positional arguments for keypoint detector.
         :param kwargs: Keyword arguments for keypoint detector.
         """
