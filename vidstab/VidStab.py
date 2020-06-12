@@ -62,6 +62,11 @@ class VidStab:
     :ivar trajectory: a 2d showing the trajectory of the input video
     :ivar smoothed_trajectory: a 2d numpy array showing the smoothed trajectory of the input video
     :ivar transforms: a 2d numpy array storing the transformations used from frame to frame
+    :ivar tripod_mode: a bool indicating if tripod_mode is on.  tripod_mode will lock the reference frame
+                       for stabilization to be the first frame in video stream. For use w/ locked camera
+                       positions.  The assumption is that there will be less movement of camera and that
+                       movement of objects in frame should not be the focus of the stabilization, but rather
+                       adjusting view to the original camera FOV.
     """
 
     def __init__(self, kp_method='GFTT', processing_max_dim=float('inf'), *args, **kwargs):
@@ -108,6 +113,7 @@ class VidStab:
 
         self.frame_queue = FrameQueue()
         self.prev_kps = self.prev_gray = None
+        self.tripod_mode = False
 
         self.writer = None
 
@@ -122,6 +128,7 @@ class VidStab:
         self.frame_corners = None
 
         self._default_stabilize_frame_output = None
+
 
     def _resize_frame(self, frame):
         if self._processing_resize_kwargs == {}:
@@ -170,7 +177,9 @@ class VidStab:
         transform_i = vidstab_utils.estimate_partial_transform(matched_keypoints)
 
         # update previous frame info for next iteration
-        self._update_prev_frame(current_frame_gray)
+        if not self.tripod_mode:
+            self._update_prev_frame(current_frame_gray)
+
         self._raw_transforms.append(transform_i[:])
         self._update_trajectory(transform_i)
 
@@ -494,7 +503,8 @@ class VidStab:
 
     def stabilize(self, input_path, output_path, smoothing_window=30, max_frames=float('inf'),
                   border_type='black', border_size=0, layer_func=None, playback=False,
-                  use_stored_transforms=False, show_progress=True, output_fourcc='MJPG'):
+                  use_stored_transforms=False, show_progress=True, output_fourcc='MJPG',
+                  tripod_mode=False):
         """Read video, perform stabilization, & write stabilized video to file
 
         :param input_path: Path to input video to stabilize.
@@ -531,6 +541,8 @@ class VidStab:
         >>> stabilizer = VidStab(kp_method = 'ORB')
         >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
         """
+        self.tripod_mode = tripod_mode
+
         if border_size == 'auto':
             self.auto_border_flag = True
 
