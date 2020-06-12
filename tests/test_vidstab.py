@@ -1,3 +1,4 @@
+import os
 import tempfile
 import cv2
 import imutils
@@ -136,3 +137,14 @@ def test_resize():
 
     # noinspection PyProtectedMember
     assert stabilizer._processing_resize_kwargs == {'width': max_dim}
+
+
+def test_writer_reset():
+    path_1 = 'stable_1.avi'
+    path_2 = 'stable_2.avi'
+    stabilizer = VidStab()
+    stabilizer.stabilize(OSTRICH_VIDEO, path_1, max_frames=16, smoothing_window=1)
+    stabilizer.stabilize(OSTRICH_VIDEO, path_2, max_frames=16, smoothing_window=1)
+
+    assert os.path.exists(path_1)
+    assert os.path.exists(path_2)
