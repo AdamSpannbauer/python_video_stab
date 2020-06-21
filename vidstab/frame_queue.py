@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 from .frame import Frame
 from .pop_deque import PopDeque
 
@@ -7,6 +8,7 @@ class FrameQueue:
     def __init__(self, max_len=None, max_frames=None):
         self.max_len = max_len
         self.max_frames = max_frames
+        self._max_frames = None
 
         self.frames = PopDeque(maxlen=max_len)
         self.inds = PopDeque(maxlen=max_len)
@@ -22,6 +24,10 @@ class FrameQueue:
         self.max_len = max_len if max_len is not None else self.max_len
         self.max_frames = max_frames if max_frames is not None else self.max_frames
 
+        has_max_frames = self.max_frames is not None and not np.isinf(self.max_frames)
+        if has_max_frames:
+            self._max_frames = self.max_frames
+
         self.frames = PopDeque(maxlen=max_len)
         self.inds = PopDeque(maxlen=max_len)
         self.i = None
@@ -31,6 +37,12 @@ class FrameQueue:
             self.source = source
             self.source_frame_count = int(source.get(cv2.CAP_PROP_FRAME_COUNT))
             self.source_fps = int(source.get(cv2.CAP_PROP_FPS))
+
+            has_max_frames = self.max_frames is not None and not np.isinf(self.max_frames)
+            if self.source_frame_count > 0 and not has_max_frames:
+                self._max_frames = self.source_frame_count
+            elif has_max_frames and self.source_frame_count < self.max_frames:
+                self._max_frames = self.source_frame_count
         else:
             raise TypeError('Not yet support for non cv2.VideoCapture frame source.')
 
