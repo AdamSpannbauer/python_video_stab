@@ -88,7 +88,7 @@ def check_transforms(stabilizer, is_cv4=True):
 def test_trajectory_transform_values():
     for window in [15, 30, 60]:
         stabilizer = VidStab(processing_max_dim=float('inf'))
-        stabilizer.gen_transforms(input_path=OSTRICH_VIDEO, smoothing_window=window)
+        stabilizer.stabilize(input_path=OSTRICH_VIDEO, output_path='stable.avi', smoothing_window=window)
 
         pickle_test_transforms(stabilizer, 'pickled_transforms')
 
