@@ -290,6 +290,7 @@ class VidStab:
             self.writer.write(transformed)
 
         self.writer.release()
+        self.writer = None
         general_utils.update_progress_bar(progress_bar, finish=True)
         cv2.destroyAllWindows()
 
@@ -539,6 +540,8 @@ class VidStab:
         >>> stabilizer = VidStab(kp_method = 'ORB')
         >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
         """
+        self.writer = None
+
         if border_size == 'auto':
             self.auto_border_flag = True
 
