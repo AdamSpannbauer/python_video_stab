@@ -17,6 +17,7 @@ setup(name='vidstab',
       url='https://github.com/AdamSpannbauer/python_video_stab',
       packages=['vidstab'],
       license='MIT',
+      python_requires='>=3.6',
       install_requires=[
           'numpy',
           'imutils>=0.5.2',
@@ -24,7 +25,7 @@ setup(name='vidstab',
           'matplotlib',
       ],
       extras_require={
-          'cv2': ['opencv-contrib-python >= 3.4.0']
+          'cv2': ['opencv-contrib-python>=3.4.0']
       },
       tests_require=['pytest'],
       keywords=['video stabilization', 'computer vision', 'image processing', 'opencv'],

@@ -299,6 +299,7 @@ class VidStab:
             self.writer.write(transformed)
 
         self.writer.release()
+        self.writer = None
         general_utils.update_progress_bar(progress_bar, finish=True)
         cv2.destroyAllWindows()
 
@@ -306,6 +307,14 @@ class VidStab:
         self.trajectory = np.array(self._trajectory)
         self.smoothed_trajectory = general_utils.bfill_rolling_mean(self.trajectory, n=self._smoothing_window)
         self.transforms = np.array(self._raw_transforms) + (self.smoothed_trajectory - self.trajectory)
+
+        # Dump superfluous frames
+        # noinspection PyProtectedMember
+        n = self.frame_queue._max_frames
+        if n:
+            self.trajectory = self.trajectory[:n - 1, :]
+            self.smoothed_trajectory = self.smoothed_trajectory[:n - 1, :]
+            self.transforms = self.transforms[:n - 1, :]
 
     def gen_transforms(self, input_path, smoothing_window=30, show_progress=True):
         """Generate stabilizing transforms for a video
@@ -542,6 +551,7 @@ class VidStab:
         >>> stabilizer.stabilize(input_path='input_video.mov', output_path='stable_video.avi')
         """
         self.tripod_mode = tripod_mode
+        self.writer = None
 
         if border_size == 'auto':
             self.auto_border_flag = True
