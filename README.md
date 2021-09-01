@@ -1,6 +1,7 @@
 # Python Video Stabilization <img src='https://s3.amazonaws.com/python-vidstab/logo/vidstab_logo_hex.png' width=125 align='right'/>
 
 <!-- noop -->
+<!-- noop -->
 
 [![Build Status](https://travis-ci.org/AdamSpannbauer/python_video_stab.svg?branch=master)](https://travis-ci.org/AdamSpannbauer/python_video_stab)
 [![codecov](https://codecov.io/gh/AdamSpannbauer/python_video_stab/branch/master/graph/badge.svg)](https://codecov.io/gh/AdamSpannbauer/python_video_stab)
