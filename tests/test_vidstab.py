@@ -155,6 +155,31 @@ def test_writer_reset():
         imutils.video.count_frames(path_1)
 
 
+def test_output_fps():
+    force_fps = 10
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_vid = '{}/test_output.avi'.format(tmpdir)
 
-    assert os.path.exists(path_1)
-    assert os.path.exists(path_2)
+        stabilizer = VidStab()
+        stabilizer.stabilize(
+            OSTRICH_VIDEO,
+            output_vid,
+            max_frames=16,
+            smoothing_window=1,
+            output_fps=force_fps
+        )
+
+        output_fps = cv2.VideoCapture(output_vid).get(cv2.CAP_PROP_FPS)
+        assert force_fps == output_fps
+
+
+def test_max_frames():
+    max_frames = 16
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_path = '{}/stable_1.avi'.format(tmpdir)
+
+        stabilizer = VidStab()
+        stabilizer.stabilize(OSTRICH_VIDEO, output_path, max_frames=max_frames, smoothing_window=1)
+
+        output_frame_count = imutils.video.count_frames(output_path)
+        assert max_frames == output_frame_count
