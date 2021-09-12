@@ -43,7 +43,7 @@ def plot_trajectory(transforms, trajectory, smoothed_trajectory):
         plt.xlabel('Frame Number')
 
         fig.suptitle('Video Trajectory', x=0.15, y=0.96, ha='left')
-        fig.canvas.set_window_title('Trajectory')
+        fig.canvas.manager.set_window_title('Trajectory')
 
         return fig, (ax1, ax2)
 
@@ -93,6 +93,6 @@ def plot_transforms(transforms, radians=False):
         plt.xlabel('Frame Number')
 
         fig.suptitle('Transformations for Stabilizing', x=0.15, y=0.96, ha='left')
-        fig.canvas.set_window_title('Transforms')
+        fig.canvas.manager.set_window_title('Transforms')
 
         return fig, (ax1, ax2)

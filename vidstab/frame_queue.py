@@ -26,7 +26,7 @@ class FrameQueue:
 
         has_max_frames = self.max_frames is not None and not np.isinf(self.max_frames)
         if has_max_frames:
-            self._max_frames = self.max_frames
+            self._max_frames = self.max_frames + 1
 
         self.frames = PopDeque(maxlen=max_len)
         self.inds = PopDeque(maxlen=max_len)
@@ -66,7 +66,7 @@ class FrameQueue:
         if (pop_ind
                 and self.i is not None
                 and self.max_frames is not None):
-            break_flag = self.i >= self.max_frames
+            break_flag = self.i >= self.max_frames - 1
         else:
             break_flag = None
 

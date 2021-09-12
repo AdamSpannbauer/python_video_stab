@@ -551,6 +551,9 @@ class VidStab:
         """
         self.writer = None
 
+        if max_frames is not None:
+            max_frames += 1
+
         if border_size == 'auto':
             self.auto_border_flag = True
 
