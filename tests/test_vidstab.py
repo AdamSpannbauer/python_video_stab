@@ -2,6 +2,7 @@ import os
 import tempfile
 import cv2
 import imutils
+import imutils.video
 import numpy as np
 import pytest
 
@@ -12,7 +13,7 @@ from .pickled_transforms import download_pickled_transforms, pickle_test_transfo
 # atol value to use when comparing results using np.allclose
 NP_ALLCLOSE_ATOL = 1e-3
 
-# excluding non-free 'SIFT' & 'SURF' methods do to exclusion from opencv-contrib-python
+# excluding non-free 'SIFT' & 'SURF' methods due to exclusion from opencv-contrib-python
 # see: https://github.com/skvark/opencv-python/issues/126
 KP_METHODS = ['GFTT', 'BRISK', 'DENSE', 'FAST', 'HARRIS', 'MSER', 'ORB', 'STAR']
 
@@ -140,11 +141,20 @@ def test_resize():
 
 
 def test_writer_reset():
-    path_1 = 'stable_1.avi'
-    path_2 = 'stable_2.avi'
-    stabilizer = VidStab()
-    stabilizer.stabilize(OSTRICH_VIDEO, path_1, max_frames=16, smoothing_window=1)
-    stabilizer.stabilize(OSTRICH_VIDEO, path_2, max_frames=16, smoothing_window=1)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path_1 = '{}/stable_1.avi'.format(tmpdir)
+        path_2 = '{}/stable_2.avi'.format(tmpdir)
+
+        stabilizer = VidStab()
+        stabilizer.stabilize(OSTRICH_VIDEO, path_1, max_frames=16, smoothing_window=1)
+        stabilizer.stabilize(OSTRICH_VIDEO, path_2, max_frames=16, smoothing_window=1)
+
+        assert os.path.exists(path_1)
+        assert os.path.exists(path_2)
+
+        imutils.video.count_frames(path_1)
+
+
 
     assert os.path.exists(path_1)
     assert os.path.exists(path_2)
