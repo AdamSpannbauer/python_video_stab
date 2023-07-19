@@ -163,6 +163,7 @@ class VidStab:
 
         # calc flow of movement
         prev_gray_uint8 = self.prev_gray
+        current_frame_gray_uint8 = current_frame_gray
         if current_frame_gray.dtype == np.float32:
             prev_gray_uint8 = (self.prev_gray * 255).astype(np.uint8)
             current_frame_gray_uint8 = (current_frame_gray * 255).astype(np.uint8)
