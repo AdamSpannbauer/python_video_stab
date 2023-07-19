@@ -162,8 +162,13 @@ class VidStab:
         current_frame_gray = self._resize_frame(current_frame_gray)
 
         # calc flow of movement
-        optical_flow = cv2.calcOpticalFlowPyrLK(self.prev_gray,
-                                                current_frame_gray,
+        prev_gray_uint8 = self.prev_gray
+        current_frame_gray_uint8 = current_frame_gray
+        if current_frame_gray.dtype == np.float32:
+            prev_gray_uint8 = (self.prev_gray * 255).astype(np.uint8)
+            current_frame_gray_uint8 = (current_frame_gray * 255).astype(np.uint8)
+        optical_flow = cv2.calcOpticalFlowPyrLK(prev_gray_uint8,
+                                                current_frame_gray_uint8,
                                                 self.prev_kps, None)
 
         matched_keypoints = vidstab_utils.match_keypoints(optical_flow, self.prev_kps)
