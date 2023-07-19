@@ -1,14 +1,12 @@
 import os
-import tempfile
-import time
 import cv2
-from vidstab import VidStab, layer_overlay, download_ostrich_video
+from vidstab import VidStab
 import numpy as np
 from tqdm import tqdm
 
 # Init stabilizer and video reader
 stabilizer = VidStab()
-frames = np.load('C:/Users/marcu/repos/NETxTEN/netxten/Recordings/NPY_Files/OGI Training/SEQ_10652.npy')
+frames = np.load(os.path.join(os.getcwd(), 'vids', 'SEQ_10652.npy'))
 frames = frames.astype(np.float32) / 65535.0
 
 frameidx = 0
